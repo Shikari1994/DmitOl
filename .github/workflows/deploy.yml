@@ -26,7 +26,7 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          BASE_PATH: /NDV2
+          BASE_PATH: /DmitOl
           SITE: https://shikari1994.github.io
       - uses: actions/upload-pages-artifact@v3
         with:
