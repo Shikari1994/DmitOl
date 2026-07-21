@@ -3,13 +3,16 @@ import { asset } from '../lib/asset.js'
 
 /* 2026-07-21: секция «Продукция» переписана 1-в-1 по D:\Projects\Dmit
    (`id="production"`) — пользователь явно попросил буквальную копию
-   текста/анимаций/видео, включая ранее отвергнутые corner-marks и
-   3D-кнопку-куб (реопен решения из PRODUCT.md → Anti-references,
-   см. память dmit-sibling-reference). Тексты карточек и ТТХ в шторке —
-   дословный перенос, не парафраз. */
+   текста/анимаций/видео, включая ранее отвергнутые corner-marks (см.
+   память dmit-sibling-reference). Тексты карточек и ТТХ в шторке —
+   дословный перенос, не парафраз.
+   Кнопка .rig-cube: изначально 3D-флип-куб 1:1 из Dmit, по прямой
+   просьбе пользователя заменён на горизонтальную заливку-«загрузку»
+   (clip-path слева направо) — сознательное отклонение от буквальной
+   копии, см. index.css. */
 const PRODUCTS = [
   {
-    id: 'mwd', n: '01', title: 'GT-Navigator', line: 'Телесистема MWD / LWD',
+    id: 'mwd', n: '01', title: 'GT-NAVIGATOR', line: 'Телесистема MWD / LWD (комплект)',
     text: 'Локализация системы с гидравлическим каналом связи на базе архитектуры QDT Tensor.',
     specIndex: 'ИРИ // 01',
     specTitle: 'Телесистема MWD/LWD «GT-Navigator»',
@@ -22,7 +25,7 @@ const PRODUCTS = [
     ],
   },
   {
-    id: 'decoder', n: '02', title: 'Наземный комплекс', line: 'Универсальные системы',
+    id: 'decoder', n: '02', title: 'НАДЗЕМКА', line: 'Наземный комплекс',
     text: 'Аппаратные модули высокоскоростного декодирования со встроенным промышленным монитором и узлом удаленной связи.',
     specIndex: 'ИРИ // 02',
     specTitle: 'Универсальный наземный комплекс',
@@ -35,7 +38,7 @@ const PRODUCTS = [
     ],
   },
   {
-    id: 'inclinometer', n: '03', title: 'Модуль инклинометра', line: 'MEMS Датчики',
+    id: 'inclinometer', n: '03', title: 'ИНКЛИНОМЕТР', line: 'MEMS Датчики',
     text: 'Высокая виброустойчивость, энергоэффективность и мгновенная обработка данных в скважине.',
     specIndex: 'ИРИ // 03',
     specTitle: 'Универсальный модуль инклинометра',
@@ -47,14 +50,50 @@ const PRODUCTS = [
       ['Виброустойчивость', 'Ультимативная (до 50 g)'],
     ],
   },
+  {
+    id: 'resistivimeter', n: '04', title: 'РЕЗИСТИВИМЕТР', line: 'Модуль удельного сопротивления',
+    text: 'Измерение удельного электрического сопротивления пласта в процессе бурения для оперативной геонавигации.',
+    specIndex: 'ИРИ // 04',
+    specTitle: 'Модуль удельного сопротивления «Резистивиметр»',
+    specs: [
+      ['Рабочая температура', 'до +150°C (опция +175°C)'],
+      ['Канал передачи данных', 'Гидравлический (пульсатор) / шина инструмента'],
+      ['Тип встроенных датчиков', 'Резистивиметр (удельное сопротивление пласта)'],
+      ['Совместимость платформ', 'Архитектура QDT Tensor'],
+      ['Виброустойчивость', 'Высокая (до 30 g)'],
+    ],
+  },
+  {
+    id: 'generators', n: '05', title: 'ГЕНЕРАТОРЫ, ПУЛЬСАТОРЫ', line: 'Узлы формирования сигнала',
+    text: 'Силовые генераторы и гидравлические пульсаторы для формирования и передачи телеметрического сигнала по буровому раствору.',
+    specIndex: 'ИРИ // 05',
+    specTitle: 'Генераторы и гидравлические пульсаторы',
+    specs: [
+      ['Рабочая температура', 'до +150°C (опция +175°C)'],
+      ['Канал передачи данных', 'Гидравлический (формирование сигнала в буровом растворе)'],
+      ['Тип узла', 'Силовой генератор + гидравлический пульсатор'],
+      ['Совместимость платформ', 'Большинство телесистем MWD/LWD'],
+      ['Виброустойчивость', 'Высокая (до 30 g)'],
+    ],
+  },
 ]
+
+/* 06 «Запчасти» ведёт на внешний перечень (oklimashov.fvds.ru), а не
+   в шторку ТТХ — для расходников нет технических характеристик,
+   только запрос перечня, поэтому это отдельная ссылка, а не запись
+   в PRODUCTS/specs-панелях. */
+const PARTS = {
+  n: '06', title: 'ЗАПЧАСТИ', line: 'Для телесистем любого типа',
+  text: 'Сменные узлы, платы и расходные компоненты — совместимость с оборудованием большинства производителей телесистем.',
+  cta: 'Запросить перечень',
+}
 ---
 
 <section id="products" data-theme="black">
-  {/* Фон на весь раздел, кроме шапки (2026-07-21, по просьбе — отход
-      от буквальной копии Dmit, где видео лежало только под карточками):
-      .prod-head непрозрачна своим фоном и перекрывает видео над собой,
-      ниже неё дорожка (та же, что в hero) видна во всю ширину секции. */}
+  {/* Фон на весь раздел целиком, включая шапку (2026-07-21, по просьбе —
+      отход от буквальной копии Dmit, где видео лежало только под
+      карточками): дорожка (та же, что в hero) видна во всю высоту секции,
+      .prod-head больше не глушит её собственным фоном. */}
   <div class="prod-media" aria-hidden="true">
     <video
       class="prod-media-video"
@@ -67,16 +106,16 @@ const PRODUCTS = [
   </div>
 
   <div class="prod-head">
-    <div class="prod-head-title">
-      <div class="eyebrow reveal">// Аппаратные комплексы</div>
-      <h2 class="h-title reveal">Продукция</h2>
-    </div>
-    <div class="prod-head-lead">
-      <p class="lead reveal">
-        Собственное серийное производство узлов, датчиков и элементов
-        телесистем. Оборудование полностью соответствует строгим
-        международным стандартам качества.
-      </p>
+    <div class="eyebrow reveal prod-head-eyebrow">Аппаратные комплексы</div>
+    <div class="prod-head-row">
+      <h2 class="h-title reveal prod-head-title">Продукция</h2>
+      <div class="prod-head-lead">
+        <p class="lead reveal">
+          Собственное серийное производство узлов, датчиков и элементов
+          телесистем. Оборудование полностью соответствует строгим
+          международным стандартам качества.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -92,13 +131,26 @@ const PRODUCTS = [
           </span>
           <span class="rig-text">{p.text}</span>
           <span class="rig-cube" aria-hidden="true">
-            <span class="rig-cube-face">Обзор систем →</span>
-            <span class="rig-cube-face">Смотреть ТТХ</span>
-            <span class="rig-cube-face">Обзор систем</span>
-            <span class="rig-cube-face">Смотреть ТТХ</span>
+            <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span class="rig-cube-label">Смотреть ТТХ →</span>
+            <span class="rig-cube-fill"><span class="rig-cube-fill-text">Смотреть ТТХ →<span class="rig-cube-caret">_</span></span></span>
           </span>
         </button>
       ))}
+      <a class="rig-row" href="https://oklimashov.fvds.ru/" target="_blank" rel="noopener noreferrer">
+        <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="rig-num mono" aria-hidden="true">{PARTS.n} /</span>
+        <span class="rig-head">
+          <span class="rig-title">{PARTS.title}</span>
+          <span class="rig-line mono">{PARTS.line}</span>
+        </span>
+        <span class="rig-text">{PARTS.text}</span>
+        <span class="rig-cube" aria-hidden="true">
+          <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="rig-cube-label">{PARTS.cta} →</span>
+          <span class="rig-cube-fill"><span class="rig-cube-fill-text">{PARTS.cta} →<span class="rig-cube-caret">_</span></span></span>
+        </span>
+      </a>
     </div>
   </div>
 </section>
@@ -115,7 +167,7 @@ const PRODUCTS = [
   {PRODUCTS.map((p) => (
     <div class="specs-panel" data-specs-panel={p.id}>
       <span class="specs-index mono">{p.specIndex}</span>
-      <span class="specs-eyebrow mono">// Технические характеристики</span>
+      <span class="specs-eyebrow mono">Технические характеристики</span>
       <h3 class="specs-title">{p.specTitle}</h3>
       <dl class="specs-list">
         {p.specs.map(([label, value]) => (
@@ -126,6 +178,7 @@ const PRODUCTS = [
         ))}
       </dl>
       <a class="btn btn-primary specs-cta" href="#contact" data-specs-close>
+        <span class="btn-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         Запросить ТЭО системы
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
       </a>

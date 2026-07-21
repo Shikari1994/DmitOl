@@ -26,8 +26,18 @@ const menu = document.querySelector('.nav-mobile')
    несопоставимо дешевле перерисовки компонента, ради которой здесь
    раньше держался React. Слушатель пассивный — прокрутку не тормозит. */
 if (nav) {
-  const apply = () => nav.classList.toggle('scrolled', window.scrollY > 40)
+  /* Настоящая высота шапки → --nav-h (см. index.css): читаем её тут же,
+     а не держим в CSS числом-догадкой на каждый брейкпоинт — на 1200px
+     раскладка меняется (часы+кнопка ↔ бургер), и высота вместе с ней. */
+  const setNavHeight = () => {
+    document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px')
+  }
+  const apply = () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40)
+    setNavHeight()
+  }
   window.addEventListener('scroll', apply, { passive: true })
+  window.addEventListener('resize', setNavHeight)
   apply()
 }
 
@@ -72,7 +82,7 @@ if (burger && menu) {
   })
 }
 
-/* ─── Часы MSK в шапке ───
+/* ─── Часы (МСК) в шапке ───
    Реальное время, не заглушка: буровая, диспетчерская и офис в разных
    часовых поясах, единый ориентир на шапке экономит вопрос «сколько
    там сейчас». Формат совпадает с остальными readout'ами сайта —
@@ -84,7 +94,7 @@ if (burger && menu) {
       const t = new Date().toLocaleTimeString('ru-RU', {
         timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', second: '2-digit',
       })
-      clock.textContent = 'MSK · ' + t
+      clock.textContent = 'МОСКВА · ' + t
     }
     tick()
     setInterval(tick, 1000)

@@ -8,7 +8,6 @@ import Mobile from '../components/Mobile.astro'
 import Showcase from '../components/Showcase.astro'
 import How from '../components/How.astro'
 import Economics from '../components/Economics.astro'
-import Store from '../components/Store.astro'
 import Footer from '../components/Footer.astro'
 import Marquee from '../components/Marquee.astro'
 
@@ -25,14 +24,20 @@ const CAPABILITIES = [
   <Nav />
   <main id="main">
     <Hero />
-    <About />
-    <Showcase />
-    <Software />
-    <Mobile />
-    <Economics />
-    <Marquee items={CAPABILITIES} theme="black" speed={45} />
-    <How />
-    <Store />
+    {/* Направляющая — линия, продолжающая border-left футера (.footer-cell-b)
+        вверх до основания хиро. Сама div-обёртка ничего не рисует, только
+        задаёт точку отсчёта (position: relative), от которой top: 0
+        линии совпадает с нижним краем Hero без JS-замеров. */}
+    <div class="align-scope">
+      <div class="align-guide" aria-hidden="true"></div>
+      <About />
+      <Showcase />
+      <Software />
+      <Mobile />
+      <Economics />
+      <How />
+      <Marquee items={CAPABILITIES} theme="black" speed={45} />
+    </div>
   </main>
   <Footer />
 </Layout>

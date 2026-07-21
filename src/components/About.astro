@@ -78,7 +78,7 @@ const total = String(FACTS.length).padStart(2, '0')
           разворот (см. GEO_END там же). */}
       <div class="atlas-copy">
         <div class="atlas-head">
-          <div class="eyebrow"><span class="ey-no">01<span class="ey-den"> / 07</span></span>О компании</div>
+          <div class="eyebrow"><span class="ey-no">01<span class="ey-den"> / 06</span></span>О компании</div>
           <h2 class="atlas-geo" data-atlas-geo>
             {GEO_WORDS.join(' ')}
             {/* Копия по словам: заливка идёт по чтению — слово за словом,
@@ -97,7 +97,10 @@ const total = String(FACTS.length).padStart(2, '0')
             От Западной Сибири до шельфовых месторождений — с телеметрией
             и геонавигацией собственной разработки.
           </p>
-          <a class="pill" href="#contact">связаться</a>
+          <a class="pill" href="#contact">
+            связаться
+            <span class="btn-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </a>
         </div>
       </div>
 
