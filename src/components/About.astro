@@ -30,6 +30,8 @@ import { asset } from '../lib/asset.js'
    переключается классом, а наливается прогрессом); справа, прямо
    над карточкой фактов, — маленький кикер «Ключевые цифры», который
    эту карточку и подписывает. */
+const GEO_WORDS = 'Реализуем проекты по всей России'.split(' ')
+
 const FACTS = [
   {
     big: '15', unit: 'лет', kicker: 'На рынке телеметрии',
@@ -66,14 +68,30 @@ const total = String(FACTS.length).padStart(2, '0')
           под «Ключевыми цифрами»: раньше она шла вторым пунктом и терялась,
           коллега не связал глобус с текстом. Дублирующий span-оверлей —
           чисто визуальный слой заливки: он aria-hidden, читает текст
-          screen reader ровно один раз (сам h2). Прогресс заливки ведёт
-          aboutScene.js — тот же прогресс, что доворачивает глобус. */}
+          screen reader ровно один раз (сам h2). Заливка идёт по словам
+          (см. GEO_WORDS и .atlas-geo-word ниже) — слово за словом, в
+          порядке чтения, а не сплошной полосой поперёк всей строки: при
+          переносе на вторую строку общий clip-path резал бы обе строки
+          одной вертикальной чертой, и заливка шла бы не по словам, а по
+          столбцу. Ведёт прогресс aboutScene.js — тот же, что доворачивает
+          глобус, и завершается ровно к тому кадру, где шар закончил
+          разворот (см. GEO_END там же). */}
       <div class="atlas-copy">
         <div class="atlas-head">
-          <div class="eyebrow"><span class="ey-no">01<span class="ey-den"> / 09</span></span>О компании</div>
+          <div class="eyebrow"><span class="ey-no">01<span class="ey-den"> / 07</span></span>О компании</div>
           <h2 class="atlas-geo" data-atlas-geo>
-            Реализуем проекты по всей России
-            <span class="atlas-geo-fill" data-atlas-geo-fill aria-hidden="true">Реализуем проекты по всей России</span>
+            {GEO_WORDS.join(' ')}
+            {/* Копия по словам: заливка идёт по чтению — слово за словом,
+                внутри слова буква за буквой (тот же clip-path, но на
+                каждом слове свой). Ведёт aboutScene.js. */}
+            <span class="atlas-geo-fill" aria-hidden="true">
+              {GEO_WORDS.map((w, i) => (
+                <>
+                  <span class="atlas-geo-word" data-geo-word={i}>{w}</span>
+                  {i < GEO_WORDS.length - 1 && ' '}
+                </>
+              ))}
+            </span>
           </h2>
           <p class="lead">
             От Западной Сибири до шельфовых месторождений — с телеметрией
@@ -124,8 +142,6 @@ const total = String(FACTS.length).padStart(2, '0')
           </div>
         </div>
       </div>
-
-      <span class="atlas-label mono" aria-hidden="true">География деятельности</span>
     </div>
   </div>
 </section>

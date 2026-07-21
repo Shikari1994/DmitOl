@@ -1,212 +1,125 @@
 ---
 import { asset } from '../lib/asset.js'
 
-/* ── КОЛОДА ЭКРАНОВ 01–02 ──────────────────────────────────────────
-   Приём первоисточника (ZITAR® METALWARE → ZITAR® ABRASIVES): первая
-   строка ОДНА И ТА ЖЕ на всех экранах колоды и стоит на одной и той же
-   высоте вьюпорта. Наезжающая заливка режет её по горизонтали: сверху
-   она ещё в тоне уходящего экрана, снизу — уже в тоне пришедшего.
-   Меняется только слово под ней и цвет фона.
+/* ── HERO · буквальный перенос из D:\Projects\Dmit (1gemini-code-...html) ──
+   Не адаптация под токены сайта, а прямой перевод разметки и значений:
+   свои цвета (logoBlue #0090df, sky-400 #38bdf8, slate-400/500), свой
+   шрифт заголовка (Inter black, не Unbounded — у Dmit третьей гарнитуры
+   нет), контурная кнопка с инверсией на hover, лого-плашка «ГТН» вместо
+   реального логотипа, тонкие 8%-границы, стеклянная подложка правой
+   колонки (bg-black/20 + blur). Все значения — из style-блока и классов
+   Dmit, не подобраны на глаз.
 
-   Чтобы разрез сошёлся, обязаны совпадать три вещи:
-     · высота строки на экране — держится одинаковой вёрсткой экранов;
-     · кегль — общий для всей колоды, считается по самой длинной строке
-       (--deck-len ниже), иначе на разных экранах буквы разного размера;
-     · неподвижность — содержимое пришедшего экрана не едет вместе с
-       заливкой, его компенсирует motion.js.
+   Единственные два сознательных отличия от оригинала:
+   1) сцены в плитках (ноутбук+телефон, снаряд из двух модулей) — этого
+      контента у Dmit нет вообще, добавлены по прямой просьбе и скрыты
+      в покое, выезжают только по hover/focus на карточку (чистый CSS);
+   2) ссылки — реальные якоря (#products/#software) вместо onclick
+      scrollIntoView, функционально то же самое через Lenis (motion.js).
 
-   Ряд показателей и окно прибора с первого экрана убраны: интерфейс
-   Drill Monitor подробно разобран в Software и About, а здесь он мешал
-   разрезу — первый экран был плотнее остальных, и приём не читался.
-   Экран про ЗИП из колоды тоже убран: сервис и комплектующие живут
-   в Showcase и Store, в колоде он был третьим повтором того же приёма.
-   ────────────────────────────────────────────────────────────────── */
-const BRAND = 'ГЕОТЕХНАВИГАЦИЯ'
-
-const SCREENS = [
-  {
-    theme: 'black',
-    no: '01',
-    kicker: 'Телеметрия и геонавигация бурения',
-    word: ['Производство', 'телесистем'],
-    descr: [
-      'системы MWD / LWD и наземные станции декодирования —',
-      'полный цикл от забойного датчика до отчёта заказчику',
-    ],
-    // каротажный canvas вместо видео — своя фактура у входного экрана
-    canvas: true,
-    // компоновка в сборе: канвас замаскирован в левую половину, снаряд идёт справа
-    rig: '/mwd-rig.webp',
-    cta: { href: '#products', label: 'Оборудование' },
-  },
-  {
-    theme: 'graphite',
-    no: '02',
-    kicker: 'Программный комплекс',
-    word: ['Разработка', 'ПО'],
-    descr: ['Drill Monitor: рабочее место инженера и мобильный клиент —', 'один промысел на всех экранах'],
-    /* Рабочее место вместо видео-фактуры: у экрана про ПО иллюстрация —
-       сам интерфейс, а не абстрактный кадр. Телефон здесь один и стоит
-       на кромке ноутбука: ряд из трёх дробил экран, а читались всё
-       равно не они. */
-    stage: { note: '/note1.webp', phone: '/mob2.webp' },
-    /* Левая половина экрана оставалась гладкой заливкой: у входного
-       экрана верх держат канвас и снаряд, здесь не держало ничего.
-       Фактура тут не абстрактная, а та же, что и предмет справа, —
-       readout Drill Monitor: те же величины, что видны на скриншоте
-       ноутбука, только идущие вживую. Разрезу константы блок не
-       мешает — она внизу, а полоса под шапкой свободна.
-
-       Величины совпадают со скриншотом намеренно: слева и справа
-       один и тот же промысел, иначе сцена распадается на картинку
-       и не связанный с ней виджет. Дрейф и шаг ведёт deckReadout.js,
-       разметка несёт покой — он же вид без скрипта и при
-       reduced-motion. */
-    readout: {
-      title: 'Drill Monitor · демо-поток',
-      rows: [
-        { label: 'Глубина',   value: '1500.5', unit: 'м',      fix: 1, rate: 0.08 },
-        { label: 'Зенит',     value: '2.70',   unit: '°',      fix: 2, drift: 0.05 },
-        { label: 'Азимут',    value: '39.56',  unit: '°',      fix: 2, drift: 0.14 },
-        { label: 'Обороты',   value: '135',    unit: 'об/мин', fix: 0, drift: 2.2 },
-        { label: 'Нагрузка',  value: '118.6',  unit: 'кН',     fix: 1, drift: 1.4 },
-        { label: 'Давление',  value: '19.11',  unit: 'МПа',    fix: 2, drift: 0.16 },
-      ],
-    },
-    cta: { href: '#software', label: 'Смотреть Drill Monitor' },
-  },
-]
-
-/* Кегль колоды считается по самой длинной строке — и константе, и словам.
-   Один кегль на все экраны: если он прыгает, разрез константы не сходится.
-   Поэтому же слово разбито на строки руками: автоперенос дал бы разным
-   экранам разную высоту заголовка и увёл бы константу с общей высоты. */
-const LONGEST = Math.max(BRAND.length, ...SCREENS.flatMap((s) => s.word.map((w) => w.length)))
-const TOTAL = String(SCREENS.length).padStart(2, '0')
+   Прежняя «колода» с разрезом константы «ГЕОТЕХНАВИГАЦИЯ» удалена
+   целиком вместе с каротажным canvas — см. память (dmit-sibling-reference,
+   redesign-direction). */
 ---
 
-<div class="deck" style={`--deck-len:${LONGEST}`}>
-  {SCREENS.map((s, i) => {
-    const Heading = i === 0 ? 'h1' : 'h2'
-    return (
-      <section
-        class="deck-screen"
-        id={i === 0 ? 'hero' : undefined}
-        data-theme={s.theme}
-        data-rails="on"
-      >
-        <div class="deck-inner">
-          {s.canvas && <canvas class="hero-bg-canvas" aria-hidden="true"></canvas>}
+<section id="hero" data-theme="black" class="hero-intro">
+  <div class="hero-media" aria-hidden="true">
+    <video
+      class="hero-media-video"
+      data-hero-video
+      src={asset('/hero-scan.mp4')}
+      loop
+      muted
+      playsinline
+    ></video>
+    <div class="hero-media-scrim"></div>
+  </div>
 
-          {/* Курсорный readout: AZ/INC читают положение курсора над
-              канвасом, а не поток данных — интерактивная деталь того же
-              приборного языка, что у .deck-readout экрана 02. Только
-              на устройствах с настоящим указателем (см. CSS). */}
-          {s.canvas && (
-            <div class="deck-cursor-readout mono" data-cursor-readout aria-hidden="true">
-              <span>AZ <b data-cursor-az>000.0°</b></span>
-              <span>INC <b data-cursor-inc>00.0°</b></span>
+  <div class="hero-readout mono" data-cursor-readout aria-hidden="true">
+    <span>AZ <b data-cursor-az>000.0°</b></span>
+    <span>INC <b data-cursor-inc>00.0°</b></span>
+    <span class="hero-readout-note">// Симуляция датчика</span>
+  </div>
+
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="hero-copy-top">
+        <span class="hero-tag mono">// Научно-производственный комплекс</span>
+        <div class="hero-brand">
+          <span class="hero-brand-mark mono">ГТН</span>
+          <h1 class="hero-brand-title">ГЕОТЕХ<br />НАВИГАЦИЯ</h1>
+        </div>
+      </div>
+
+      <div class="hero-copy-bottom">
+        <p class="hero-lead">
+          Разработка, производство и внедрение забойных телеметрических систем
+          MWD/LWD и передового программного обеспечения. Мы создаём замкнутую
+          экосистему бурения: от отказоустойчивого аппаратного железа до систем
+          удалённого онлайн-контроля.
+        </p>
+        <div class="hero-cta-row">
+          <a class="hero-btn mono" href="#products">Перейти к оборудованию</a>
+          <a class="hero-link mono" href="#software">
+            Цифровой комплекс <span class="hero-link-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-teasers">
+      {/* Плитка 1 · инженерный софт. Сцена «ноутбук + телефон» — добавка
+          сверх Dmit (там плитка пустая), скрыта в покое, выезжает по
+          наведению на карточку (см. .hero-tile-art в index.css). */}
+      <a class="hero-tile" href="#software">
+        <span class="hero-tile-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <div class="hero-tile-art" aria-hidden="true">
+          <div class="hero-tile-stage">
+            <div class="hero-tile-note">
+              <img src={asset('/note1.webp')} alt="" loading="eager" draggable="false" />
             </div>
-          )}
-
-          {/* data-lift-x — ход выхода в процентах собственной ширины.
-              Величины здесь, а не в CSS: transform целиком отдан GSAP,
-              иначе он разберёт готовый transform в пиксельную базу и
-              смещение перестанет пересчитываться на ресайзе. Телефону
-              ход втрое длиннее — он и стартует из-под ноутбука.
-
-              Узла у телефона два: место в сцене держит CSS (.deck-phone),
-              ход везёт вложенный .deck-phone-move. На одном узле
-              позиционирование и твин дрались бы за transform. */}
-          {s.stage && (
-            <div class="deck-devices" aria-hidden="true">
-              <div class="deck-stage">
-                <div class="deck-note" data-device data-lift-x="46" style="--lift-x: 46%">
-                  <img src={asset(s.stage.note)} alt="" loading="lazy" draggable="false" />
-                </div>
-                <div class="deck-phone">
-                  <div class="deck-phone-move" data-device data-lift-x="235" style="--lift-x: 235%">
-                    <img src={asset(s.stage.phone)} alt="" loading="lazy" draggable="false" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* aria-hidden: величины демонстрационные и дублируют кадр
-              справа — в озвучке это был бы поток чисел без смысла */}
-          {s.readout && (
-            <div class="deck-readout mono" data-readout aria-hidden="true">
-              <div class="deck-readout-head">
-                <span class="deck-readout-live"></span>
-                <span>{s.readout.title}</span>
-              </div>
-              <dl class="deck-readout-rows">
-                {s.readout.rows.map((r) => (
-                  <div class="deck-readout-row">
-                    <dt>{r.label}</dt>
-                    <dd>
-                      <span
-                        class="deck-readout-val"
-                        data-val
-                        data-base={r.value}
-                        data-fix={r.fix}
-                        data-drift={r.drift ?? 0}
-                        data-rate={r.rate ?? 0}
-                      >{r.value}</span>
-                      <span class="deck-readout-unit">{r.unit}</span>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          )}
-
-          {/* три узла, и это не лишняя вложенность: поворот кадра,
-              выход на загрузке и параллакс — три трансформа, а на
-              одном узле они затирают друг друга */}
-          {s.rig && (
-            <div class="deck-rig" aria-hidden="true">
-              <div class="deck-rig-move">
-                <img src={asset(s.rig)} alt="" data-rig fetchpriority="high" draggable="false" />
-              </div>
-            </div>
-          )}
-
-          <div class="deck-body container">
-            <span class="deck-kicker mono">{s.kicker}</span>
-            <Heading class="mega deck-heading">
-              <span class="deck-heading-line deck-brand">{BRAND}</span>
-              <span class="deck-word">
-                {s.word.map((w) => (
-                  <span class="deck-heading-line">{w}</span>
-                ))}
-              </span>
-            </Heading>
-            <div class="deck-foot">
-              <p class="deck-descr">
-                {s.descr.map((line, k) => (
-                  <span>
-                    {line}
-                    {k < s.descr.length - 1 && <br />}
-                  </span>
-                ))}
-              </p>
-
-              {s.cta && (
-                <a class="btn btn-ghost deck-cta" href={s.cta.href}>
-                  {s.cta.label}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                </a>
-              )}
-
-              <div class="deck-count mono" aria-hidden="true">
-                <span>{s.no}</span><span class="deck-count-den">/</span><span class="deck-count-den">{TOTAL}</span>
+            <div class="hero-tile-phone">
+              <div class="hero-tile-phone-move">
+                <img src={asset('/mob2.webp')} alt="" loading="eager" draggable="false" />
               </div>
             </div>
           </div>
         </div>
-      </section>
-    )
-  })}
-</div>
+        <div class="hero-tile-row">
+          <span class="hero-tile-label mono">[ инженерный_софт ]</span>
+          <span class="hero-tile-status mono is-live">●&nbsp;Интерактивный стенд</span>
+        </div>
+        <div class="hero-tile-foot">
+          <span class="hero-tile-title mono">Drill Monitor</span>
+          <p class="hero-tile-text">
+            Кроссплатформенное программное обеспечение для мгновенной синхронизации
+            и удалённого контроля процессов бурения.
+          </p>
+        </div>
+      </a>
+
+      {/* Плитка 2 · аппаратное производство. Снаряд — два стержневых
+          модуля в одном кадре, та же логика выезда по наведению. Акцент
+          текста здесь sky-400, не logoBlue — так и у Dmit (.hero-tile--sky). */}
+      <a class="hero-tile hero-tile--sky" href="#products">
+        <span class="hero-tile-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <div class="hero-tile-art hero-tile-art--rig" aria-hidden="true">
+          <div class="hero-tile-rig">
+            <img src={asset('/mwd-rig.webp')} alt="" loading="eager" draggable="false" />
+          </div>
+        </div>
+        <div class="hero-tile-row">
+          <span class="hero-tile-label mono">[ аппаратное_производство ]</span>
+          <span class="hero-tile-status mono">●&nbsp;К каталогу систем</span>
+        </div>
+        <div class="hero-tile-foot">
+          <span class="hero-tile-title mono">GT-Navigator</span>
+          <p class="hero-tile-text">
+            Собственное производство скважинных телесистем, MEMS-инклинометров
+            и наземных комплексов декодирования.
+          </p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>

@@ -16,13 +16,15 @@ const canonical = Astro.site
 // Один источник правды на оба тега ниже: <link> и его <noscript>-дубль
 // обязаны запрашивать ровно тот же URL, иначе без JS приедет другой набор
 // начертаний.
-// Три гарнитуры вместо четырёх. Geologica и Golos Text заменены одним
-// нейтральным гротеском (Inter) — швейцарский канон требует одной-двух
-// гарнитур, а не набора близких по рисунку. Unbounded остался, но сжат
-// до единственного начертания: после сужения его области до мега-заголовка
-// колоды из пяти весов используется ровно один — 800.
+// Две гарнитуры, не три. Geologica и Golos Text заменены одним нейтральным
+// гротеском (Inter) — швейцарский канон требует одной-двух гарнитур, а не
+// набора близких по рисунку. Unbounded убран 2026-07-21 вместе с колодой —
+// он был нужен только мега-заголовку, которого больше нет.
+// Веса 800/900 у Inter и 700/800 у JetBrains Mono — под hero (буквальный
+// перенос D:\Projects\Dmit: font-black на заголовке и на mono-заголовках
+// плиток), больше нигде на сайте таким жирным начертанием не пользуются.
 const fontsHref =
-  'https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap'
 
 const ogImage = Astro.site ? new URL(logoHref, Astro.site).href : logoHref
 
@@ -57,7 +59,7 @@ const orgSchema = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta name="theme-color" content="#07090d" />
+    <meta name="theme-color" content="#141414" />
 
     <!-- Preload картинки прибора снят: первый экран стал типографическим,
          его LCP — мега-заголовок, а не изображение. Грузить сюда скриншот
@@ -90,7 +92,9 @@ const orgSchema = {
   </head>
   <body>
     <a class="skip-link" href="#main">Перейти к содержимому</a>
-    <slot />
+    <div class="page-shell">
+      <slot />
+    </div>
     <!-- Шапка первой и отдельным файлом: бургер начинает нажиматься,
          не дожидаясь разбора Lenis и GSAP из motion.js. -->
     <script>
@@ -102,9 +106,7 @@ const orgSchema = {
          подтягивает динамический import в globeCanvas.js. -->
     <script>
       import '../scripts/motion.js'
-      import '../scripts/heroCanvas.js'
       import '../scripts/heroReadout.js'
-      import '../scripts/deckReadout.js'
       // aboutScene раньше globeCanvas: первый решает, прибивать ли сцену
       // (класс .is-static), второй по этому классу — поднимать ли three.js.
       import '../scripts/aboutScene.js'

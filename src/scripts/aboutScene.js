@@ -21,7 +21,7 @@
    поток — заголовок и три факта списком), а globeCanvas.js по этому
    же классу не поднимает three.js вовсе.
    ───────────────────────────────────────────── */
-import { makeProgress, span, offsetFor } from './scrollProgress.js'
+import { makeProgress, span, offsetFor, clamp01 } from './scrollProgress.js'
 
 const wrap = document.querySelector('[data-atlas]')
 if (wrap) init(wrap)
@@ -29,7 +29,7 @@ if (wrap) init(wrap)
 function init(wrap) {
   const stage = wrap.querySelector('[data-atlas-stage]')
   const nightEl = wrap.querySelector('.atlas-night')
-  const geoFillEl = wrap.querySelector('[data-atlas-geo-fill]')
+  const geoWords = [...wrap.querySelectorAll('[data-geo-word]')]
   const cards = [...wrap.querySelectorAll('[data-atlas-card]')]
   const countEl = wrap.querySelector('[data-atlas-count]')
   const prevBtn = wrap.querySelector('[data-atlas-prev]')
@@ -66,11 +66,22 @@ function init(wrap) {
      достаточно, чтобы тёмный текст потерялся. */
   const CARD_END = 0.92
   const NIGHT_IN = 0.12
-  const NIGHT_FULL = 0.85
+  /* Раньше 0.85: ночь догорала до полной темноты за 15% прогресса ДО
+     конца .atlas, и весь этот хвост шёл без единого визуального
+     изменения — шар и карточки уже показаны, текст уже добел, а скролл
+     ещё оставался. Поднято к 0.9, вплотную к завершению разворота шара
+     (см. GEO_END и GLOBE_END в globeCanvas.js) — ночь дотемняется тем же
+     кадром, что и финал шара, и от него до конца обёртки остаётся только
+     небольшая обоснованная пауза, а не мёртвая зона. */
+  const NIGHT_FULL = 0.9
   const NIGHT_SWAP = 0.52   // порог перекраски заголовка в светлый
-  // держать в паре с GLOBE_END в globeCanvas.js: подпись слева дозаполняется
-  // добела к тому же кадру, где глобус заканчивает разворот к России
-  const GEO_END = 0.9
+  /* Держать в паре с globeCanvas.js: там GLOBE_END=0.98 переводит общий
+     прогресс p в свой gp (0…1), а разворот к России (turn) в этом gp
+     заканчивается на 0.9. В координатах p это 0.98×0.9=0.882 — момент,
+     когда шар зрительно уже полностью развёрнут и дальше просто держит
+     кадр. Подпись должна дозаполниться добела ровно к этому кадру, а не
+     к концу всей выдержки (дальше в p — уже пауза, в ней меняться нечему). */
+  const GEO_END = 0.882
 
   const progress = makeProgress(wrap, stage)
 
@@ -100,8 +111,16 @@ function init(wrap) {
     // синева наливается прозрачностью слоя, покадрово по прокрутке
     nightEl.style.opacity = span(p, NIGHT_IN, NIGHT_FULL).toFixed(3)
 
-    // строка про Россию заливается белым тем же прогрессом, что доворачивает шар
-    if (geoFillEl) geoFillEl.style.setProperty('--geo-fill', span(p, 0, GEO_END).toFixed(3))
+    /* Строка про Россию заливается белым тем же прогрессом, что доворачивает
+       шар — но не вся разом, а по словам: у слова i свой ломоть общего фила
+       [i/n … (i+1)/n], внутри ломтя слово идёт от 0 до 1 (буква за буквой
+       тем же clip-path, см. .atlas-geo-word). Слова строго по порядку —
+       предыдущее уже добело, следующее ещё не начато. */
+    const fill = span(p, 0, GEO_END)
+    const wn = geoWords.length
+    geoWords.forEach((w, i) => {
+      w.style.setProperty('--w-fill', clamp01(fill * wn - i).toFixed(3))
+    })
 
     // заголовок перекрашивается в светлый, когда синевы стало достаточно
     const isNight = p >= NIGHT_SWAP

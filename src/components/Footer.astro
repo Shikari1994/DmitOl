@@ -1,51 +1,105 @@
 ---
-import { asset } from '../lib/asset.js'
-
-const NAV = [
-  ['#about', 'О компании'],
-  ['#products', 'Оборудование'],
-  ['#software', 'Платформа'],
-  ['#how', 'Технологии'],
-  ['#services', 'Услуги'],
-  ['#store', 'Магазин ЗИП'],
-]
+/* 2026-07-21: футер переписан дословно по структуре и тексту подвала
+   D:\Projects\Dmit (Услуги → Контакты → нижний бар) — пользователь
+   явно попросил копию 1:1, а не парафраз. Секции Services.astro и
+   Contact.astro удалены целиком, их содержимое живёт здесь, как у
+   Dmit. Жёсткая чертёжная рамка (grid-border) и corner-marks-прицелы
+   сознательно не перенесены — по просьбе пользователя оставлены только
+   тонкие разделительные линии var(--line), см. память
+   dmit-sibling-reference / redesign-direction. */
 ---
 
 <footer>
-  <div class="container footer-top grid">
-    <div class="footer-brand">
-      <div class="footer-logo">
-        <img src={asset('/logo.webp')} alt="ГЕОТЕХНАВИГАЦИЯ" loading="lazy" />
-        <span class="footer-logo-text">Геотехнавигация</span>
-      </div>
-      <p class="footer-desc">
-        Разработка и производство телеметрического оборудования MWD/LWD
-        и программного комплекса для геонавигации бурения.
+  <div class="footer-row">
+    <div class="footer-cell footer-cell-a">
+      <span class="footer-tag mono">// Сервисный центр</span>
+      <h2 class="footer-services-title">Услуги</h2>
+    </div>
+    <div class="footer-cell footer-cell-b footer-quote">
+      <p>
+        Полный цикл инженерно-технической поддержки: от сложного
+        компонентного ремонта железа на собственной базе до
+        онлайн-супервайзинга бурения.
       </p>
-    </div>
-
-    <div class="footer-col">
-      <h4>Навигация</h4>
-      <ul>
-        {NAV.map(([href, label]) => (
-          <li><a href={href}>{label}</a></li>
-        ))}
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4>Контакты</h4>
-      {/* TODO: заменить на реальные контакты */}
-      <ul>
-        <li><a href="tel:+78000000000">+7 (800) 000-00-00</a></li>
-        <li><a href="mailto:info@telemetrylab.ru">info@telemetrylab.ru</a></li>
-        <li class="footer-muted">г. Москва, ул. Нефтяников, 1</li>
-      </ul>
     </div>
   </div>
 
-  <div class="container footer-bottom">
-    <span class="footer-copy">© 2026 ООО «ГЕОТЕХНАВИГАЦИЯ». Все права защищены.</span>
-    <span class="footer-copy footer-muted">ПО в реестре отечественного ПО Минпромторга РФ</span>
+  <div class="footer-row">
+    <div class="footer-cell footer-cell-a">
+      <span class="services-n mono">Направление сервиса // 01</span>
+      <h3>Модернизация и ТО телесистем</h3>
+      <p>
+        Регламентное текущее обслуживание, калибровка инклинометров,
+        глубокий ремонт электронных модулей, замена датчиков и
+        восстановление геометрии корпусов телесистем.
+      </p>
+      <a class="services-link mono" href="#contact">
+        Отправить ТЗ на ремонт
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+      </a>
+    </div>
+    <div class="footer-cell footer-cell-b">
+      <span class="services-n mono">Направление сервиса // 02</span>
+      <h3>Онлайн-сопровождение бурения</h3>
+      <p>
+        Развёртывание систем удалённого контроля параметров проходки,
+        предиктивный анализ аварийных ситуаций, удалённый
+        супервайзинг и круглосуточная поддержка инженеров на объекте.
+      </p>
+      <a class="services-link mono" href="#contact">
+        Запросить мониторинг
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+      </a>
+    </div>
+  </div>
+
+  <div id="contact" class="footer-row">
+    <div class="footer-cell footer-cell-a">
+      <span class="footer-tag mono">[ связь ]</span>
+      <h2 class="footer-contact-title">Начать проект</h2>
+      {/* TODO: подключить реальную отправку формы */}
+      <form class="footer-form mono" onsubmit="event.preventDefault()">
+        <label>
+          <span>01 // Ваше имя</span>
+          <input type="text" placeholder="Иван Иванов" />
+        </label>
+        <label>
+          <span>02 // Контактный телефон</span>
+          <input type="tel" placeholder="+7 (999) 000-00-00" />
+        </label>
+        <label>
+          <span>03 // Суть задачи</span>
+          <input type="text" placeholder="Описание технической поддержки" />
+        </label>
+        <button type="submit" class="btn btn-ghost footer-form-submit">Отправить запрос</button>
+      </form>
+    </div>
+    <div class="footer-cell footer-cell-b footer-coords">
+      <div class="footer-coord-row">
+        <span class="footer-tag mono">[ координаты ]</span>
+        <div class="footer-coord-main">
+          <a href="tel:+78000000000">+7 (800) 000-00-00</a>
+          <a href="mailto:info@telemetrylab.ru">info@telemetrylab.ru</a>
+        </div>
+      </div>
+      <div class="footer-coord-row">
+        <span class="footer-tag mono">[ адрес_офиса ]</span>
+        <div class="footer-coord-main footer-coord-text">г. Москва, ул. Нефтяников, 1</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <div class="footer-bar-cell">
+      <span>© 2026 ООО «ГЕОТЕХНАВИГАЦИЯ». Все права защищены.</span>
+      <span class="footer-muted">ПО в реестре отечественного ПО Минпромторга РФ</span>
+    </div>
+    <div class="footer-bar-cell">Центральный офис // г. Москва, ул. Нефтяников, 1</div>
+    <a class="footer-bar-cell footer-bar-link" href="https://oklimashov.fvds.ru" target="_blank" rel="noopener noreferrer">
+      <span>Онлайн-магазин</span><span class="footer-bar-arrow">Перейти →</span>
+    </a>
+    <a class="footer-bar-cell footer-bar-link" href="tel:+78000000000">
+      <span>ГТН_СИС // ИНФО</span><span class="footer-bar-arrow">Вызов →</span>
+    </a>
   </div>
 </footer>
