@@ -1081,7 +1081,7 @@ html[data-scheme="light"] .theme-toggle-icon--moon { display: block; }
    за тем, как GLOBE_END/GEO_END/NIGHT_FULL в JS были раздвинуты к концу
    прогресса (см. globeCanvas.js, aboutScene.js) — теперь финал сцены
    приходится на последние ~10% этой длины, а не тонет в лишнем хвосте. */
-.atlas { position: relative; height: 320svh; }
+.atlas { position: relative; height: 240svh; }
 .atlas-stage {
   position: sticky; top: 0; height: 100svh; overflow: hidden;
   background: var(--surface);
@@ -1377,7 +1377,7 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
 }
 
 @media (max-width: 900px) {
-  .atlas { height: 250svh; }
+  .atlas { height: 188svh; }
   /* колонка уводится во всю ширину, карточка ложится на низ кадра */
   .atlas-copy { right: var(--gut); }
   .atlas-deck {
@@ -1681,7 +1681,7 @@ html[data-scheme="light"] #hero .hero-media-scrim {
 .hero-tile-text {
   margin-top: 8px;
   font-family: var(--font-text); font-weight: 500;
-  font-size: 12px; line-height: 1.625; color: var(--hero-dim);
+  font-size: 14px; line-height: 1.625; color: var(--hero-dim); /* было 12px — по просьбе */
 }
 
 /* ── Сцена в плитке DRILL MONITOR: ноутбук + телефон ──
