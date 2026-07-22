@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import Nav from '../components/Nav.astro'
+import SideNav from '../components/SideNav.astro'
 import Hero from '../components/Hero.astro'
 import About from '../components/About.astro'
 import Software from '../components/Software.astro'
@@ -22,22 +23,16 @@ const CAPABILITIES = [
 
   {/* Разметку рисует сервер, поведение — scripts/nav.js. */}
   <Nav />
+  <SideNav />
   <main id="main">
     <Hero />
-    {/* Направляющая — линия, продолжающая border-left футера (.footer-cell-b)
-        вверх до основания хиро. Сама div-обёртка ничего не рисует, только
-        задаёт точку отсчёта (position: relative), от которой top: 0
-        линии совпадает с нижним краем Hero без JS-замеров. */}
-    <div class="align-scope">
-      <div class="align-guide" aria-hidden="true"></div>
-      <About />
-      <Showcase />
-      <Software />
-      <Mobile />
-      <Economics />
-      <How />
-      <Marquee items={CAPABILITIES} theme="black" speed={45} />
-    </div>
+    <About />
+    <Showcase />
+    <Software />
+    <Mobile />
+    <Economics />
+    <How />
+    <Marquee items={CAPABILITIES} theme="black" speed={45} />
   </main>
   <Footer />
 </Layout>

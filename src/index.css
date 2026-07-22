@@ -295,11 +295,17 @@
    навешана (в разметке нет ни одного data-theme="graphite") — резерв
    под будущий экран колоды, а не активная тема.
 
-   Глобального переключателя тем нет и не появилось: варианты внутри
-   тёмного полотна (black/graphite) по-прежнему решает композиция
-   секции, а не настройка пользователя — тумблер между двумя тёмными
-   заливками не добавил бы читателю выбора, только лишний орган
-   управления.
+   Переключатель light/dark (2026-07-22, кнопка в шапке, см. блок
+   «СВЕТЛАЯ СХЕМА» ниже) — это ДРУГАЯ ось, не про варианты внутри
+   тёмного полотна: black/graphite по-прежнему решает композиция
+   секции, а не пользователь. Тумблер лишь накрывает часть тёмных
+   секций (тех, что помечены `data-theme="black"`) светлой инверсией;
+   секции `data-theme="black-fixed"` тумблер не трогает — они остаются
+   чёрными всегда, см. блок ниже. 2026-07-22: hero/software/mobile по
+   очереди выведены из их числа (все три сами переключаются целиком) —
+   имя `black-fixed` сейчас нигде не навешено, резерв на случай, если
+   снова понадобится секция, которую тумблер не должен трогать, тем же
+   приёмом, что «graphite» резерв для колоды.
 
    ВАЖНО: legacy-алиасы (--text: var(--ink)) резолвятся
    в :root и НЕ пересчитываются при переопределении --ink
@@ -320,7 +326,24 @@
   color: var(--ink);
 }
 
-[data-theme="black"] {
+/* black-fixed — те же токены, что у black, но БЕЗ права на светлую
+   инверсию (см. блок «СВЕТЛАЯ СХЕМА» ниже). 2026-07-22, по очереди за
+   один день: #software и #mobile выведены первыми (terminal-green
+   --live держался только точечно, через локальный оверрайд на
+   `.bento-bar`, а не через второе имя темы — см. «СИГНАТУРА DRILL
+   MONITOR»); следом и #hero — пользователь явно попросил и его, хотя
+   секция буквальный перенос Dmit. Локальные Dmit-токены hero
+   (--hero-blue/--hero-ink/и т.п.) получили свой светлый набор рядом
+   с местом их объявления (см. `#hero {}` у «HERO» и парную
+   `html[data-scheme="light"] #hero {}` чуть ниже блока графита).
+   Сейчас имя `black-fixed` нигде не навешено — резерв на случай новой
+   секции, которую тумблер не должен трогать, тем же приёмом, что
+   «graphite» резерв для колоды. Разный атрибут — не разные токены:
+   значения ниже общие для обоих имён, отличие проявляется только в
+   блоке светлой схемы, который матчит "black" и не матчит
+   "black-fixed". */
+[data-theme="black"],
+[data-theme="black-fixed"] {
   --surface:     #141414;
   --ink:         #eef2f7;  --text:       #eef2f7;
   --ink-dim:     rgba(238,242,247,0.66);  --text-dim:   rgba(238,242,247,0.66);
@@ -356,13 +379,171 @@
   --glass-bg:    rgba(30,37,47,0.38);
   --glass-solid: #232a35;
   --glass-line:  rgba(255,255,255,0.16);
+  /* --glass-hl/-lo/-shadow и --brand-* раньше не переопределялись —
+     графит просто наследовал тёмные дефолты :root, а других (светлых)
+     значений в дереве не было. 2026-07-22 графит на один шаг заводили
+     внутрь #software (.sw-stage) как «тёмный остров» под скриншоты —
+     решение отменено в тот же день (см. память light-theme-toggle):
+     остров визуально ломал и тёмную тему (нежданный шов #1c222c рядом
+     с #141414), и не устраивал светлую (пользователь хотел, чтобы там
+     тоже не осталось тёмного). #software целиком уходит в общий каскад
+     `[data-theme="black"]`; тёмным нарочно остаётся только `.bento-bar`
+     — тонкий read-out поверх самого скриншота, см. его блок ниже.
+     Токены здесь на всякий случай досчитаны до полного набора — если
+     графит когда-нибудь снова навесят внутрь переключаемой секции, он
+     не потечёт светлым сквозь недостающие --glass-hl/-lo/-shadow/
+     --brand-*, как это едва не случилось в этот раз. */
+  --glass-hl:    rgba(255,255,255,0.30);
+  --glass-lo:    rgba(0,0,0,0.22);
+  --glass-shadow: 0 1px 2px rgba(0,0,0,0.30), 0 16px 48px -12px rgba(0,0,0,0.55);
+  --brand:        #0e8fd4;   --accent:        #0e8fd4;
+  --brand-strong: #0b78b4;   --accent-strong: #0b78b4;
+  --brand-soft:   rgba(14,143,212,0.12);  --accent-soft: rgba(14,143,212,0.12);
+  --brand-line:   rgba(14,143,212,0.28);  --accent-line: rgba(14,143,212,0.28);
 }
 
-/* Светлой заливки на сайте больше нет: «gray»/«white»/«blue» по очереди
-   слились в «light» и затем были убраны совсем — весь сайт стоит на
-   двух тёмных темах выше (black, graphite). --brand/--accent поэтому
-   больше не переопределяются по теме: лазурь логотипа (#0e8fd4 из :root)
-   уже настроена под тёмный фон и держит контраст везде одинаково. */
+/* ════════════════════════════════════════════════
+   СВЕТЛАЯ СХЕМА · html[data-scheme="light"]
+   ────────────────────────────────────────────────
+   Отдельная ось от [data-theme] выше: пользователь переключает не
+   вариант чёрного (black/graphite — те решает композиция секции), а
+   всю страницу между тёмной и светлой инверсией. Атрибут стоит на
+   <html> (scripts/theme.js, ставится синхронным inline-скриптом в
+   Layout.astro до отрисовки — иначе на первом кадре мелькнула бы
+   не та тема); localStorage запоминает выбор, до первого клика — берём
+   prefers-color-scheme.
+
+   Логика физическая, зеркальная тёмной: там приподнятая панель светлее
+   фона (--panel #1c1c1c над --bg #141414 — она ловит свет). Здесь
+   зеркально — панель приподнята к белому, фон на полтона темнее панели,
+   а не наоборот: если сделать фон белым, а карточки темнее, стеклу
+   не с чем работать — blur+saturate размывают то, что светлее, а
+   асимметричная кромка (светлый верх/тёмный низ), на которой держится
+   весь рецепт стекла (см. блок «СТЕКЛО» ниже), на чистом белом не читается.
+
+   Два слоя переопределений:
+   1. html[data-scheme="light"] — база: покрывает всё, что вне
+      [data-theme] (футер, .bg-fx, .nav-mobile) через обычное
+      наследование custom properties.
+   2. html[data-scheme="light"] [data-theme="black"] — секции, у
+      которых [data-theme="black"] выше уже задаёт --ink/--line/--panel
+      локально (см. блок объединённый с black-fixed) и тем самым
+      экранирует наследование от <html>; без этого слоя они остались
+      бы тёмными несмотря на общий тумблер.
+   [data-theme="black-fixed"] сейчас нигде не навешен (резерв, см.
+   комментарий у самого атрибута выше) — все три секции, что раньше в
+   нём жили, переключаются целиком без исключений уровня секции.
+   Единственный тёмный остаток на сайте — `.bento-bar` внутри
+   #software (read-out поверх скриншота Drill Monitor), заперт не
+   вторым именем темы, а локальным оверрайдом на самом селекторе, см.
+   его блок у «ПРОГРАММНЫЙ КОМПЛЕКС». У #hero свои локальные Dmit-
+   токены (--hero-blue и т.п.) держат отдельный светлый набор рядом с
+   их объявлением, не в этом блоке — см. `html[data-scheme="light"]
+   #hero {}` у блока графита.
+   Ниже — третий, узкий слой: он отменяет утечку
+   именно стеклянных токенов внутрь запертого hero (--glass-* не
+   дублируются в [data-theme="black"/"black-fixed"], а наследуются с
+   :root/<html>, поэтому без явного отката nav.nav, пока над ней
+   #hero, получила бы светлое стекло на чёрном фоне). */
+html[data-scheme="light"] {
+  --bg:          #eef0f3;
+  --bg-2:        #e6e8ec;
+  --panel:       #ffffff;  --bg-raised:   #ffffff;
+  --panel-2:     #fbfcfd;  --bg-raised-2: #fbfcfd;
+  --glass:       rgba(255,255,255,0.62);
+
+  --ink:         #14171c;  --text:       #14171c;
+  --ink-dim:     rgba(20,23,28,0.66);   --text-dim:   rgba(20,23,28,0.66);
+  --ink-faint:   rgba(20,23,28,0.46);   --text-faint: rgba(20,23,28,0.46);
+
+  --line:        rgba(20,23,28,0.14);
+  --line-soft:   rgba(20,23,28,0.07);
+  --line-strong: rgba(20,23,28,0.26);
+
+  /* лазурь логотипа темнее на шаг — на белом/светло-сером #0e8fd4 не
+     держит AA для текста (≈3:1); прежний --brand-strong (#0b78b4,
+     ≈4.6:1 на белом) занимает место базового акцента, hover уходит ещё
+     на шаг темнее */
+  --brand:        #0b78b4;   --accent:        #0b78b4;
+  --brand-strong: #095f91;   --accent-strong: #095f91;
+  --brand-soft:   rgba(14,143,212,0.10);  --accent-soft: rgba(14,143,212,0.10);
+  --brand-line:   rgba(14,143,212,0.32);  --accent-line: rgba(14,143,212,0.32);
+
+  /* 2026-07-22: путь значения — 0.55 (терялось на видео/градиентах) →
+     0.72 (перестало быть стеклом, читалось плоской карточкой) → 0.6
+     (середина) → 0.48 (ещё прозрачнее по прямой просьбе, после того как
+     под стеклом гарантированно есть видимая текстура видео/сцены, см.
+     правки .hero-media-video/.prod-media-video выше). */
+  --glass-bg:     rgba(255,255,255,0.48);
+  --glass-solid:  #ffffff;
+  --glass-line:   rgba(20,23,28,0.18);
+  --glass-hl:     rgba(255,255,255,0.85);
+  --glass-lo:     rgba(20,23,28,0.10);
+  --glass-shadow: 0 1px 2px rgba(20,23,28,0.06), 0 16px 48px -12px rgba(20,23,28,0.16);
+}
+
+/* Секции black — та же палитра, продублирована явно: [data-theme="black"]
+   выше уже поставил свои --ink/--line/--panel на этот же элемент, и без
+   локального повтора здесь унаследованный от <html> светлый набор
+   проиграл бы им (объявление на самом элементе всегда старше
+   наследования, специфичность тут ни при чём). */
+html[data-scheme="light"] [data-theme="black"] {
+  --surface:     #eef0f3;
+  --ink:         #14171c;  --text:       #14171c;
+  --ink-dim:     rgba(20,23,28,0.66);   --text-dim:   rgba(20,23,28,0.66);
+  --ink-faint:   rgba(20,23,28,0.46);   --text-faint: rgba(20,23,28,0.46);
+  --line:        rgba(20,23,28,0.14);
+  --line-soft:   rgba(20,23,28,0.07);
+  --line-strong: rgba(20,23,28,0.26);
+  --panel:       #ffffff;  --bg-raised:   #ffffff;
+  --panel-2:     #fbfcfd;  --bg-raised-2: #fbfcfd;
+}
+
+/* Откат стекла для запертых секций — держится про запас (см. пояснение
+   выше): сейчас [data-theme="black-fixed"] нигде не навешен, поэтому
+   правило ничего не матчит, но без него любая будущая black-fixed-
+   секция унаследовала бы светлое стекло от <html> напрямую, минуя
+   [data-theme="black"]. Значения — буквальный повтор дефолтов :root. */
+html[data-scheme="light"] [data-theme="black-fixed"] {
+  --glass-bg:     rgba(20,20,20,0.38);
+  --glass-solid:  #1e1e1e;
+  --glass-line:   rgba(255,255,255,0.14);
+  --glass-hl:     rgba(255,255,255,0.30);
+  --glass-lo:     rgba(0,0,0,0.22);
+  --glass-shadow: 0 1px 2px rgba(0,0,0,0.30), 0 16px 48px -12px rgba(0,0,0,0.55);
+  --brand:        #0e8fd4;   --accent:        #0e8fd4;
+  --brand-strong: #0b78b4;   --accent-strong: #0b78b4;
+  --brand-soft:   rgba(14,143,212,0.12);  --accent-soft: rgba(14,143,212,0.12);
+  --brand-line:   rgba(14,143,212,0.28);  --accent-line: rgba(14,143,212,0.28);
+}
+
+/* #hero — с 2026-07-22 участвует в тумблере (data-theme="black", было
+   "black-fixed"); --surface/--ink/--line и т.п. подхватываются общим
+   [data-theme="black"] / html[data-scheme="light"] [data-theme="black"]
+   выше без отдельного кода. Здесь — только СВОИ локальные Dmit-токены
+   (см. #hero { } у самого верха «HERO»), которых в общей системе нет:
+   голубой/синий акцент плиток, приглушённый текст, линии, и три
+   токена, заведённые именно ради этого дня (--hero-ink/--hero-glass/
+   --hero-tile-hover — раньше были буквальным #fff/rgba() в правилах).
+   Селектор специфичнее плоского `#hero {}` (html+атрибут+ID против
+   одного ID), поэтому побеждает независимо от порядка в файле. */
+html[data-scheme="light"] #hero {
+  --hero-blue:         #0b78b4;   /* тот же тон, что общий --brand в светлой схеме */
+  --hero-sky:          #0369a1;   /* темнее sky-400 на несколько шагов ради AA */
+  --hero-dim:          #475569;   /* slate-600 вместо slate-400 */
+  --hero-faint:        #334155;   /* slate-700 вместо slate-500 — мелкий mono-readout */
+  --hero-line:         rgba(20,23,28,0.14);
+  --hero-line-strong:  rgba(20,23,28,0.36);
+  --hero-ink:          #14171c;
+  /* 2026-07-22: путь значения — 0.45 → 0.62 (тонуло в фоне) → 0.5
+     (перебор, вернули к стеклу) → 0.4 → 0.28 (ещё прозрачнее, общий
+     уровень с .rig-row и .sw-eco-tile). .rig-row в «Продукция» держит
+     тот же rgba литералом (index.css:2219), .sw-eco-tile — локальным
+     --glass-bg (index.css:2522) — синхронизировать вручную при
+     следующей правке этого токена. */
+  --hero-glass:        rgba(255,255,255,0.14);
+  --hero-tile-hover:   rgba(20,23,28,0.04);
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -430,44 +611,6 @@ img { display: block; max-width: 100%; }
 .page-shell { max-width: var(--maxw); margin: 0 auto; position: relative; }
 
 .container { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gut); }
-
-/* ВРЕМЕННО · направляющая выравнивания.
-   Продолжает вверх реальную линию из футера — border-left у .footer-cell-b,
-   то же положение — колонка 4/12. .align-scope оборачивает всё после Hero
-   (см. index.astro), поэтому top: 0 приходится ровно на нижний край Hero
-   без JS-замеров высоты. Цвет — var(--line), тот же, что у настоящей линии
-   футера: не отдельный акцент, а её видимое продолжение. z-index не задан
-   специально — z-index: auto ставит линию в общий с остальным контентом
-   слой и по DOM-порядку (она первый ребёнок .align-scope) она красится
-   раньше, то есть уходит под все позиционированные элементы разделов
-   (глобус .atlas-canvas, телефоны .mob-phone и т.п.), а не поверх них.
-
-   z-index: 1 обязателен: каждая [data-theme]-секция сама непрозрачна
-   (background-color: var(--surface), см. [data-theme] выше) и стоит на
-   position: relative (общее section{}), а .align-guide лежит вне какой
-   бы то ни было [data-theme] — общее правило `[data-theme] > *
-   { z-index: 1 }` (index.css:501, «контент всегда над направляющими»)
-   на неё не действует. Без этого z-index линия остаётся в z-index:auto
-   и полностью гасится непрозрачной заливкой любой секции, идущей следом
-   по DOM — линия физически не видна нигде. С z-index: 1 она встаёт в тот
-   же слой, что и содержимое секций, и по DOM-порядку (она раньше) красится
-   под ним — см. абзац выше. */
-.align-scope { position: relative; }
-.align-guide {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(100% * 4 / 12);
-  width: 1px;
-  background: var(--line);
-  z-index: 1;
-  pointer-events: none;
-}
-/* На мобильной вёрстке колонки не в 1/3, а перестраиваются в один ряд —
-   направляющая на 4/12 там ничего не размечает и просто ломает вид. */
-@media (max-width: 900px) {
-  .align-guide { display: none; }
-}
 
 /* ─── .grid · двенадцатиколоночная сетка раскладки ───
    Раньше каждая шапка секции придумывала себе пропорции сама: 1fr 1fr
@@ -792,8 +935,11 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 /* grid-column закреплена явно: после удаления пункта «Магазин ЗИП»
    (2026-07-21) пунктов меню меньше, чем средних колонок сетки, и без
    явного номера авто-расстановка утащила бы .nav-tail в первую
-   свободную колонку вместо крайней правой (1fr). */
-.nav-tail { grid-column: 7; justify-self: end; margin-right: var(--gut); display: flex; align-items: center; gap: clamp(16px, 1.6vw, 26px); }
+   свободную колонку вместо крайней правой. Span на две колонки (6..конец),
+   а не только последнюю 1fr — часам + переключателю темы + пилюле
+   «Связаться» одной узкой 1fr-колонки не хватало, и хвост вылезал за
+   правый край шапки. */
+.nav-tail { grid-column: 6 / -1; justify-self: end; margin-right: var(--gut); display: flex; align-items: center; gap: clamp(16px, 1.6vw, 26px); }
 /* часы — тот же приборный микро-регистр, что у readout'ов Drill Monitor
    в hero: mono, разрядка, приглушённый тон, табличные цифры не прыгают
    по ширине посекундно */
@@ -815,6 +961,28 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
   box-shadow: inset 0 0 0 2px var(--brand);
 }
 .pill.nav-cta:hover .btn-corners i, .pill.nav-cta:focus-visible .btn-corners i { opacity: 1; transform: translate(0, 0); }
+
+/* ─── ТУМБЛЕР СВЕТЛОЙ/ТЁМНОЙ СХЕМЫ ───
+   Состояние живёт в html[data-scheme], а не в собственном классе кнопки:
+   один атрибут на корне разом красит и .theme-toggle в шапке, и его копию
+   в .nav-mobile (scripts/nav.js вешает клик на оба через querySelectorAll,
+   держать их в паре не нужно — атрибут общий). Иконка солнца/луны — какую
+   схему ПОЛУЧИТЕ по клику, не какая активна сейчас: солнце в тёмной теме
+   («нажми — станет светло»), луна в светлой. */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; padding: 0; flex: 0 0 auto;
+  background: transparent; border: 1px solid var(--line-strong);
+  border-radius: 999px; color: var(--ink); cursor: pointer;
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--brand); color: var(--brand); }
+.theme-toggle-icon { width: 17px; height: 17px; }
+.theme-toggle-icon--moon { display: none; }
+html[data-scheme="light"] .theme-toggle-icon--sun { display: none; }
+html[data-scheme="light"] .theme-toggle-icon--moon { display: block; }
+.nav-mobile .theme-toggle { width: 44px; height: 44px; }
+.nav-mobile .theme-toggle-icon { width: 20px; height: 20px; }
 
 /* ─── PILL · маленькая кнопка-таблетка строчными ───
    Приём первоисточника: единственная «кнопочная» форма на сайте.
@@ -937,7 +1105,44 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
   background:
     radial-gradient(130% 95% at 50% 118%, #2c3441 0%, #1c222c 34%, #12151b 64%, #07090d 100%);
 }
-.atlas-canvas { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; }
+/* Светлая схема: та же радиальная форма и те же доли (0/34/64/100%),
+   только стопы светлые — от почти белого у шара до умеренно-синего
+   к краю, но нигде не темнее среднего тона. Без этого слоя сцена
+   «О компании» в светлой схеме на середине скролла проваливалась бы в
+   тот же near-black, что и в тёмной — жалоба пользователя 2026-07-22
+   («тёмная заливка в светлой теме», а заодно она топила земной шар:
+   в паре с плотной тьмой контраст читался иначе, чем задумано, и шар
+   визуально терялся). Драматургия «сгущается к краю» сохранена, просто
+   «ночь» здесь про глубже-синий, а не про темнее-к-чёрному. */
+html[data-scheme="light"] .atlas-night {
+  background:
+    radial-gradient(130% 95% at 50% 118%, #eaf1f8 0%, #cfe0ee 34%, #a9c3dc 64%, #82a5c7 100%);
+}
+.atlas-canvas { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; transition: filter 0.4s var(--ease); }
+
+/* Светлая схема: модель шара — по сути «ночная Земля» (см.
+   globeCanvas.js — цвет материала намеренно не трогаем, только свет).
+   Текстура (public/globe.glb, вшитый PNG) вскрыта и промерена:
+   океан — почти чёрный (яркость ~20–50 из 255, это ~80% полотна),
+   суша светлее (~60–116), рельеф/лёд — самое яркое, что там вообще
+   есть. Диапазон целиком зажат в тёмную четверть шкалы — на светлом
+   фоне .atlas-night океан читался чужеродным чёрным пятном.
+
+   Простой invert() тут не работает: он честно зеркалит эту узкую
+   тёмную полосу в такую же узкую светлую (океан → ~205–230, суша →
+   ~140–165) — весь рельеф остаётся почти одного оттенка, картинка
+   плоская, «как луна», без океана/суши не разобрать. Нужно сперва
+   растянуть узкий исходный диапазон на всю шкалу (brightness+contrast
+   как ручной «levels»: чёрная точка ~25, белая ~105 → 0…255), и
+   только потом инвертировать — тогда океану достаётся весь светлый
+   край шкалы, а рельефу суши/льду — весь тёмный, графитовый.
+   Финальный contrast(0.75) снимает жёсткость чистых 0/255 (не плоский
+   чёрный и не бумажный белый), hue-rotate(180deg) после invert —
+   стандартный приём «инверсия без порчи цвета»: оранжевые точки
+   городов возвращаются к тёплому оттенку вместо ухода в синий. */
+html[data-scheme="light"] .atlas-canvas {
+  filter: brightness(1.9) contrast(1.6) invert(1) hue-rotate(180deg) contrast(0.75) saturate(1.1);
+}
 
 /* Радиальная «ночь» светлее всего у нижней кромки сцены (центр
    градиента вынесен под кадр, см. .atlas-night) — а следом сразу флэт
@@ -1022,6 +1227,20 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .atlas-stage.is-night .atlas-head .lead { color: rgba(238, 242, 247, 0.72); }
 .atlas-stage.is-night .atlas-head .pill { color: #eef2f7; border-color: rgba(238, 242, 247, 0.28); }
 
+/* Светлая схема — тот же приём «усиления», но от тёмного текста, а не
+   от светлого: --ink здесь и так тёмный с самого старта (акт I тоже
+   светлый), .is-night лишь чуть поднимает контраст/непрозрачность и
+   даёт номеру рубрики синий акцент, как и в тёмной версии. Дублируем
+   явно, а не полагаемся на var(--ink) — правила выше жёстко прибиты
+   к белому и наследование их не пересчитает. */
+html[data-scheme="light"] .atlas-stage.is-night .atlas-geo { color: rgba(20, 23, 28, 0.40); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-geo-fill { color: #14171c; }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .eyebrow { color: rgba(20, 23, 28, 0.72); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no { color: #0369a1; }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(20, 23, 28, 0.50); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .lead { color: rgba(20, 23, 28, 0.78); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .pill { color: #14171c; border-color: rgba(20, 23, 28, 0.32); }
+
 /* ── Стеклянная карточка-факт ──
    Одна панель на все три факта: они лежат друг на друге в grid-слоте
    (высота слота = самая высокая карточка), видима ровно одна — её ведёт
@@ -1061,6 +1280,23 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
   --glass-shadow:
     0 1px 2px rgba(0, 0, 0, 0.35),
     0 24px 64px -14px rgba(0, 0, 0, 0.5);
+}
+/* Светлая схема: карточка над светло-синей .atlas-night (см. выше) —
+   тот же общий светлый рецепт стекла, что у html[data-scheme="light"]
+   в остальном сайте (см. «СВЕТЛАЯ СХЕМА»), а не тёмный ледяной. Акт I
+   уже на нём же (общий рецепт из html[data-scheme="light"]) — здесь
+   просто явный повтор, чтобы .is-night не откатывал обратно на дефолт
+   :root (та же причина, по которой темна версия дублирует его выше). */
+html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
+  --glass-bg:    rgba(255, 255, 255, 0.48);
+  --glass-blur:  20px;
+  --glass-sat:   180%;
+  --glass-hl:    rgba(255, 255, 255, 0.85);
+  --glass-lo:    rgba(20, 23, 28, 0.10);
+  --glass-line:  rgba(20, 23, 28, 0.14);
+  --glass-shadow:
+    0 1px 2px rgba(20, 23, 28, 0.06),
+    0 16px 48px -12px rgba(20, 23, 28, 0.16);
 }
 
 .atlas-slot { display: grid; }
@@ -1167,22 +1403,42 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
    подложка правой колонки. Локальные переменные ниже — те самые hex/rgba
    из tailwind.config и <style> Dmit, не наши --brand/--ink/--line.
 
-   Единственные два отличия от оригинала: сцены в плитках (ноутбук+
+   Единственные три отличия от оригинала: сцены в плитках (ноутбук+
    телефон, снаряд) — этого контента у Dmit нет вообще, добавлены по
    просьбе и скрыты в покое, выезжают ТОЛЬКО по hover/focus на карточку
-   (см. .hero-tile-art); и реальные якоря вместо onclick scrollIntoView.
+   (см. .hero-tile-art); реальные якоря вместо onclick scrollIntoView;
+   и светлая инверсия (2026-07-22, `html[data-scheme="light"] #hero`
+   ниже) — у Dmit её тоже нет, но пользователь явно попросил hero в
+   тумблер. Пиксель-в-пиксель остаётся правилом только для ТЁМНОГО
+   состояния; светлые значения токенов ниже — не из Dmit, подобраны
+   заново под AA на светлом фоне (тот же приём, что и для --brand
+   сайта, см. «СВЕТЛАЯ СХЕМА»).
 
    Прежняя колода с разрезом константы «ГЕОТЕХНАВИГАЦИЯ» и каротажный
    canvas удалены целиком — см. память (dmit-sibling-reference). */
 #hero {
-  --surface:          #141414;   /* brandDark */
   --hero-blue:         #0090df;  /* logoBlue — акцент плитки Drill Monitor */
   --hero-sky:          #38bdf8;  /* sky-400 — акцент плитки GT-Navigator */
   --hero-dim:          #94a3b8;  /* slate-400 — основной приглушённый текст */
   --hero-faint:        #64748b;  /* slate-500 — курсорный readout */
   --hero-line:         rgba(255, 255, 255, 0.08);  /* .dark .grid-border */
   --hero-line-strong:  rgba(255, 255, 255, 0.3);   /* контур .liqium-btn */
+  /* Три токена ниже раньше были голым #fff/rgba() прямо в правилах —
+     буквальный перенос Dmit, который никогда не должен был меняться.
+     2026-07-22: hero переведён на общий тумблер (data-theme="black",
+     было "black-fixed"), и голый белый на светлом фоне стал бы
+     невидимым. Вынесены в переменные ровно затем, чтобы светлая схема
+     ниже могла их перекрыть — сами дефолты не изменились. */
+  --hero-ink:          #fff;                 /* было color:#fff / border:#fff */
+  --hero-glass:        rgba(0, 0, 0, 0.07);   /* 2026-07-22: ещё прозрачнее, приведено к общему уровню с .rig-row/.sw-eco-tile */
+  --hero-tile-hover:   rgba(255, 255, 255, 0.05); /* было .hero-tile:hover { background: rgba(255,255,255,.05) } */
 }
+/* --surface для #hero больше не переопределяется здесь локально: раньше
+   было --surface:#141414 прямо на #hero (ID-специфичность любую другую
+   схему всё равно не пустила бы). Секция теперь берёт --surface из
+   общего [data-theme="black"] и наследует поведение тумблера, как
+   остальной сайт — тот же тон #141414 в тёмной схеме, тот же путь, что
+   у About/Showcase и остальных. */
 
 /* grid + grid-template-rows:1fr тянет колонки на всю высоту секции.
    ВАЖНО: общий `section { padding: var(--section-y) 0 }` навешивает на
@@ -1213,6 +1469,32 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
   background:
     linear-gradient(180deg, transparent 50%, var(--surface) 100%),
     rgba(20, 20, 20, 0.7);
+}
+/* Светлая схема — тот же приём, что у #products (.prod-media-video):
+   плоская тёмная заливка через luminosity уронила бы видео в грязно-
+   серое пятно, а не в белый фон. Луминосити-блендинг вместо этого красит
+   видео тоном подложки (--surface, уже светлый) и оставляет только его
+   яркостный рисунок.
+   2026-07-22 (второй заход): изначальный 1:1-перенос значений
+   .prod-media-video (opacity 0.12 + плоский scrim 70% белого поверх)
+   утопил дорожку до полной невидимости — правая колонка (.hero-teasers,
+   стекло без своего рецепта .glass) оказалась вообще без фактуры под
+   собой и слилась со страницей в кашу. Подняты оба значения разом —
+   opacity 0.12→0.32 у видео и scrim 0.7→0.4.
+   2026-07-22 (третий заход): у #products нет второго слоя-заглушки
+   (только mask-fade по краям, см. .prod-media), поэтому там дорожка при
+   том же opacity 0.32 читается заметно сильнее — здесь тот же 0.32
+   ещё раз гасится плоским scrim сверху. Подняты оба числа ещё раз —
+   opacity 0.32→0.4, scrim 0.4→0.18 — так, чтобы итоговая видимость
+   (video × (1 − scrim)) сошлась с products (~0.32) вместо ~0.19. */
+html[data-scheme="light"] #hero .hero-media-video {
+  opacity: 0.4;
+  mix-blend-mode: luminosity;
+}
+html[data-scheme="light"] #hero .hero-media-scrim {
+  background:
+    linear-gradient(180deg, transparent 50%, var(--surface) 100%),
+    rgba(255, 255, 255, 0.18);
 }
 
 /* ── Курсорный readout AZ/INC ──
@@ -1272,9 +1554,9 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .hero-brand-mark {
   flex: 0 0 auto; width: 64px; height: 64px;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid #fff;
+  border: 2px solid var(--hero-ink);
   font-family: var(--font-mono); font-weight: 800; font-size: 20px;
-  letter-spacing: -0.03em; text-transform: uppercase; color: #fff;
+  letter-spacing: -0.03em; text-transform: uppercase; color: var(--hero-ink);
 }
 @media (min-width: 640px) {
   .hero-brand-mark { width: 80px; height: 80px; font-size: 24px; }
@@ -1282,7 +1564,7 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .hero-brand-title {
   font-family: var(--font-text); font-weight: 700;
   font-size: 28px; line-height: 1; letter-spacing: -0.05em;
-  text-transform: uppercase; color: #fff;
+  text-transform: uppercase; color: var(--hero-ink);
 }
 @media (min-width: 640px)  { .hero-brand-title { font-size: 44px; } }
 @media (min-width: 1280px) { .hero-brand-title { font-size: 54px; } }
@@ -1306,7 +1588,7 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .hero-teasers {
   position: relative; z-index: 1;
   display: grid; grid-template-rows: 1fr 1fr;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--hero-glass);
   -webkit-backdrop-filter: blur(12px);
           backdrop-filter: blur(12px);
   border-top: 1px solid var(--hero-line);
@@ -1330,7 +1612,7 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .hero-tile:last-child { border-bottom: 0; }
 .hero-tile:hover,
 .hero-tile:focus-visible {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--hero-tile-hover);
   box-shadow: inset 0 0 0 2px var(--hero-blue);
 }
 
@@ -1385,7 +1667,7 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .hero-tile-foot { position: relative; z-index: 2; max-width: 60%; }
 .hero-tile-title {
   display: block; font-family: var(--font-mono); letter-spacing: 0.08em;
-  font-size: 24px; font-weight: 800; text-transform: uppercase; color: #fff;
+  font-size: 24px; font-weight: 800; text-transform: uppercase; color: var(--hero-ink);
   transition: color 0.3s ease;
 }
 .hero-tile:hover .hero-tile-title,
@@ -1432,6 +1714,13 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
   display: block; width: 100%; height: 100%;
   object-fit: contain; object-position: bottom center;
   filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.55));
+}
+/* 2026-07-22: та же болезнь, что у .mob-phone img/.sw-frame — тень
+   рассчитана на чёрный фон, на светлом читается чёрными полосами вокруг
+   крышки ноутбука/телефона. */
+html[data-scheme="light"] .hero-tile-note img,
+html[data-scheme="light"] .hero-tile-phone img {
+  filter: drop-shadow(0 12px 24px rgba(20, 23, 28, 0.22));
 }
 .hero-tile-phone { position: absolute; z-index: 2; left: -6%; bottom: -3%; height: 82%; }
 .hero-tile-phone-move {
@@ -1499,7 +1788,7 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
    ТЕГИ-ЧИПЫ · карусель оборудования + bento ПО
    ════════════════════════════════════════════════ */
 .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
-.tag { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; color: var(--text-faint); border: 1px solid var(--line); padding: 4px 9px; border-radius: 0; }
+.tag { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; color: var(--text-dim); border: 1px solid var(--line); padding: 5px 11px; border-radius: 0; }
 
 /* ════════════════════════════════════════════════
    КАК РАБОТАЕТ
@@ -1714,6 +2003,14 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 .footer-cell { padding: clamp(28px, 3.2vw, 56px) var(--gut); }
 .footer-cell-a { grid-column: span 4; }
 .footer-cell-b { grid-column: span 8; border-left: 1px solid var(--line); }
+/* Строка «Направление сервиса»: правая ячейка (footer-cell-b) шире,
+   текст в ней переносится иначе, чем в левой — при равном верхнем крае
+   абзацы разной длины сдвигают ссылки под ними на разную высоту. Ячейки
+   и так растянуты по общей высоте строки (grid stretch по умолчанию),
+   поэтому колонкой + margin-top: auto на ссылке прижимаем обе к одному
+   нижнему краю, независимо от числа строк в абзаце. */
+.footer-row-services .footer-cell { display: flex; flex-direction: column; }
+.footer-row-services .services-link { margin-top: auto; }
 
 .footer-tag {
   display: block; font-size: var(--fs-0); letter-spacing: 0.14em;
@@ -1858,6 +2155,13 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 min(18vh, 160px), #000 calc(100% - min(8vh, 90px)), transparent);
 }
 .prod-media-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.12; mix-blend-mode: luminosity; }
+/* 2026-07-22: 0.12 держит тёмную схему (сюда пользователь претензий не
+   высказывал), но в светлой тонет до полной невидимости — тот же диагноз,
+   что и у .hero-media-video, поднятого рядом тем же числом (см. #hero).
+   Здесь нет второго слоя-заглушки поверх (.prod-media обходится
+   mask-image по краям, без плоского scrim), поэтому хватает поднять
+   только сам видеослой. */
+html[data-scheme="light"] .prod-media-video { opacity: 0.32; }
 
 .rig-stage { position: relative; overflow: hidden; }
 
@@ -1885,12 +2189,9 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 .prod-head-title {
   padding: clamp(16px, 2vw, 24px) clamp(20px, 2.4vw, 32px) 0 var(--gut);
 }
+.prod-head-title .h-title { margin-top: calc((1 - 1.04) * 0.5em); }
 .prod-head-lead {
-  /* Тот же padding-top, что у заголовка, не выравнивает текст: у .lead
-     интерлиньяж 1.7 против 1.04 у .h-title, и надстрочный отступ строки
-     (half-leading) у него заметно больше — без поправки текст лида
-     стартует на ~11px ниже. */
-  padding: calc(clamp(16px, 2vw, 24px) - 11px) var(--gut) 0 clamp(28px, 3.2vw, 44px);
+  padding: clamp(16px, 2vw, 24px) var(--gut) 0 clamp(28px, 3.2vw, 44px);
   border-left: 1px solid var(--line);
 }
 .prod-head-lead .lead {
@@ -1898,6 +2199,18 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   padding-left: clamp(16px, 1.8vw, 22px);
   max-width: 58ch;
   margin: 0;
+  /* Надстрочный интервал строки (half-leading) у .h-title (line-height
+     1.04) и .lead (1.7) разный, из-за чего их первая строка стартует на
+     разной высоте при равном верхнем крае колонок. Вместо подогнанного
+     на глаз px убираем half-leading у каждого формулой
+     (1 − line-height) / 2 × его собственный кегль — тогда текст обоих
+     блоков всегда упирается в верх строки сетки, на любом кегле. */
+  margin-top: calc((1 - 1.7) * 0.5em);
+  /* 2026-07-22: под шапкой сквозь неё видно .prod-media-video (вейвы),
+     на светлой схеме местами светлее текста и режет читаемость — блюр
+     сглаживает фактуру фона под абзацем, не добавляя видимой заливки/рамки. */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .rig-list {
@@ -1938,12 +2251,19 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   border-radius: 0;
   /* Своя, более прозрачная заливка поверх общего рецепта .glass (index.css:608):
      под строками едет то же видео дорожки, что и под .hero-teasers, и там
-     заливка вдвое прозрачнее (rgba(0,0,0,0.2)) — здесь тот же уровень, чтобы
-     секция «Продукция» читалась настолько же стеклянной, как хиро. */
-  background-color: rgba(20, 20, 20, 0.2);
+     заливка тот же уровень, что и у хиро (и у .sw-eco-tile в Drill Monitor,
+     index.css:2522) — единая прозрачность стекла на всех трёх видео-фонах. */
+  background-color: rgba(20, 20, 20, 0.07);
   transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease),
               transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
+/* 2026-07-22: заливка выше — литеральный rgba, не переменная, поэтому
+   светлая схема её никогда не подхватывала (в отличие от --hero-glass у
+   hero, который как раз ради этого и вынесен в токен) — на светлом фоне
+   тёмный чёрный читался грязно-серым пятном. Значение здесь —
+   буквально текущее --hero-glass светлой схемы (#hero), чтобы карточки
+   правда совпадали с хиро, а не просто были «тоже светлыми». */
+html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14); }
 .rig-row:hover, .rig-row:focus-visible {
   border-color: var(--brand);
   background: var(--bg-raised);
@@ -2163,17 +2483,17 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
      .container одинаковое и в разности сокращается, остаётся
      W/3 − gut — та же формула, что и в других подогнанных секциях. */
   max-width: calc(min(100vw, var(--maxw)) / 3 - var(--gut));
-  /* Компенсация надстрочного интервала: у .h-title line-height 1.04,
-     у .lead справа — 1.7, и при равном верхнем крае колонок текст лида
-     оптически стартует на ~11px ниже (тот же эффект и та же поправка,
-     что у .prod-head-title/.prod-head-lead). Здесь колонки без padding,
-     поэтому поправку проще внести в заголовок, а не уводить лид в
-     отрицательный padding. */
-  padding-top: 11px;
+  /* Надстрочный интервал строки (half-leading) у .h-title (line-height
+     1.04) и .lead (1.7) разный, из-за чего их первая строка стартует на
+     разной высоте при равном верхнем крае колонок. Вместо подогнанного
+     на глаз px убираем half-leading у каждого формулой
+     (1 − line-height) / 2 × его собственный кегль — тогда текст обоих
+     блоков всегда упирается в верх строки сетки, на любом кегле. */
+  margin-top: calc((1 - 1.04) * 0.5em);
 }
 .sw-head > *:last-child  { grid-column: 8 / span 5; }
 .sw-head-side { display: flex; flex-direction: column; gap: 26px; }
-.sw-head-side .lead { max-width: 480px; }
+.sw-head-side .lead { max-width: 480px; margin-top: calc((1 - 1.7) * 0.5em); }
 .sw-actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
 /* Видео-плашка «мобильной экосистемы», буквальный перенос из Dmit
@@ -2186,7 +2506,7 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
    фейда. */
 .sw-eco {
   position: relative; overflow: hidden;
-  height: clamp(320px, 30vw, 440px);
+  height: clamp(380px, 36vw, 520px);
   margin-top: clamp(28px, 3vw, 40px);
   display: flex; align-items: flex-end;
 }
@@ -2194,8 +2514,21 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 .sw-eco-video {
   width: 100%; height: 100%; object-fit: cover;
 }
+/* .sw-eco — обычный участок #software, ничем не заперт, идёт вместе
+   с общим тумблером секции (2026-07-22).
+   ::before/::after ниже по-прежнему растворяют верх/низ в var(--surface)
+   без изменений в самой формуле: в тёмной схеме это чёрный #141414
+   (виден тёмный ecosystem.mp4), в светлой — #eef0f3 (виден white.mp4) —
+   оба ролика подмешиваются в цвет реального фона секции на своей схеме.
+   Светлый ролик прячется через display:none, поэтому не грузится
+   лениво (video[data-lazy-video] в motion.js наблюдает через
+   IntersectionObserver, а у display:none нет геометрии — грузится
+   только после переключения темы). */
+.sw-eco-video--light { display: none; }
+html[data-scheme="light"] .sw-eco-video--dark { display: none; }
+html[data-scheme="light"] .sw-eco-video--light { display: block; }
 .sw-eco-media::before, .sw-eco-media::after {
-  content: ''; position: absolute; inset-inline: 0; z-index: 1; height: 40%;
+  content: ''; position: absolute; inset-inline: 0; z-index: 1; height: 24%;
   pointer-events: none;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -2231,7 +2564,15 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   width: 100%;
   padding: clamp(16px, 2vw, 24px);
 }
-.sw-eco-tile { padding: 18px 20px; }
+/* Свой, более прозрачный --glass-bg поверх общего рецепта .glass:
+   дефолтный (0.38 тёмный / 0.48 светлый) плотнее, чем у хиро и .rig-row
+   на тех же видео-фонах — здесь тот же уровень (index.css:1405, 2211),
+   чтобы три набора карточек поверх видео читались одним стеклом. */
+.sw-eco-tile {
+  --glass-bg: rgba(20, 20, 20, 0.07);
+  padding: 18px 20px;
+}
+html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); }
 .sw-eco-tile-n {
   display: block; margin-bottom: 8px;
   font-size: var(--fs-0); letter-spacing: 0.14em; color: var(--accent);
@@ -2251,17 +2592,7 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
    рамку и приборный уголок instr-frame один раз, а не пять — активная
    .sw-slide подставляет свой скриншот через display, снятые с рамки
    .bento-bar/.bento-body работают как раньше, просто внутри вкладки. */
-.sw-stage {
-  /* padding, не margin: margin — снаружи блока, фон .sw-stage его не
-     красит, и .align-guide лезет ровно в этот зазор сверху. Отступ тот
-     же самый, просто внутри border-box, под заливкой. */
-  padding-top: clamp(28px, 3vw, 40px);
-  /* Заливка тона секции — гасит .align-guide в зазоре между вкладками
-     и рамкой (margin-bottom у .sw-tabs), где нет своего непрозрачного
-     фона ни у вкладок, ни у рамки ещё. */
-  position: relative;
-  background: var(--surface);
-}
+.sw-stage { margin-top: clamp(28px, 3vw, 40px); }
 
 /* Вкладки вторят собственной верхней навигации Drill Monitor (см.
    app-drilling.webp) — тот же приём подчёркивания, что у scrollspy
@@ -2270,12 +2601,6 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   display: flex; flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
   margin-bottom: clamp(20px, 2.2vw, 30px);
-  /* Непрозрачная заливка (тон секции, визуально та же, что и так вокруг)
-     нужна только затем, чтобы направляющая .align-guide не просвечивала
-     сквозь подписи вкладок: у .sw-tab фон none, а внутри самой рамки
-     .sw-frame ниже линия уже скрыта её собственным bg-raised. */
-  background: var(--surface);
-  position: relative;
 }
 .sw-tab {
   position: relative;
@@ -2284,7 +2609,7 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   margin-right: clamp(8px, 1vw, 16px);
   background: none; border: 0; cursor: pointer;
   font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--text-faint);
+  text-transform: uppercase; color: var(--text-dim);
   transition: color 0.25s;
 }
 .sw-tab:first-child { padding-left: 0; }
@@ -2313,6 +2638,14 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   border: 1px solid var(--line); border-radius: 0;
   background: var(--bg-raised);
   box-shadow: 0 40px 80px -34px rgba(0,0,0,0.7);
+}
+/* 2026-07-22: сама рамка (.bento-shot внутри) уже светлая — но эта тень
+   вокруг НЕЁ, не на скриншоте, до сих пор была плоским чёрным 70% вне
+   зависимости от схемы. На тёмной секции терялась в фоне, на светлой
+   читалась полосой/ореолом рядом с кадром, а не тенью под ним — тот же
+   диагноз, что у .mob-phone img и .bento-shot выше. */
+html[data-scheme="light"] .sw-frame {
+  box-shadow: 0 30px 70px -30px rgba(20, 23, 28, 0.20);
 }
 
 /* Скрытые вкладки не участвуют в раскладке (display: none), поэтому
@@ -2367,6 +2700,15 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   object-fit: contain; object-position: center;
   background: #05080f;
 }
+/* 2026-07-22: сам скриншот/видео (реальный тёмный UI прибора) не
+   перекрашивается — это решение остаётся в силе (см. память). Но у
+   app-*.webp/mp4 внутри собственного кадра есть прозрачные поля вокруг
+   устройств (ноутбук+телефон не заполняют прямоугольник целиком) — в
+   них просвечивал этот фон-заглушка #05080f. На тёмной секции он
+   сливался с окружением, на светлой читался чёрным ореолом вокруг
+   мокапа. Здесь — не перекраска картинки, а замена подложки под её
+   прозрачными полями на тон окружающей светлой поверхности. */
+html[data-scheme="light"] .bento-shot { background: var(--surface); }
 .bt-drilling .bento-shot { aspect-ratio: 1.724; }
 .bt-survey   .bento-shot { aspect-ratio: 1.812; }
 .bt-bha      .bento-shot { aspect-ratio: 2.698; }
@@ -2377,8 +2719,28 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 /* Бар поверх скриншота. Стеклянный, а не градиентный: градиент вниз
    притемнял верх кадра и на светлых снимках всё равно не спасал подпись,
    а стекло размывает ровно то, что под ним, и подпись читается на любом
-   кадре. Кромки только нижняя — бар прижат к трём краям кадра. */
+   кадре. Кромки только нижняя — бар прижат к трём краям кадра.
+
+   Тёмный ВСЕГДА, вне зависимости от html[data-scheme]: бар лежит не на
+   заливке секции, а на самом скриншоте Drill Monitor (.sw-slide-shot),
+   а тот тёмный по построению (реальный UI прибора, картинкой не
+   перекрашивается, см. .bento-shot ниже). 2026-07-22: до этого момента
+   всю тьму держала секция целиком (`black-fixed`), затем — вложенный
+   data-theme="graphite" на .sw-stage; оба подхода красили заодно и
+   вкладки, и текст описания, которым полагается идти светлыми вместе
+   с остальным #software. Здесь — точечный оверрайд ровно на баре: те
+   же токены, что раньше жили в :root/[data-theme="black"], объявлены
+   локально и потому не зависят от того, что происходит выше по дереву. */
 .bento-bar {
+  --ink:         #eef2f7;  --text:       #eef2f7;
+  --ink-dim:     rgba(238,242,247,0.66);  --text-dim:   rgba(238,242,247,0.66);
+  --ink-faint:   rgba(238,242,247,0.46);  --text-faint: rgba(238,242,247,0.46);
+  --glass-bg:     rgba(20,20,20,0.38);
+  --glass-solid:  #1e1e1e;
+  --glass-line:   rgba(255,255,255,0.14);
+  --glass-hl:     rgba(255,255,255,0.30);
+  --glass-lo:     rgba(0,0,0,0.22);
+  --glass-shadow: 0 1px 2px rgba(0,0,0,0.30), 0 16px 48px -12px rgba(0,0,0,0.55);
   position: absolute; top: 0; left: 0; right: 0; z-index: 3;
   display: flex; align-items: center; gap: var(--s-1);
   padding: 12px 16px;
@@ -2512,7 +2874,7 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   .sw-head { grid-template-columns: 1fr; gap: var(--s-3); align-items: start; }
   .sw-head > *:first-child,
   .sw-head > *:last-child { grid-column: auto; }
-  .sw-head > *:first-child { max-width: none; padding-top: 0; }
+  .sw-head > *:first-child { max-width: none; margin-top: 0; }
   /* Сплит скриншот/подпись в узкую колонку прожимает кадр слишком узко
      на планшете — та же причина, по которой .split здесь тоже
      возвращается в один столбец. Подпись обратно под кадр, полной
@@ -2541,9 +2903,16 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
    иначе зелёного станет столько, что бейдж LIVE на
    плитке real-time перестанет что-либо значить.
 
-   Обе секции всегда data-theme="black", светлых тем
-   здесь не бывает: #46c98a рассчитан на near-black и в
-   светлой колоде не поехал бы.
+   С 2026-07-22 обе секции целиком участвуют в тумблере
+   (data-theme="black"), без исключений уровня секции. #46c98a остаётся
+   как есть только там, где элемент лежит поверх самого скриншота
+   Drill Monitor и заперт локальным оверрайдом на .bento-bar (см. её
+   блок у «ПРОГРАММНЫЙ КОМПЛЕКС») — это уже не near-black фон, near-
+   black гарантирован не темой, а тем, что бар всегда на тёмной картинке.
+   Всё остальное mono этой сигнатуры (eyebrow-индекс #software/#mobile,
+   кикер/индекс «между рейсами») стоит на теперь-переключаемом фоне
+   секции и рискует светлым — для них ниже отдельный, более тёмный
+   оттенок той же зелени ради AA.
    ════════════════════════════════════════════════ */
 #software .eyebrow .ey-no,
 #mobile   .eyebrow .ey-no { color: var(--live); }
@@ -2553,13 +2922,29 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 }
 
 /* индекс плитки — только цифра; название вкладки остаётся серым,
-   так пара «01 · Бурение» читается как строка приборного списка */
+   так пара «01 · Бурение» читается как строка приборного списка.
+   Живёт внутри .bento-bar — тот заперт тёмным локально (см. выше),
+   светлая схема сюда не заглядывает. */
 .bento-n { color: var(--live); }
 
 /* кикер жизненного цикла: был синим — синий на сайте занят
    интерактивом, а это подпись, а не ссылка */
 .sw-life-kicker { color: var(--live); }
 .sw-life-n { color: var(--live); }
+
+/* Светлый оттенок той же сигнатуры — везде, где #software/#mobile
+   переключились на светлый фон, кроме .bento-bar (тот заперт тёмным
+   локально на самом себе, см. его блок выше, и сюда не достаёт).
+   #46c98a на #eef0f3 держит ~1.9:1 — далеко не AA; #166534 (тот же
+   зелёный, темнее на несколько шагов) даёт ~6:1. */
+html[data-scheme="light"] #software .eyebrow .ey-no,
+html[data-scheme="light"] #mobile   .eyebrow .ey-no,
+html[data-scheme="light"] .sw-life-kicker,
+html[data-scheme="light"] .sw-life-n { color: #166534; }
+html[data-scheme="light"] #software .eyebrow::before,
+html[data-scheme="light"] #mobile   .eyebrow::before {
+  background: linear-gradient(90deg, rgba(21,128,61,0.18), transparent);
+}
 
 /* Тег «Live-данные» в шапке мобильной версии зелёным НЕ красится:
    рядом стоят «iOS / Android» и «Офлайн-режим», и один цветной чип
@@ -2600,11 +2985,16 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   /* Заголовок не должен заходить за временную розовую .align-guide —
      тот же приём и та же формула, что у .sw-head (index.css:2089). */
   max-width: calc(min(100vw, var(--maxw)) / 3 - var(--gut));
-  /* Компенсация надстрочного интервала .h-title (1.04) vs .lead (1.7) —
-     тот же приём и то же значение, что у .prod-head/.sw-head. */
-  padding-top: 11px;
+  /* Надстрочный интервал строки (half-leading) у .h-title и .lead разный
+     (line-height 1.04 против 1.7), из-за чего их первая строка стартует
+     на разной высоте, хотя оба блока — top их grid-ячейки. Вместо
+     подогнанного на глаз px убираем half-leading у каждого формулой
+     (1 − line-height) / 2 × его собственный кегль — тогда текст обоих
+     блоков всегда упирается в верх строки сетки, на любом кегле. */
+  margin-top: calc((1 - 1.04) * 0.5em);
 }
 .mob-head > *:last-child  { grid-column: 8 / span 5; }
+.mob-head-side .lead { margin-top: calc((1 - 1.7) * 0.5em); }
 .mob-head-side .tag-row { margin-top: 22px; }
 
 .mob-stage {
@@ -2631,12 +3021,21 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   /* тень несёт глубину ряда: на чёрном без неё аппараты висят в пустоте */
   filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.75));
 }
+/* 2026-07-22: #mobile участвует в тумблере (data-theme="black" — не
+   "black-fixed"), а тень выше рассчитана буквально на чёрный фон.
+   На светлом та же rgba(0,0,0,.75) читается не тенью, а плотным чёрным
+   ореолом вокруг выреза телефона (сам PNG/webp — с прозрачным фоном).
+   Здесь — та же логика тени, что у --glass-shadow светлой схемы
+   (мягкий rgba(20,23,28,…) вместо чёрного), просто без blur-стекла. */
+html[data-scheme="light"] #mobile .mob-phone img {
+  filter: drop-shadow(0 20px 36px rgba(20, 23, 28, 0.20));
+}
 
 @media (max-width: 900px) {
   .mob-head { grid-template-columns: 1fr; gap: var(--s-3); align-items: start; }
   .mob-head > *:first-child,
   .mob-head > *:last-child { grid-column: auto; }
-  .mob-head > *:first-child { max-width: none; padding-top: 0; }
+  .mob-head > *:first-child { max-width: none; margin-top: 0; }
   .mob-stage { height: clamp(320px, 50svh, 480px); gap: 10px; }
 }
 /* ── Ряд на телефоне: веер вместо трёх полосок ──
@@ -2662,6 +3061,10 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   .mob-phone.is-mid { height: 96%; margin-bottom: -2%; z-index: 2; }
   /* тень плотнее обычной — она и отделяет передний аппарат от задних */
   .mob-phone.is-mid img { filter: drop-shadow(0 18px 44px rgba(0, 0, 0, 0.9)); }
+  /* та же светлая замена, что у обычной .mob-phone img выше, но плотнее —
+     передний аппарат всё ещё должен отделяться от задних тенью, просто
+     не чёрным ореолом. */
+  html[data-scheme="light"] .mob-phone.is-mid img { filter: drop-shadow(0 12px 30px rgba(20, 23, 28, 0.26)); }
 }
 
 /* ════════════════════════════════════════════════
@@ -2824,5 +3227,116 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 
 @media (max-width: 380px) {
   .sw-actions .btn { padding: 14px 20px; }
+}
+
+/* ════════════════════════════════════════════════
+   БОКОВАЯ НАВИГАЦИЯ · плавающий быстрый переход
+   ────────────────────────────────────────────────
+   Шесть меток вдоль тонкой направляющей — те же
+   номера 01…06, что уже стоят в eyebrow-шапках
+   разделов (see components/SideNav.astro). Панель
+   скрыта на hero (там подсвечивать нечего) и
+   проявляется, как только он уходит за половину
+   экрана — переключает .visible scripts/sideNav.js.
+
+   Подпись у метки — .glass: тот же список плавающей
+   хромы, что у шапки и меню (см. блок «СТЕКЛО» выше),
+   поэтому она получает ту же заливку/блюр/кромку без
+   повторного объявления и попадает в оба фоллбэка
+   (без backdrop-filter, prefers-reduced-transparency)
+   автоматически.
+   ════════════════════════════════════════════════ */
+.side-nav {
+  position: fixed;
+  top: 50%;
+  right: clamp(14px, 2vw, 28px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(6px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.side-nav.visible { opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0); }
+
+.side-nav ul {
+  list-style: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-block: 6px;
+}
+/* направляющая линия за метками — тот же приём, что у --rail-* на фоне страницы */
+.side-nav ul::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 1px;
+  background: var(--line-strong);
+  transform: translateX(-50%);
+}
+
+.side-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  margin: -7px 0;
+}
+
+.side-nav-tick {
+  position: relative; z-index: 1;
+  width: 9px; height: 9px;
+  background: var(--ink-faint);
+  transition: background-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.side-nav a:hover .side-nav-tick,
+.side-nav a:focus-visible .side-nav-tick {
+  background: var(--ink);
+  transform: scale(1.4);
+}
+.side-nav a.active .side-nav-tick {
+  background: var(--accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* подпись всплывает слева от метки — только по hover/фокусу */
+.side-nav-tip {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  font-size: var(--fs-0);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-50%) translateX(6px);
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+}
+.side-nav-tip-num {
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+}
+.side-nav a:hover .side-nav-tip,
+.side-nav a:focus-visible .side-nav-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* На планшете/мобильном полный список разделов уже есть в бургер-меню —
+   боковая панель здесь лишь отъедала бы ширину у зауженного контента. */
+@media (max-width: 1024px) {
+  .side-nav { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-nav, .side-nav-tick, .side-nav-tip { transition: none; }
 }
 

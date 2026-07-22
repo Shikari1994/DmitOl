@@ -82,6 +82,37 @@ if (burger && menu) {
   })
 }
 
+/* ─── Тумблер светлой/тёмной схемы ───
+   Атрибут html[data-scheme] уже стоит — его синхронно поставил inline-
+   скрипт в Layout.astro (см. там же, до первой отрисовки). Здесь только
+   клик и синхронизация двух копий кнопки (шапка + мобильное меню, см.
+   Nav.astro) через общий класс, без собственного состояния каждой. */
+{
+  const KEY = 'gtn-theme'
+  const root = document.documentElement
+  const buttons = [...document.querySelectorAll('.theme-toggle')]
+  const metaThemeColor = document.getElementById('theme-color-meta')
+  const COLOR = { dark: '#141414', light: '#eef0f3' }
+
+  const reflect = () => {
+    const scheme = root.getAttribute('data-scheme') === 'light' ? 'light' : 'dark'
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(scheme === 'light')))
+    if (metaThemeColor) metaThemeColor.setAttribute('content', COLOR[scheme])
+  }
+  reflect()
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = root.getAttribute('data-scheme') === 'light' ? 'dark' : 'light'
+      root.setAttribute('data-scheme', next)
+      try {
+        localStorage.setItem(KEY, next)
+      } catch (e) {}
+      reflect()
+    })
+  })
+}
+
 /* ─── Часы (МСК) в шапке ───
    Реальное время, не заглушка: буровая, диспетчерская и офис в разных
    часовых поясах, единый ориентир на шапке экономит вопрос «сколько

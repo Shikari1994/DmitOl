@@ -144,9 +144,23 @@ const LIFECYCLE = [
 
     <div class="sw-eco reveal">
       <div class="sw-eco-media" aria-hidden="true">
+        {/* Два ролика, один и тот же кадр в двух цветовых версиях: тёмный
+            видим всегда, светлый (белые оттенки, от пользователя) — только
+            при html[data-scheme="light"] (см. index.css). CSS выключает
+            неактивный через display:none, поэтому лениво грузится (см.
+            motion.js, video[data-lazy-video]) только тот ролик, что сейчас
+            показан — второй начнёт качаться только после переключения темы. */}
         <video
-          class="sw-eco-video"
+          class="sw-eco-video sw-eco-video--dark"
           data-lazy-video={asset('/ecosystem.mp4')}
+          muted
+          loop
+          playsinline
+          preload="none"
+        ></video>
+        <video
+          class="sw-eco-video sw-eco-video--light"
+          data-lazy-video={asset('/white.mp4')}
           muted
           loop
           playsinline

@@ -1,0 +1,37 @@
+---
+/* Плавающая боковая навигация — быстрый переход по шести смысловым
+   разделам страницы. Номера 01…06 не выдуманы заново: это те же самые
+   eyebrow-метки «0X / 06», что уже стоят в шапках About/Software/Mobile/
+   How (см. index.astro — порядок секций там и задаёт эту нумерацию:
+   Продукция и Экономика этот eyebrow не показывают в разметке, но по
+   месту в потоке остаются 02 и 05).
+
+   Разметку рисует сервер; активный пункт (scrollspy) и появление после
+   ухода из hero — scripts/sideNav.js. Это отдельный наблюдатель, а не
+   расширение scrollspy из nav.js: тот привязан к четырём пунктам верхнего
+   меню и к DOM-порядку внутри него, а здесь набор и порядок секций
+   другие (добавлены Mobile и Economics, которых в шапке нет). */
+const ITEMS = [
+  ['#about', '01', 'О компании'],
+  ['#products', '02', 'Продукция'],
+  ['#software', '03', 'Drill Monitor'],
+  ['#mobile', '04', 'Мобильная версия'],
+  ['#economics', '05', 'Экономика бурения'],
+  ['#how', '06', 'Технологии'],
+]
+---
+
+<nav class="side-nav" aria-label="Быстрый переход по разделам страницы">
+  <ul>
+    {ITEMS.map(([href, num, label]) => (
+      <li>
+        <a href={href} aria-label={`${label} · раздел ${num}`}>
+          <span class="side-nav-tick" aria-hidden="true"></span>
+          <span class="glass side-nav-tip" aria-hidden="true">
+            <span class="side-nav-tip-num mono">{num}</span>{label}
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>

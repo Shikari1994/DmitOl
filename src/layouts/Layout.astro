@@ -59,7 +59,28 @@ const orgSchema = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta name="theme-color" content="#141414" />
+    <meta name="theme-color" content="#141414" id="theme-color-meta" />
+
+    <!-- Схема (светлая/тёмная) ставится синхронно, до отрисовки body:
+         иначе на тёмной системе с сохранённым светлым выбором страница
+         на первый кадр мелькнула бы дефолтной тёмной, а затем
+         перекрасилась бы в светлую после разбора модулей. is:inline —
+         не ESM-модуль, выполняется сразу по месту, без defer. -->
+    <script is:inline>
+      (function () {
+        try {
+          var KEY = 'gtn-theme'
+          var stored = localStorage.getItem(KEY)
+          var scheme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.setAttribute('data-scheme', scheme)
+        } catch (e) {}
+      })()
+    </script>
 
     <!-- Preload картинки прибора снят: первый экран стал типографическим,
          его LCP — мега-заголовок, а не изображение. Грузить сюда скриншот
@@ -99,6 +120,7 @@ const orgSchema = {
          не дожидаясь разбора Lenis и GSAP из motion.js. -->
     <script>
       import '../scripts/nav.js'
+      import '../scripts/sideNav.js'
     </script>
     <!-- Остальное — одним тегом: раньше три отдельных <script> давали три
          бандла и три запроса, хотя модули независимы и нужны одновременно.

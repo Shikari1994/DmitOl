@@ -10,6 +10,15 @@ _source
 # исходники видео в корне — рабочие копии живут в public/app-*.mp4
 0101.mp4
 0202.mp4
+whitefon.mp4
 
 # исходники моделей в корне: на сайт едет только public/globe.glb.
 /*.glb
+
+# служебные скрипты/дампы отладочных сессий
+1gemini-code-*.html
+_check_align*.mjs
+_hover_shot*.mjs
+_inspect_mask.mjs
+_probe.mjs
+_shot*.mjs

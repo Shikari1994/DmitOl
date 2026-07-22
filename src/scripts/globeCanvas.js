@@ -151,44 +151,39 @@ async function start() {
   }
   resize()
 
-  /* ресайз прижимаем к кадру: серия событий при перетаскивании окна
-     пересобирала буфер рендерера на каждое из них */
-  let resizeRaf = 0
-  window.addEventListener('resize', () => {
-    if (resizeRaf) return
-    resizeRaf = requestAnimationFrame(() => { resizeRaf = 0; resize() })
-  })
-
-  /* ─── Кадры считаются только пока сцена на экране ───
-     Прежде цикл rAF продолжал вызываться всегда: за пределами секции он
-     выходил на первой же строке, но браузер всё равно будил его каждый
-     кадр до конца жизни страницы. Теперь цикл именно останавливается
-     и заводится заново по наблюдателю — и глохнет на скрытой вкладке. */
+  /* ─── Кадры считаются только по факту скролла/ресайза, не по таймеру ───
+     Раньше здесь крутился свободный rAF-цикл: пока секция на экране (а это
+     несколько высот вьюпорта из-за pin), браузер рисовал по 60 кадров в
+     секунду даже когда пользователь стоит на месте и gp не меняется — сцена
+     чистая функция прогресса скролла, кадр без движения строго идентичен
+     предыдущему. WebGL-рендер вхолостую конкурировал за GPU/compositor
+     с соседними стеклянными карточками (.atlas-deck, backdrop-filter) в
+     той же сцене — заметный вклад в подтормаживание при скролле через
+     блок «О компании». Теперь рендер идёт тем же приёмом, что и соседний
+     aboutScene.js: по нативному scroll-событию (Lenis его шлёт) и по
+     ресайзу, прижатый к кадру через rAF. */
   let visible = false
   let raf = 0
 
-  const play = () => {
+  const schedule = () => {
     if (raf || !visible || document.hidden) return
-    raf = requestAnimationFrame(frame)
+    raf = requestAnimationFrame(render)
   }
-  const stop = () => {
-    if (!raf) return
-    cancelAnimationFrame(raf)
-    raf = 0
-  }
+
+  window.addEventListener('resize', () => { resize(); schedule() })
 
   new IntersectionObserver(
     (entries) => entries.forEach((e) => {
       visible = e.isIntersecting
-      visible ? play() : stop()
+      if (visible) schedule()
     }),
     { threshold: 0 },
   ).observe(wrap)
 
-  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : play()))
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule() })
 
-  function frame() {
-    raf = requestAnimationFrame(frame)
+  function render() {
+    raf = 0
 
     // gp — прогресс акта с шаром (0 на GLOBE_START, 1 в конце сцены)
     const gp = globeProgress()
@@ -228,11 +223,13 @@ async function start() {
     renderer.render(scene, camera)
   }
 
+  window.addEventListener('scroll', schedule, { passive: true })
+
   /* Первый кадр рисуем сразу, не дожидаясь наблюдателя: модель могла
      догрузиться уже после того, как секция вошла в экран, и до первого
      колебания скролла шар остался бы непоказанным. */
   visible = true
-  play()
+  schedule()
 }
 
 /* Поднимать ли three.js — решено в aboutScene.js: он вешает .is-static в
