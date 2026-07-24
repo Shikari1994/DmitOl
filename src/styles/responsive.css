@@ -1,0 +1,17 @@
+/* ════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  /* (шапка уходит в бургер ниже 1200 — см. блок «МОБИЛЬНАЯ ОГРАНКА») */
+  .car-head { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .car-head .h-title, .prod-head .h-title { font-size: clamp(1.55rem, 6.3vw, 2.0rem); }
+  .prod-head-row { grid-template-columns: 1fr; }
+  .prod-head-lead { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); margin-top: 16px; padding-top: 16px; }
+  .step { grid-template-columns: 44px 1fr; gap: 18px; }
+  .step-node { width: 44px; height: 44px; }
+  .how-line, .how-line-fill { left: 21px; }
+  .how-done-label, .how-done-title, .how-done-meta { padding-left: 21px; }
+  .how-done-rule { margin-left: 21px; }
+  footer .container { flex-direction: column; align-items: flex-start; }
+}
+

@@ -1,0 +1,123 @@
+/* ════════════════════════════════════════════════
+   ФУТЕР
+   ────────────────────────────────────────────────
+   2026-07-21: футер переписан дословно по структуре подвала Dmit —
+   Услуги (была отдельной секцией Services.astro) → Контакты (была
+   отдельной секцией Contact.astro, форма + координаты) → нижний бар
+   (копирайт / офис / звонок), плюс добавленная по просьбе пользователя
+   ячейка «Онлайн-магазин». Разметка — сетка на 12 колонок с делением
+   4/8, как у Dmit; жёсткая чертёжная рамка и corner-marks-прицелы
+   сознательно не перенесены — только тонкая линия var(--line) между
+   ячейками, см. память dmit-sibling-reference.
+   ════════════════════════════════════════════════ */
+footer { border-top: 1px solid var(--line); padding-top: 80px; }
+.footer-muted { color: var(--text-faint); }
+
+.footer-row {
+  display: grid; grid-template-columns: repeat(12, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+.footer-cell { padding: clamp(28px, 3.2vw, 56px) var(--gut); }
+.footer-cell-a { grid-column: span 4; }
+.footer-cell-b { grid-column: span 8; border-left: 1px solid var(--line); }
+/* Строка «Направление сервиса»: правая ячейка (footer-cell-b) шире,
+   текст в ней переносится иначе, чем в левой — при равном верхнем крае
+   абзацы разной длины сдвигают ссылки под ними на разную высоту. Ячейки
+   и так растянуты по общей высоте строки (grid stretch по умолчанию),
+   поэтому колонкой + margin-top: auto на ссылке прижимаем обе к одному
+   нижнему краю, независимо от числа строк в абзаце. */
+.footer-row-services .footer-cell { display: flex; flex-direction: column; }
+.footer-row-services .services-link { margin-top: auto; }
+
+.footer-tag {
+  display: block; font-size: var(--fs-0); letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-faint); font-weight: 700;
+  margin-bottom: var(--s-3);
+}
+.footer-services-title { font-size: var(--fs-6); font-weight: 700; letter-spacing: -0.02em; }
+.footer-quote { display: flex; align-items: center; }
+.footer-quote p {
+  border-left: 2px solid var(--brand); padding-left: var(--s-3);
+  color: var(--text-dim); font-size: var(--fs-2); line-height: 1.7; max-width: 56ch;
+}
+.footer-cell-a h3, .footer-cell-b h3 { font-size: var(--fs-4); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+.footer-cell-a p, .footer-cell-b p { font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 56ch; margin-bottom: var(--s-4); }
+
+.footer-contact-title { font-size: var(--fs-5); font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--s-4); }
+.footer-form { display: flex; flex-direction: column; gap: var(--s-4); }
+.footer-form label { display: flex; flex-direction: column; gap: var(--s-2); }
+.footer-form label span { font-size: var(--fs-0); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); font-weight: 600; }
+.footer-form input {
+  background: transparent; border: 0; border-bottom: 1px solid var(--line);
+  padding: var(--s-2) 0; font-family: inherit; font-size: var(--fs-2); color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.footer-form input::placeholder { color: var(--text-faint); }
+.footer-form input:focus { border-color: var(--brand); }
+.footer-form-submit { align-self: flex-start; margin-top: var(--s-2); }
+
+.footer-coords { display: flex; flex-direction: column; padding: 0; }
+.footer-coord-row {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--s-3);
+  padding: clamp(28px, 3.2vw, 56px) var(--gut);
+}
+.footer-coord-row + .footer-coord-row { border-top: 1px solid var(--line); }
+.footer-coord-main { display: flex; flex-direction: column; gap: 6px; }
+.footer-coord-main a {
+  font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em;
+  color: var(--text); text-decoration: none; transition: color 0.2s;
+}
+.footer-coord-main a:hover { color: var(--brand); }
+.footer-coord-text { font-size: var(--fs-2); color: var(--text-dim); }
+
+@media (max-width: 900px) {
+  .footer-row { grid-template-columns: 1fr; }
+  .footer-cell-a, .footer-cell-b { grid-column: 1 / -1; }
+  .footer-cell-b { border-left: 0; border-top: 1px solid var(--line); }
+  .footer-coords { border-top: 1px solid var(--line); }
+}
+
+.footer-bar {
+  display: flex; flex-wrap: wrap;
+  margin-top: var(--s-6);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: var(--fs-0);
+  letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600;
+  color: var(--text-faint);
+}
+.footer-bar-cell {
+  flex: 1 1 220px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: var(--s-3) var(--s-4);
+  border-left: 1px solid var(--line);
+}
+.footer-bar-cell:first-child {
+  /* 33.3333% = 4/12 колонки — граница совпадает с .footer-cell-b выше
+     (border-left той же ячейки) и с временной розовой .align-guide. */
+  flex: 0 0 33.3333%;
+  border-left: 0; padding-left: 0;
+}
+.footer-bar-link {
+  flex-direction: row; align-items: center; justify-content: space-between; gap: var(--s-2);
+  color: var(--text-faint); text-decoration: none; transition: color 0.2s;
+}
+.footer-bar-link:hover { color: var(--text); }
+.footer-bar-arrow { color: var(--text); }
+
+@media (max-width: 760px) {
+  footer { padding-top: 56px; }
+  .footer-bar { flex-direction: column; }
+  .footer-bar-cell { border-left: 0; border-top: 1px solid var(--line); padding: var(--s-3) 0; }
+  .footer-bar-cell:first-child { flex-basis: auto; border-top: 0; }
+  .footer-bar-cell:not(:first-child) { padding-left: 0; }
+  .footer-bar-cell:last-child { padding-bottom: calc(26px + env(safe-area-inset-bottom)); }
+}
+
+/* ─── REVEAL (GSAP управляет, но дефолт скрыт) ─── */
+/* сдвиг намеренно короткий: элемент «проявляется», а не «взлетает» */
+.reveal { opacity: 0; transform: translateY(14px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+

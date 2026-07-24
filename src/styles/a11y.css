@@ -1,0 +1,26 @@
+/* ════════════════════════════════════════════════
+   ДОСТУПНОСТЬ · фокус с клавиатуры + skip-ссылка
+   ════════════════════════════════════════════════ */
+/* видимое кольцо фокуса только для клавиатуры, не для мыши */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+.skip-link {
+  position: fixed; left: 16px; top: -64px; z-index: 200;
+  padding: 11px 20px; border-radius: var(--r);
+  background: var(--panel-2); color: var(--ink);
+  border: 1px solid var(--brand-line);
+  font-size: var(--fs-1); font-weight: 600; text-decoration: none;
+  transition: top 0.22s var(--ease);
+}
+.skip-link:focus { top: 16px; }
+
+/* ─── активная ссылка навигации (scrollspy) ─── */
+.nav-links a.active { color: var(--ink); }
+.nav-links a.active::after { transform: scaleX(1); }
+
+

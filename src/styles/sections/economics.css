@@ -1,0 +1,111 @@
+/* ════════════════════════════════════════════════
+   ЭКОНОМИКА БУРЕНИЯ · буквальный перенос D:\Projects\Dmit
+   ────────────────────────────────────────────────
+   2026-07-21: реопен grid-border-эстетики для ещё одной секции (см.
+   память dmit-sibling-reference) — та же раскладка «шапка на волосяной
+   сетке + строки-таблица + итоговая панель 4/8», что уже стоит у
+   #products (.prod-head/.rig-row), с тем же приёмом колоночных долей
+   (minmax(240px,34%) 1fr ≈ Tailwind col-span-4/8 у Dmit). Красный —
+   единственный цвет, которого до этой секции на сайте не было: у Dmit
+   он держит все кикеры «Проблема NN» и левую кромку лида, здесь заведён
+   локальной переменной (буквальный logoRed Dmit), а не новым токеном
+   в :root — используется только внутри #economics. Синий акцент
+   переиспользует общий var(--brand) (тот же тон, что logoBlue Dmit). */
+#economics {
+  --econ-red: #be2026; /* logoRed Dmit — кикеры «Проблема», кромка лида */
+  /* Секция сразу за #mobile — той же чёрной темы и без своего нижнего
+     отступа (сцена с телефонами обрезана кромкой). Общий `section`
+     навешивает сюда padding-top = --section-y, из-за чего между
+     обрезанным рядом аппаратов и шапкой «Экономики» читался лишний
+     воздух, а не встык двух сцен одного рассказа. */
+  padding-top: 0;
+}
+
+.econ-head {
+  /* 34% → calc(100%/3): линия (border-left у .econ-head-lead,
+     .econ-problem-text, .econ-algos ниже — общая сплошная черта на всю
+     секцию) переведена на розовую .align-guide (та же доля от
+     .page-shell, #economics своей ширины не режет — совпадает точно). */
+  display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
+  border-bottom: 1px solid var(--line);
+}
+.econ-head-title {
+  padding: clamp(32px, 4vw, 56px) clamp(20px, 2.4vw, 32px) clamp(32px, 4vw, 56px) var(--gut);
+  display: flex; flex-direction: column; justify-content: center; gap: 16px;
+}
+.econ-kicker {
+  font-size: var(--fs-0); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--econ-red);
+}
+.econ-head-lead {
+  display: flex; align-items: center;
+  padding: clamp(32px, 4vw, 56px) var(--gut) clamp(32px, 4vw, 56px) clamp(28px, 3.2vw, 44px);
+  border-left: 1px solid var(--line); background: var(--line-soft);
+}
+.econ-head-lead .lead {
+  border-left: 2px solid var(--econ-red); padding-left: clamp(16px, 1.8vw, 22px); max-width: 58ch;
+}
+
+.econ-problems { display: flex; flex-direction: column; border-bottom: 1px solid var(--line); }
+.econ-problem {
+  display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
+  border-top: 1px solid var(--line);
+  transition: background-color 0.3s var(--ease);
+}
+.econ-problem:first-child { border-top: 0; }
+.econ-problem:hover { background: var(--bg-raised); }
+.econ-problem-head {
+  padding: clamp(28px, 3.4vw, 48px) clamp(20px, 2.4vw, 32px) clamp(28px, 3.4vw, 48px) var(--gut);
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+}
+.econ-problem-kicker {
+  font-size: var(--fs-0); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--econ-red);
+}
+.econ-problem-head h3 { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.econ-problem-text {
+  display: flex; align-items: center;
+  padding: clamp(28px, 3.4vw, 48px) var(--gut) clamp(28px, 3.4vw, 48px) clamp(28px, 3.2vw, 44px);
+  border-left: 1px solid var(--line);
+  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 64ch;
+}
+
+.econ-synergy { display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr; }
+.econ-synergy-main {
+  padding: clamp(32px, 4vw, 56px) clamp(20px, 2.4vw, 32px) clamp(32px, 4vw, 56px) var(--gut);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 32px;
+}
+.econ-synergy-copy { display: flex; flex-direction: column; gap: 14px; }
+.econ-synergy-kicker { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.econ-synergy-title { font-size: var(--fs-4); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--ink); }
+.econ-synergy-text { font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; }
+.econ-badge {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: clamp(12px, 1.6vw, 16px); border: 1px solid var(--brand-line); background: var(--brand-soft);
+  color: var(--brand); font-size: var(--fs-0); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.econ-algos {
+  padding: clamp(32px, 4vw, 56px) var(--gut) clamp(32px, 4vw, 56px) clamp(28px, 3.2vw, 44px);
+  border-left: 1px solid var(--line); border-top: 1px solid var(--line);
+  display: flex; flex-direction: column; justify-content: center; gap: 20px;
+}
+.econ-algos-kicker { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.econ-algo-list { display: flex; flex-direction: column; }
+.econ-algo-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: clamp(20px, 2.4vw, 28px) 0; border-top: 1px solid var(--line);
+}
+.econ-algo-row:first-child { border-top: 0; padding-top: 0; }
+.econ-algo-copy { display: flex; flex-direction: column; gap: 4px; }
+.econ-algo-title { font-family: var(--font-text); font-size: var(--fs-2); font-weight: 800; color: var(--ink); }
+.econ-algo-sub { font-size: var(--fs-1); letter-spacing: 0.02em; color: var(--ink-faint); font-weight: 500; }
+.econ-algo-tag { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.econ-algo-tag.is-accent { color: var(--brand); }
+
+@media (max-width: 700px) {
+  .econ-head, .econ-problem, .econ-synergy { grid-template-columns: 1fr; }
+  .econ-head-lead, .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); }
+  .econ-algos { border-left: none; }
+}
+

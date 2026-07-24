@@ -1,0 +1,269 @@
+/* ════════════════════════════════════════════════
+   ЛИНЕЙКА ОБОРУДОВАНИЯ · ряды во всю ширину
+   ────────────────────────────────────────────────
+   2026-07-21: буквальный перенос секции «Продукция» из D:\Projects\Dmit
+   (реопен решения «чертёжный язык Dmit не переносим», см. память
+   dmit-sibling-reference — пользователь прямо попросил копию 1-в-1).
+   Строка = индекс + модель + описание + 3D-кнопка-куб, видимые сразу,
+   клик по всей строке поднимает шторку ТТХ. corner-marks проявляются
+   на hover тем же приёмом, что .hero-tile-corners на hero-плитках.
+
+   Шапка (.prod-head) — эйбрау отдельной строкой сверху, ниже строка
+   «Продукция» + лид в двух колонках через волосяную вертикальную черту.
+   Эйбрау вынесен из колонки заголовка (2026-07-21 №2), чтобы не сбивать
+   центровку: раньше заголовок и лид были в одной grid-строке, но
+   заголовок лежал в стеке с эйбрау над ним, из-за чего «Продукция»
+   центрировалась ниже, чем лид-параграф. Теперь заголовок и лид — соседние
+   ячейки одной grid-строки (.prod-head-row) с одинаковым padding-top,
+   поэтому их текст стартует на одной высоте независимо от того, что лид
+   длиннее и переносится на несколько строк.
+
+   Фоновое видео (.prod-media) — фон всей секции целиком, включая шапку
+   (2026-07-21 №2: раньше .prod-head глушила его непрозрачным --surface-
+   фоном — по просьбе убрано, дорожка теперь видна и под заголовком).
+   bg-topography.mp4 из оригинала в проекте нет, переиспользован ролик
+   hero (.hero-media) тем же приёмом (luminosity-блендинг, почти до
+   фактуры), что и в остальных местах сайта, где видео Dmit нет 1:1. */
+/* Сверху секция вплотную идёт за липкой сценой глобуса (.atlas) — та
+   уже сама держит нужный воздух своей высотой и сумеречным градиентом
+   (.atlas-stage::after), общий отступ section { padding } поверх неё
+   читался лишней пустой полосой перед заголовком. Снизу так же: следом
+   идёт #software той же тёмной темы — она держит свой верхний отступ
+   сама, а сложенные вместе оба --section-y читались двойным зазором
+   между секциями одного цвета. */
+#products { position: relative; overflow: hidden; padding: 0; }
+
+/* Угасает к низу секции в тот же --surface, что и флэт следующего
+   #software: без этого движущаяся дорожка обрывалась ровно на стыке
+   секций жёсткой линией — статика после движения читалась как сбой,
+   а не граница. Сверху симметрично проявляется из прозрачного на той
+   же высоте, что и затухание .atlas-stage::after (min(18vh, 160px)):
+   раньше шапка .prod-head была непрозрачна и видео там не показывалось,
+   поэтому шов у сцены-глобуса гас в плоский --surface без текстуры;
+   теперь видео видно и под шапкой, и без встречного фейда оно
+   появлялось сразу в полную силу ровно на стыке секций — жёсткая грань
+   (2026-07-21 №2). */
+.prod-media {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent, #000 min(18vh, 160px), #000 calc(100% - min(8vh, 90px)), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 min(18vh, 160px), #000 calc(100% - min(8vh, 90px)), transparent);
+}
+.prod-media-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.12; mix-blend-mode: luminosity; }
+/* 2026-07-22: 0.12 держит тёмную схему (сюда пользователь претензий не
+   высказывал), но в светлой тонет до полной невидимости — тот же диагноз,
+   что и у .hero-media-video, поднятого рядом тем же числом (см. #hero).
+   Здесь нет второго слоя-заглушки поверх (.prod-media обходится
+   mask-image по краям, без плоского scrim), поэтому хватает поднять
+   только сам видеослой. */
+html[data-scheme="light"] .prod-media-video { opacity: 0.32; }
+
+.rig-stage { position: relative; overflow: hidden; }
+
+/* Шов со стыком атлас-сцены больше гасить не нужно: секция [data-theme]
+   уже сама непрозрачна тем же --surface-тоном, в который выцветает
+   градиент атлас-сцены (.atlas-stage::after) над ней — видео поверх
+   лежит лишь тонким полупрозрачным слоем (opacity 0.12), шва не создаёт.
+   Прежний #products::after дублировал эту заглушку и, при шапке короче
+   18vh, полосой вылезал бы поверх видео ниже неё. */
+#products > .prod-head, #products > .rig-stage { position: relative; z-index: 2; }
+
+.prod-head {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: clamp(28px, 3.6vw, 48px);
+}
+.prod-head-eyebrow { padding: clamp(28px, 3.6vw, 48px) var(--gut) 0; }
+.prod-head-row {
+  display: grid;
+  /* 34% → calc(100%/3): серая линия — border-left у .prod-head-lead
+     ниже — переведена на розовую .align-guide. #products без .container,
+     своей ширины не режет, поэтому 100% здесь = 100% .page-shell. */
+  grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
+  padding-bottom: clamp(28px, 3.6vw, 48px);
+}
+.prod-head-title {
+  padding: clamp(16px, 2vw, 24px) clamp(20px, 2.4vw, 32px) 0 var(--gut);
+}
+.prod-head-title .h-title { margin-top: calc((1 - 1.04) * 0.5em); }
+.prod-head-lead {
+  padding: clamp(16px, 2vw, 24px) var(--gut) 0 clamp(28px, 3.2vw, 44px);
+  border-left: 1px solid var(--line);
+}
+.prod-head-lead .lead {
+  border-left: 2px solid var(--brand);
+  padding-left: clamp(16px, 1.8vw, 22px);
+  max-width: 58ch;
+  margin: 0;
+  /* Надстрочный интервал строки (half-leading) у .h-title (line-height
+     1.04) и .lead (1.7) разный, из-за чего их первая строка стартует на
+     разной высоте при равном верхнем крае колонок. Вместо подогнанного
+     на глаз px убираем half-leading у каждого формулой
+     (1 − line-height) / 2 × его собственный кегль — тогда текст обоих
+     блоков всегда упирается в верх строки сетки, на любом кегле. */
+  margin-top: calc((1 - 1.7) * 0.5em);
+  /* 2026-07-22: под шапкой сквозь неё видно .prod-media-video (вейвы),
+     на светлой схеме местами светлее текста и режет читаемость — блюр
+     сглаживает фактуру фона под абзацем, не добавляя видимой заливки/рамки. */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.rig-list {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: clamp(14px, 1.8vw, 22px);
+  margin: 0 var(--gut);
+  padding: clamp(24px, 3vw, 48px) 0;
+}
+.rig-row {
+  position: relative;
+  /* Локальные токены вместо повторения одних и тех же clamp() трижды —
+     нужны, чтобы вторую колонку пересчитать под розовую .align-guide
+     (ниже). --rn/--rg/--rp — старые значения без изменений. */
+  --rn: clamp(32px, 3.2vw, 48px);
+  --rg: clamp(20px, 2.6vw, 40px);
+  --rp: clamp(24px, 3vw, 40px);
+  display: grid;
+  /* .rig-text (третья колонка) должна начинаться ровно на розовой
+     .align-guide. Считаем в абсолютных единицах: min(100vw, var(--maxw))
+     — это и есть фактическая ширина .page-shell что при любой ширине
+     вьюпорта, что при упоре в --maxw. Guide = W/3; .rig-row стоит с
+     отступом --gut (margin .rig-list) + --rp (свой padding) от левого
+     края .page-shell, поэтому вторая колонка = W/3 − gut − rp − rn
+     (первая колонка) − 2×rg (гэпов перед третьей колонкой ДВА — между
+     1-2 и между 2-3, а не один: была ошибка, текст стоял на один gap
+     правее розовой линии). */
+  grid-template-columns:
+    var(--rn)
+    calc(min(100vw, var(--maxw)) / 3 - var(--gut) - var(--rp) - var(--rn) - (2 * var(--rg)))
+    1fr auto;
+  align-items: center;
+  gap: var(--rg);
+  width: 100%; text-align: left;
+  padding: var(--rp);
+  color: inherit; font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0;
+  /* Своя, более прозрачная заливка поверх общего рецепта .glass (glass.css):
+     под строками едет то же видео дорожки, что и под .hero-teasers, и там
+     заливка тот же уровень, что и у хиро (и у .sw-eco-tile в Drill Monitor,
+     sections/software.css) — единая прозрачность стекла на всех трёх видео-фонах. */
+  background-color: rgba(20, 20, 20, 0.07);
+  transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease),
+              transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+/* 2026-07-22: заливка выше — литеральный rgba, не переменная, поэтому
+   светлая схема её никогда не подхватывала (в отличие от --hero-glass у
+   hero, который как раз ради этого и вынесен в токен) — на светлом фоне
+   тёмный чёрный читался грязно-серым пятном. Значение здесь —
+   буквально текущее --hero-glass светлой схемы (#hero), чтобы карточки
+   правда совпадали с хиро, а не просто были «тоже светлыми». */
+html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14); }
+.rig-row:hover, .rig-row:focus-visible {
+  border-color: var(--brand);
+  background: var(--bg-raised);
+  transform: translateY(-4px);
+  box-shadow: 0 0 25px rgba(0, 144, 223, 0.15);
+}
+.rig-row:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* Уголки-прицелы — тот же приём, что .hero-tile-corners на hero. */
+.rig-corners { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.rig-corners i {
+  position: absolute; z-index: 2; width: 14px; height: 14px;
+  opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+  border-color: var(--brand);
+}
+.rig-row:hover .rig-corners i, .rig-row:focus-visible .rig-corners i { opacity: 1; transform: translate(0, 0); }
+.rig-corners i:nth-child(1) { top: 6px; left: 6px; border-top: 2px solid; border-left: 2px solid; transform: translate(4px, 4px); }
+.rig-corners i:nth-child(2) { top: 6px; right: 6px; border-top: 2px solid; border-right: 2px solid; transform: translate(-4px, 4px); }
+.rig-corners i:nth-child(3) { bottom: 6px; left: 6px; border-bottom: 2px solid; border-left: 2px solid; transform: translate(4px, -4px); }
+.rig-corners i:nth-child(4) { bottom: 6px; right: 6px; border-bottom: 2px solid; border-right: 2px solid; transform: translate(-4px, -4px); }
+
+.rig-num {
+  position: relative; z-index: 1;
+  font-size: var(--fs-0); letter-spacing: 0.12em; color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.rig-row:hover .rig-num, .rig-row:focus-visible .rig-num { color: var(--brand); }
+.rig-head { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; }
+.rig-title { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); transition: color 0.3s var(--ease); }
+.rig-row:hover .rig-title, .rig-row:focus-visible .rig-title { color: var(--brand); }
+.rig-line { font-size: var(--fs-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+.rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim); max-width: 62ch; }
+
+/* Кнопка-«загрузка»: наведение на саму кнопку (не на всю карточку)
+   заливает её белым слева направо — не плавно, а рублеными шагами
+   (steps() вместо ease), как прогресс-бар терминала, а не css-твин.
+   Моно-гарнитура и мигающий курсор `_` в хвосте текста — тот же
+   приборный/командный язык, что у .rig-num/.rig-line (IT-компания,
+   не декоративная анимация). Клавиатурный фокус держит вся строка
+   .rig-row (span кнопки нефокусируем), поэтому focus-visible
+   остаётся на ней — иначе эффект был бы недоступен с клавиатуры.
+   Раньше здесь был 3D-флип куба на 4 гранях, затем — плавная синяя
+   заливка справа налево; текущая версия — по прямой просьбе. */
+.rig-cube {
+  position: relative; z-index: 1; overflow: hidden;
+  width: clamp(148px, 15vw, 172px); height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  transition: border-color 0.3s var(--ease);
+}
+.rig-cube:hover, .rig-row:focus-visible .rig-cube { border-color: var(--brand); }
+.rig-cube-label, .rig-cube-fill-text {
+  font-family: var(--font-mono);
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.rig-cube-label { position: relative; z-index: 1; color: var(--ink); }
+.rig-cube-fill {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; color: var(--bg);
+  clip-path: inset(0 100% 0 0);
+  /* 9 шагов на весь ход — заметная «пиксельная» ступенька, а не смаз */
+  transition: clip-path 0.7s steps(9, jump-end);
+}
+.rig-cube:hover .rig-cube-fill, .rig-row:focus-visible .rig-cube-fill {
+  clip-path: inset(0 0 0 0);
+}
+.rig-cube-caret {
+  display: inline-block;
+  margin-left: 1px;
+  animation: rig-cube-blink 0.9s steps(1, jump-none) infinite;
+}
+@keyframes rig-cube-blink { 50% { opacity: 0; } }
+
+/* Прицелы на самой кнопке ТТХ/перечня — не буквальная копия Dmit (там
+   corner-marks только на строке целиком, см. .rig-corners), пользователь
+   явно попросил добавить их и на маленькую кнопку. z-index выше заливки
+   .rig-cube-fill (2), чтобы прицелы не терялись под ней при наведении. */
+.rig-cube-corners { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.rig-cube-corners i {
+  position: absolute; width: 10px; height: 10px;
+  opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.rig-cube:hover .rig-cube-corners i, .rig-row:focus-visible .rig-cube-corners i { opacity: 1; transform: translate(0, 0); }
+/* Цвет — прямо в шорткоде border-top/border-left, а не отдельным
+   border-color на родительском правиле: border-top без указания цвета
+   сбрасывает border-top-color на currentColor (это часть спецификации
+   шорткодов, а не наследование), и :nth-child специфичнее базового
+   правила — currentColor в тёмной секции #products и побеждал, отсюда
+   белые, а не чёрные прицелы на белой заливке .rig-cube-fill. */
+.rig-cube-corners i:nth-child(1) { top: 4px; left: 4px; border-top: 2px solid #000; border-left: 2px solid #000; transform: translate(3px, 3px); }
+.rig-cube-corners i:nth-child(2) { top: 4px; right: 4px; border-top: 2px solid #000; border-right: 2px solid #000; transform: translate(-3px, 3px); }
+.rig-cube-corners i:nth-child(3) { bottom: 4px; left: 4px; border-bottom: 2px solid #000; border-left: 2px solid #000; transform: translate(3px, -3px); }
+.rig-cube-corners i:nth-child(4) { bottom: 4px; right: 4px; border-bottom: 2px solid #000; border-right: 2px solid #000; transform: translate(-3px, -3px); }
+@media (prefers-reduced-motion: reduce) {
+  .rig-cube-caret { animation: none; }
+}
+
+@media (max-width: 820px) {
+  .rig-row { grid-template-columns: 1fr; row-gap: 14px; }
+  .rig-cube { justify-self: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rig-row, .rig-cube-fill, .rig-corners i, .rig-cube-corners i { transition: none; }
+}
+

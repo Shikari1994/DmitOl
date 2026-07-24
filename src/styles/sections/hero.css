@@ -1,0 +1,375 @@
+/* ════════════════════════════════════════════════
+   HERO · буквальный перенос D:\Projects\Dmit
+   ────────────────────────────────────────────────
+   Не адаптация под токены сайта — прямой перевод значений из style-блока
+   и Tailwind-классов Dmit (1gemini-code-...html): свои цвета (logoBlue,
+   sky-400, slate-400/500), Inter black вместо Unbounded, контурная
+   кнопка с инверсией на hover, лого-плашка «ГТН», 8%-границы, стеклянная
+   подложка правой колонки. Локальные переменные ниже — те самые hex/rgba
+   из tailwind.config и <style> Dmit, не наши --brand/--ink/--line.
+
+   Единственные три отличия от оригинала: сцены в плитках (ноутбук+
+   телефон, снаряд) — этого контента у Dmit нет вообще, добавлены по
+   просьбе и скрыты в покое, выезжают ТОЛЬКО по hover/focus на карточку
+   (см. .hero-tile-art); реальные якоря вместо onclick scrollIntoView;
+   и светлая инверсия (2026-07-22, `html[data-scheme="light"] #hero`
+   ниже) — у Dmit её тоже нет, но пользователь явно попросил hero в
+   тумблер. Пиксель-в-пиксель остаётся правилом только для ТЁМНОГО
+   состояния; светлые значения токенов ниже — не из Dmit, подобраны
+   заново под AA на светлом фоне (тот же приём, что и для --brand
+   сайта, см. «СВЕТЛАЯ СХЕМА»).
+
+   Прежняя колода с разрезом константы «ГЕОТЕХНАВИГАЦИЯ» и каротажный
+   canvas удалены целиком — см. память (dmit-sibling-reference). */
+#hero {
+  --hero-blue:         #0090df;  /* logoBlue — акцент плитки Drill Monitor */
+  --hero-sky:          #38bdf8;  /* sky-400 — акцент плитки GT-Navigator */
+  --hero-dim:          #94a3b8;  /* slate-400 — основной приглушённый текст */
+  --hero-faint:        #64748b;  /* slate-500 — курсорный readout */
+  --hero-line:         rgba(255, 255, 255, 0.08);  /* .dark .grid-border */
+  --hero-line-strong:  rgba(255, 255, 255, 0.3);   /* контур .liqium-btn */
+  /* Три токена ниже раньше были голым #fff/rgba() прямо в правилах —
+     буквальный перенос Dmit, который никогда не должен был меняться.
+     2026-07-22: hero переведён на общий тумблер (data-theme="black",
+     было "black-fixed"), и голый белый на светлом фоне стал бы
+     невидимым. Вынесены в переменные ровно затем, чтобы светлая схема
+     ниже могла их перекрыть — сами дефолты не изменились. */
+  --hero-ink:          #fff;                 /* было color:#fff / border:#fff */
+  --hero-glass:        rgba(0, 0, 0, 0.07);   /* 2026-07-22: ещё прозрачнее, приведено к общему уровню с .rig-row/.sw-eco-tile */
+  --hero-tile-hover:   rgba(255, 255, 255, 0.05); /* было .hero-tile:hover { background: rgba(255,255,255,.05) } */
+}
+/* --surface для #hero больше не переопределяется здесь локально: раньше
+   было --surface:#141414 прямо на #hero (ID-специфичность любую другую
+   схему всё равно не пустила бы). Секция теперь берёт --surface из
+   общего [data-theme="black"] и наследует поведение тумблера, как
+   остальной сайт — тот же тон #141414 в тёмной схеме, тот же путь, что
+   у About/Showcase и остальных. */
+
+/* grid + grid-template-rows:1fr тянет колонки на всю высоту секции.
+   ВАЖНО: общий `section { padding: var(--section-y) 0 }` навешивает на
+   секцию и НИЖНИЙ паддинг (~свыше 150px на широком экране) — свой
+   padding-top его перекрывает только сверху, а снизу оставался бы жирный
+   мёртвый отступ, из-за которого колонки не дотягивались до низа. Поэтому
+   паддинг здесь переопределяется целиком: только компенсация фикс-шапки
+   сверху (у Dmit её нет — header в потоке, у нас nav.nav в position:fixed),
+   снизу — ноль, readout AZ/INC лежит поверх абсолютом. */
+.hero-intro {
+  position: relative;
+  overflow: hidden;
+  min-height: 70vh;
+  display: grid;
+  grid-template-rows: 1fr;
+  padding: calc(var(--nav-h) + env(safe-area-inset-top)) 0 0;
+  border-bottom: 1px solid var(--hero-line);
+}
+
+.hero-media { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+/* opacity-70 dark: у видео Dmit — не подобрано, взято буквально */
+.hero-media-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+/* Тот же порядок слоёв, что у Dmit (видео → плоская заливка 70% →
+   градиент в цвет фона): в CSS background первый слой рисуется поверх
+   остальных, поэтому градиент указан первым. */
+.hero-media-scrim {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, transparent 50%, var(--surface) 100%),
+    rgba(20, 20, 20, 0.7);
+}
+/* Светлая схема — тот же приём, что у #products (.prod-media-video):
+   плоская тёмная заливка через luminosity уронила бы видео в грязно-
+   серое пятно, а не в белый фон. Луминосити-блендинг вместо этого красит
+   видео тоном подложки (--surface, уже светлый) и оставляет только его
+   яркостный рисунок.
+   2026-07-22 (второй заход): изначальный 1:1-перенос значений
+   .prod-media-video (opacity 0.12 + плоский scrim 70% белого поверх)
+   утопил дорожку до полной невидимости — правая колонка (.hero-teasers,
+   стекло без своего рецепта .glass) оказалась вообще без фактуры под
+   собой и слилась со страницей в кашу. Подняты оба значения разом —
+   opacity 0.12→0.32 у видео и scrim 0.7→0.4.
+   2026-07-22 (третий заход): у #products нет второго слоя-заглушки
+   (только mask-fade по краям, см. .prod-media), поэтому там дорожка при
+   том же opacity 0.32 читается заметно сильнее — здесь тот же 0.32
+   ещё раз гасится плоским scrim сверху. Подняты оба числа ещё раз —
+   opacity 0.32→0.4, scrim 0.4→0.18 — так, чтобы итоговая видимость
+   (video × (1 − scrim)) сошлась с products (~0.32) вместо ~0.19. */
+html[data-scheme="light"] #hero .hero-media-video {
+  opacity: 0.4;
+  mix-blend-mode: luminosity;
+}
+html[data-scheme="light"] #hero .hero-media-scrim {
+  background:
+    linear-gradient(180deg, transparent 50%, var(--surface) 100%),
+    rgba(255, 255, 255, 0.18);
+}
+
+/* ── Курсорный readout AZ/INC ──
+   bottom-6 left-8 gap-4, hidden ниже sm(640px) — буквально как у Dmit,
+   без гейта на тип указателя: там его тоже нет. */
+.hero-readout {
+  display: none;
+  position: absolute; z-index: 2; left: var(--gut); bottom: 24px;
+  align-items: center; gap: 16px;
+  font-family: var(--font-mono); letter-spacing: 0.08em;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: var(--hero-faint);
+}
+.hero-readout b { color: var(--hero-blue); font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero-readout-note { display: none; }
+@media (min-width: 640px) {
+  .hero-readout { display: flex; }
+}
+@media (min-width: 768px) {
+  .hero-readout-note { display: inline; }
+}
+
+/* ── Сетка сплита: 7/12 слева, 5/12 справа, разъезжается на lg (1024px) ── */
+.hero-grid {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr;
+  width: 100%;
+}
+/* Ниже 1024px колонки стоят одна под другой (как у Dmit на узком экране) —
+   там ряды нарочно auto, тянуть их до 70vh незачем. С 1024px колонки
+   встают рядом, и тогда единственный ряд явно 1fr — во всю высоту .hero-grid. */
+@media (min-width: 1024px) {
+  .hero-grid { grid-template-columns: 7fr 5fr; grid-template-rows: 1fr; align-items: stretch; }
+}
+
+.hero-copy {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: 48px;
+  /* Левый/правый отступ — var(--gut), не своя шкала: это тот же отступ,
+     что держит .container и .atlas-copy (left: var(--gut)) в About ниже,
+     иначе заголовок хиро съезжает правее «01 / 06» под ним. Вертикальный
+     ритм (32/48/64) остаётся собственным. */
+  padding: 32px var(--gut);
+}
+@media (min-width: 640px)  { .hero-copy { padding-top: 48px; padding-bottom: 48px; } }
+@media (min-width: 1280px) { .hero-copy { padding-top: 64px; padding-bottom: 64px; } }
+
+.hero-copy-top { display: flex; flex-direction: column; gap: 24px; }
+.hero-tag {
+  display: block;
+  font-family: var(--font-mono); letter-spacing: 0.08em;
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  color: var(--hero-sky);
+}
+.hero-brand { display: flex; align-items: center; gap: 20px; }
+.hero-brand-mark {
+  flex: 0 0 auto; width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--hero-ink);
+  font-family: var(--font-mono); font-weight: 800; font-size: 20px;
+  letter-spacing: -0.03em; text-transform: uppercase; color: var(--hero-ink);
+}
+@media (min-width: 640px) {
+  .hero-brand-mark { width: 80px; height: 80px; font-size: 24px; }
+}
+.hero-brand-title {
+  font-family: var(--font-text); font-weight: 700;
+  font-size: 28px; line-height: 1; letter-spacing: -0.05em;
+  text-transform: uppercase; color: var(--hero-ink);
+}
+@media (min-width: 640px)  { .hero-brand-title { font-size: 44px; } }
+@media (min-width: 1280px) { .hero-brand-title { font-size: 54px; } }
+
+.hero-copy-bottom { display: flex; flex-direction: column; gap: 24px; max-width: 576px; }
+.hero-lead {
+  font-family: var(--font-text); font-weight: 400;
+  font-size: 14px; line-height: 1.625; color: var(--hero-dim);
+}
+@media (min-width: 640px) { .hero-lead { font-size: 16px; } }
+
+/* ── Плитки-тизера ──
+   Буквальный визуал Dmit (рамки + corner-marks на hover) — сознательный
+   реопен решения «чертёжный язык Dmit не переносим»: тот отказ был про
+   Showcase.astro и там остаётся в силе, см. память. Дальше по сайту
+   классы .hero-tile-* не используются нигде.
+
+   grid-rows-2 у Dmit безусловный (не только на lg) — колонка справа
+   всегда делится на два равных ряда, даже когда стоит в потоке под
+   левой колонкой на узком экране. */
+.hero-teasers {
+  position: relative; z-index: 1;
+  display: grid; grid-template-rows: 1fr 1fr;
+  background: var(--hero-glass);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  border-top: 1px solid var(--hero-line);
+}
+@media (min-width: 1024px) {
+  .hero-teasers { border-top: 0; border-left: 1px solid var(--hero-line); }
+}
+
+.hero-tile {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: 24px;
+  padding: 32px;
+  text-decoration: none; color: inherit;
+  border-bottom: 1px solid var(--hero-line);
+  /* инсет-тень вместо border-width на hover: рамка не толкает паддинги */
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-tile:last-child { border-bottom: 0; }
+.hero-tile:hover,
+.hero-tile:focus-visible {
+  background: var(--hero-tile-hover);
+  box-shadow: inset 0 0 0 2px var(--hero-blue);
+}
+
+/* Обёртка скобок — absolute inset:0 (как corner-marks у Dmit): иначе
+   пустой span висит флекс-элементом и space-between раскидывает ТРИ
+   элемента (скобки/строка/футер), из-за чего лейбл уезжал в середину
+   вместо верхнего угла. Вынесенная из потока — оставляет в раскладке
+   только строку-лейбл (вверх) и футер (вниз). */
+.hero-tile-corners { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.hero-tile-corners i {
+  position: absolute; z-index: 2; width: 14px; height: 14px;
+  opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+  border-color: var(--hero-blue);
+}
+.hero-tile:hover .hero-tile-corners i,
+.hero-tile:focus-visible .hero-tile-corners i {
+  opacity: 1; transform: translate(0, 0);
+}
+.hero-tile-corners i:nth-child(1) { top: 6px; left: 6px; border-top: 2px solid; border-left: 2px solid; transform: translate(4px, 4px); }
+.hero-tile-corners i:nth-child(2) { top: 6px; right: 6px; border-top: 2px solid; border-right: 2px solid; transform: translate(-4px, 4px); }
+.hero-tile-corners i:nth-child(3) { bottom: 6px; left: 6px; border-bottom: 2px solid; border-left: 2px solid; transform: translate(4px, -4px); }
+.hero-tile-corners i:nth-child(4) { bottom: 6px; right: 6px; border-bottom: 2px solid; border-right: 2px solid; transform: translate(-4px, -4px); }
+
+.hero-tile-row {
+  position: relative; z-index: 2;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.hero-tile-label {
+  font-family: var(--font-mono); letter-spacing: 0.08em;
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  color: var(--hero-dim);
+}
+.hero-tile-status {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); letter-spacing: 0.08em;
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  color: var(--hero-blue);
+}
+.hero-tile--sky .hero-tile-status { color: var(--hero-sky); }
+/* group-hover:animate-pulse у Dmit — пульс только на статусе первой
+   плитки и только при наведении, не постоянно. */
+@keyframes hero-tile-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.hero-tile:hover .hero-tile-status.is-live,
+.hero-tile:focus-visible .hero-tile-status.is-live {
+  animation: hero-tile-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-tile-status.is-live { animation: none !important; }
+}
+
+.hero-tile-foot { position: relative; z-index: 2; max-width: 60%; }
+.hero-tile-title {
+  display: block; font-family: var(--font-mono); letter-spacing: 0.08em;
+  font-size: 24px; font-weight: 800; text-transform: uppercase; color: var(--hero-ink);
+  transition: color 0.3s ease;
+}
+.hero-tile:hover .hero-tile-title,
+.hero-tile:focus-visible .hero-tile-title {
+  color: var(--hero-blue);
+}
+.hero-tile--sky:hover .hero-tile-title,
+.hero-tile--sky:focus-visible .hero-tile-title {
+  color: var(--hero-sky);
+}
+.hero-tile-text {
+  margin-top: 8px;
+  font-family: var(--font-text); font-weight: 500;
+  font-size: 14px; line-height: 1.625; color: var(--hero-dim); /* было 12px — по просьбе */
+}
+
+/* ── Сцена в плитке DRILL MONITOR: ноутбук + телефон ──
+   У Dmit плитки в покое пустые — картинка не часть их языка. Здесь она
+   встроена, но подчинена этому покою: скрыта, пока курсор не на карточке,
+   и выезжает ТОЛЬКО на hover/focus, чистым CSS-переходом, без JS и без
+   разового жеста на загрузке. Зона сцены начинается НИЖЕ строки
+   лейбл/статус — там ей ничто не мешает читаться даже в открытом виде. */
+.hero-tile-art {
+  position: absolute; z-index: 0; pointer-events: none;
+  left: 0; right: 0; bottom: 0; top: 32%;
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  padding: 0 8px 6px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, transparent 12%, #000 30%);
+          mask-image: linear-gradient(90deg, transparent 0, transparent 12%, #000 30%);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.hero-tile:hover .hero-tile-art,
+.hero-tile:focus-visible .hero-tile-art {
+  opacity: 1;
+}
+.hero-tile-stage { position: relative; height: 100%; max-width: 100%; aspect-ratio: 1157 / 774; }
+.hero-tile-note {
+  position: relative; z-index: 1; width: 100%; height: 100%;
+  transform: translateX(12%);
+  transition: transform 0.55s ease;
+}
+.hero-tile-note img, .hero-tile-phone img {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; object-position: bottom center;
+  filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.55));
+}
+/* 2026-07-22: та же болезнь, что у .mob-phone img/.sw-frame — тень
+   рассчитана на чёрный фон, на светлом читается чёрными полосами вокруг
+   крышки ноутбука/телефона. */
+html[data-scheme="light"] .hero-tile-note img,
+html[data-scheme="light"] .hero-tile-phone img {
+  filter: drop-shadow(0 12px 24px rgba(20, 23, 28, 0.22));
+}
+.hero-tile-phone { position: absolute; z-index: 2; left: -6%; bottom: -3%; height: 82%; }
+.hero-tile-phone-move {
+  height: 100%; width: auto;
+  transform: translateX(70%);
+  transition: transform 0.55s ease 0.05s;
+}
+.hero-tile-phone img { height: 100%; width: auto; }
+.hero-tile:hover .hero-tile-note,
+.hero-tile:focus-visible .hero-tile-note,
+.hero-tile:hover .hero-tile-phone-move,
+.hero-tile:focus-visible .hero-tile-phone-move {
+  transform: translateX(0);
+}
+
+/* ── Сцена в плитке GT-NAVIGATOR: снаряд из двух модулей ──
+   Тот же кадр, что был снарядом первого экрана прежней колоды: две
+   компоновки друг под другом читаются как «модуль наверху / модуль
+   снизу». Тот же покой-до-hover, что у сцены выше. Ширина изображения
+   не ограничена — кадр бесконечно длинный, тайл его обрезает своим
+   overflow:hidden, наружная маска мягко проявляет левую кромку. */
+.hero-tile-art--rig { align-items: center; padding: 0; }
+.hero-tile-rig {
+  transform: translateX(8%);
+  transition: transform 0.55s ease;
+  margin-right: -160px;
+  margin-bottom: 14px;
+}
+.hero-tile-rig img {
+  display: block; height: clamp(60px, 6vw, 118px); width: auto; max-width: none;
+  transform: rotate(180deg);
+}
+.hero-tile:hover .hero-tile-rig,
+.hero-tile:focus-visible .hero-tile-rig {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-tile-art { transition: none; }
+  .hero-tile-note, .hero-tile-phone-move, .hero-tile-rig { transition: none; transform: none; }
+}
+
+@media (max-width: 700px) {
+  .hero-tile-foot { max-width: 68%; }
+  .hero-tile-rig img { height: clamp(52px, 14vw, 88px); }
+}
+

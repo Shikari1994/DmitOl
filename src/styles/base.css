@@ -1,0 +1,232 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { background: var(--bg); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  font-family: var(--font-text);
+  color: var(--text);
+  font-size: var(--fs-body);
+  /* clip, а не hidden: hidden делает body scroll-контейнером и ломает
+     position:sticky у прибитого счётчика в «Фактах» */
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body.menu-open { overflow: hidden; }
+
+::selection { background: rgba(47,131,212,0.32); color: #fff; }
+
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* единицы и числа — табличные везде */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ─── ТИПОГРАФИКА ───
+   Все заголовки набраны той же гарнитурой, что и текст. Это и есть
+   швейцарский приём: разницу между заголовком и абзацем несут кегль,
+   вес и воздух, а не второй шрифт. Смена рисунка на заголовке — приём
+   рекламный, он сообщает «посмотрите сюда»; модульная шкала сообщает
+   «это уровень выше», и второе точнее.
+
+   Трекинг отрицательный и растёт с кеглем: у нейтрального гротеска
+   на крупном кегле межбуквенные просветы визуально раскрываются,
+   и без поджатия строка рассыпается на отдельные буквы. */
+.h-title, h1, h2, h3, h4 {
+  font-family: var(--font-text);
+  font-optical-sizing: auto;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1.06;
+  text-transform: uppercase;
+}
+
+/* Подложка всей страницы — плоская, и остаётся плоской: секции
+   непрозрачны, и любой слой света здесь был бы не виден ни глазу, ни
+   backdrop-filter, только чистым украшением — тем самым «свечением
+   сверху», от которого страница отказалась с самого начала. */
+.bg-fx {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: var(--bg);
+}
+
+/* ─── КОНТЕЙНЕР И СЕКЦИИ ───
+   .page-shell — корневая обёртка всей страницы (Layout.astro), общая
+   для шапки и секций: ограничивает и центрирует полосу набора целиком,
+   одной точкой, а не по месту в каждой секции. Внутри неё все текущие
+   --gut-отступы и сеточные расчёты остаются процентными от НЕЁ, а не
+   от вьюпорта, поэтому шапка (см. nav.nav — она position:fixed и
+   выровнена тем же max-width+margin:auto) и секции под ней читают
+   одну и ту же ширину и не расходятся. */
+.page-shell { max-width: var(--maxw); margin: 0 auto; position: relative; }
+
+.container { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gut); }
+
+/* ─── .grid · двенадцатиколоночная сетка раскладки ───
+   Раньше каждая шапка секции придумывала себе пропорции сама: 1fr 1fr
+   у платформы, 1.05fr 1fr у мобильной версии, 1.6fr 1fr 1fr в подвале.
+   Величины разные, а задача одна — развернуть заголовок и приписку по
+   ширине страницы, — и от этого границы блоков в соседних секциях не
+   совпадали на 10–20px. Глаз такое замечает, даже не понимая, что видит.
+
+   Теперь пропорции задаются в колонках, и они общие для всей страницы.
+   minmax(0, 1fr) вместо 1fr обязателен: у grid минимальная ширина
+   колонки по умолчанию auto, и длинное неразрывное слово (а их тут
+   хватает — «ГЕОТЕХНАВИГАЦИЯ», адреса, e-mail) раздувает колонку
+   сверх её доли вместо переноса. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+/* Длинные абзацы ширину экрана не наследуют — им меру задаёт
+   собственный max-width (.lead, .sc-text и т.п.). Полную ширину
+   забирает только типографика и сетка. */
+
+/* ─── RAILS · вертикальные линии колонок ───
+   Приём точечный, а не сквозной: направляющие живут только на
+   двух экранах колоды (Drill Monitor · Скорость / Точность), где
+   они держат мега-заголовок и подчёркивают смену заливки. На
+   остальных секциях они превращались в фоновый шум, поэтому
+   включаются явным data-rails="on". Рисуются подложкой темы —
+   берут цвет линии текущей заливки и едут вместе с секцией. */
+[data-theme] { position: relative; }
+[data-rails="on"]::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(var(--line), var(--line)),
+    linear-gradient(var(--line), var(--line));
+  background-size: 1px 100%;
+  background-repeat: no-repeat;
+  background-position:
+    var(--rail-1) 0, var(--rail-2) 0, var(--rail-3) 0,
+    var(--rail-4) 0, var(--rail-5) 0, var(--rail-6) 0;
+}
+/* контент всегда над направляющими */
+[data-theme] > * { position: relative; z-index: 1; }
+
+@media (max-width: 900px) {
+  /* на телефоне шесть колонок превращаются в шум — оставляем две */
+  [data-rails="on"]::before {
+    background-position: 33.333% 0, 66.666% 0, -10px 0, -10px 0, -10px 0, -10px 0;
+  }
+}
+/* единый вертикальный ритм всей страницы — один токен, без исключений
+   по секциям: воздух одинаковый везде, поэтому смена темы читается как
+   граница раздела, а не как случайный отступ */
+/* границы секций несёт смена темы, а не линия-разделитель */
+section { padding: var(--section-y) 0; position: relative; }
+
+/* Якорь не должен приводить заголовок под шапку. Lenis свой отступ
+   держит сам (offset: -70 в motion.js), но он живёт только при
+   включённой анимации: при prefers-reduced-motion скрипт не стартует,
+   и переход по «#software» становится нативным — заголовок вставал
+   ровно под фиксированную шапку. */
+section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top)); }
+
+/* ─── MARQUEE · бегущая лента-«шов» между секциями ─── */
+.marquee {
+  display: flex; overflow: hidden; width: 100%;
+  padding: clamp(18px, 2.2vw, 30px) 0;
+  user-select: none;
+}
+.marquee-list {
+  display: flex; align-items: center; flex: 0 0 auto;
+  list-style: none; gap: 0; white-space: nowrap;
+  will-change: transform;
+}
+.marquee-list li {
+  display: inline-flex; align-items: center;
+  font-size: var(--fs-5);
+  font-weight: 600; letter-spacing: -0.02em;
+  text-transform: uppercase; color: var(--ink);
+}
+.marquee-sep { color: var(--ink-faint); margin: 0 clamp(20px, 3vw, 44px); font-weight: 400; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* без анимации лента превращается в обычную строку — не обрезаем контент */
+  .marquee { overflow-x: auto; }
+}
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  font-size: var(--fs-0); letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--ink-dim); font-weight: 600; margin-bottom: var(--s-4);
+  font-family: var(--font-mono);
+}
+
+/* ── индекс секции «01 / 06» — единственный цветовой акцент в шапке,
+   мотив инструкции-вкладыша Control: номер ведёт, лейбл уходит в серый ── */
+.eyebrow .ey-no {
+  order: -1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-1); letter-spacing: 0.04em; font-weight: 500;
+  color: var(--brand);
+}
+.eyebrow .ey-no .ey-den { color: var(--ink-faint); }
+
+/* Оба правила раньше стояли в файле дважды: вторая пара молча
+   перезаписывала первую (кегль, интерлиньяж, трекинг). Собраны в одно —
+   значения ровно те, что побеждали в каскаде. */
+.h-title {
+  font-size: var(--fs-8);
+  line-height: 1.04; text-wrap: balance;
+}
+/* Мера абзаца задана в знаках, а не в пикселях: 54ch держится внутри
+   канонических 45–75 знаков в строке на любом кегле, тогда как прежние
+   560px означали разную меру, стоило кеглю измениться. Кегль поднялся
+   на ступень (--fs-3): лид — уровень над текстом, и в модульной шкале
+   между ними нет промежуточного значения. */
+.lead { font-size: var(--fs-3); color: var(--text-dim); line-height: 1.7; max-width: 54ch; }
+
+/* ─── КНОПКИ ─── */
+.btn {
+  position: relative;
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  font-family: inherit; font-size: var(--fs-1); font-weight: 600;
+  letter-spacing: 0.01em; cursor: pointer; text-decoration: none;
+  padding: var(--s-2) var(--s-4); border-radius: 0; border: 1px solid transparent;
+  /* инсет-тень вместо border-width на hover — тот же приём, что у
+     .hero-tile / .rig-row: рамка не толкает паддинги */
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: transform 0.2s var(--ease), background 0.25s, border-color 0.25s, color 0.25s,
+              box-shadow 0.25s var(--ease);
+}
+.btn:hover, .btn:focus-visible { box-shadow: inset 0 0 0 2px var(--brand); }
+.btn svg { width: 16px; height: 16px; transition: transform 0.25s var(--ease); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-strong); }
+.btn-primary:hover svg { transform: translateX(3px); }
+/* press-feedback — единственная микро-реакция кнопки: тихое «вдавливание» */
+.btn-primary:active { transform: scale(0.97); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--line); }
+.btn-ghost:hover { border-color: var(--line-strong); background: var(--brand-soft); }
+.btn-ghost:hover svg { transform: translateX(3px); }
+.btn-ghost:active { transform: scale(0.97); border-color: var(--line-strong); background: var(--accent-soft); }
+
+/* Уголки-прицелы кнопок — тот же приём, что .hero-tile-corners /
+   .rig-corners: рамка на hover сопровождается прицелами по углам. */
+.btn-corners { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.btn-corners i {
+  position: absolute; width: 10px; height: 10px;
+  opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+  border-color: var(--brand);
+}
+.btn:hover .btn-corners i, .btn:focus-visible .btn-corners i { opacity: 1; transform: translate(0, 0); }
+.btn-corners i:nth-child(1) { top: 3px; left: 3px; border-top: 2px solid; border-left: 2px solid; transform: translate(3px, 3px); }
+.btn-corners i:nth-child(2) { top: 3px; right: 3px; border-top: 2px solid; border-right: 2px solid; transform: translate(-3px, 3px); }
+.btn-corners i:nth-child(3) { bottom: 3px; left: 3px; border-bottom: 2px solid; border-left: 2px solid; transform: translate(3px, -3px); }
+.btn-corners i:nth-child(4) { bottom: 3px; right: 3px; border-bottom: 2px solid; border-right: 2px solid; transform: translate(-3px, -3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn-corners i { transition: none; }
+}
+

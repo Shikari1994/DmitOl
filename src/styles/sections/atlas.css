@@ -1,0 +1,346 @@
+/* ════════════════════════════════════════════════
+   «О КОМПАНИИ» · одна прибитая сцена на два акта
+   ────────────────────────────────────────────────
+   Акт I  — стеклянная карточка листает факты на чёрной заливке секции,
+            глобус уже растёт из-за нижней кромки на своём синем свете.
+   Акт II — фон сгущается в синюю ночь, шар доворачивается Россией
+            к зрителю, строка слева набирается по словам.
+
+   Раньше это были два раздела подряд — штабель «Ключевых цифр» и вслед
+   отдельная сцена с шаром. Оба прибивали экран, оба считали свой скролл,
+   и стык читался как «раздел кончился, начался похожий». Теперь сцена
+   одна: карточка и шар живут на общем прогрессе прокрутки.
+
+   Раскладка абсолютная, а не сеточная: три слоя во весь экран (ночь,
+   canvas шара, хрома) обязаны лежать точно друг над другом, а карточка
+   и подпись — вставать в заданные точки кадра. Всё движение ведёт
+   scripts/aboutScene.js по одному прогрессу; шар рисует
+   scripts/globeCanvas.js по тому же прогрессу — акты не разъезжаются.
+
+   Карточка стеклянная не для вида: она стоит на чёрной заливке в акте I
+   и над сгущающейся синей ночью в акте II — двум разным фонам плашку
+   пришлось бы перекрашивать под каждый, стекло просто берёт то, что
+   под ним (см. рецепт стекла выше). Свой ледяной рецепт у неё только
+   на ночь (`.is-night .atlas-deck` ниже); до неё работает общий тёмный
+   рецепт из :root.
+   ════════════════════════════════════════════════ */
+/* Высота обёртки = длина скролла для прогресса 0…1 (минус 100svh самой
+   sticky-сцены, см. scrollProgress.js). Раньше было 420svh при том, что
+   вся видимая анимация (шар, текст, карточки, ночь) укладывалась в первые
+   ~60-90% прогресса — после этого ещё оставалось 10-15% чистого скролла
+   «на месте», без единого визуального изменения. Высота уменьшена вслед
+   за тем, как GLOBE_END/GEO_END/NIGHT_FULL в JS были раздвинуты к концу
+   прогресса (см. globeCanvas.js, aboutScene.js) — теперь финал сцены
+   приходится на последние ~10% этой длины, а не тонет в лишнем хвосте. */
+.atlas { position: relative; height: 240svh; }
+.atlas-stage {
+  position: sticky; top: 0; height: 100svh; overflow: hidden;
+  background: var(--surface);
+  /* На мобильном адресная строка прячется по ходу скролла, и реальный
+     вьюпорт вырастает за пределы «малого» 100svh — под прибитой сценой
+     открывается голая заливка секции (#about, чёрная) до самого низа
+     экрана. 100dvh гонится за текущим вьюпортом и полосу закрывает; для
+     progress()-расчёта в scrollProgress.js ничего не меняется — он
+     читает offsetHeight живьём, каким бы он ни был. Строка ниже — не
+     дубль, а фолбэк: где dvh не понимают, работает первое значение. */
+  height: 100dvh;
+}
+
+/* Ночь — отдельный слой над заливкой и под шаром: чёрный космос
+   светлеет к графиту (--surface тем black/graphite), без цветного
+   тона — сайт держит только чёрный и графитовый, синего фона нет нигде.
+   Прозрачность ведёт скролл, поэтому фон не переключается классом,
+   а проявляется. */
+.atlas-night {
+  position: absolute; inset: 0; z-index: 1; opacity: 0;
+  background:
+    radial-gradient(130% 95% at 50% 118%, #2c3441 0%, #1c222c 34%, #12151b 64%, #07090d 100%);
+}
+/* Светлая схема: та же радиальная форма и те же доли (0/34/64/100%),
+   только стопы светлые — от почти белого у шара до умеренно-синего
+   к краю, но нигде не темнее среднего тона. Без этого слоя сцена
+   «О компании» в светлой схеме на середине скролла проваливалась бы в
+   тот же near-black, что и в тёмной — жалоба пользователя 2026-07-22
+   («тёмная заливка в светлой теме», а заодно она топила земной шар:
+   в паре с плотной тьмой контраст читался иначе, чем задумано, и шар
+   визуально терялся). Драматургия «сгущается к краю» сохранена, просто
+   «ночь» здесь про глубже-синий, а не про темнее-к-чёрному. */
+html[data-scheme="light"] .atlas-night {
+  background:
+    radial-gradient(130% 95% at 50% 118%, #eaf1f8 0%, #cfe0ee 34%, #a9c3dc 64%, #82a5c7 100%);
+}
+.atlas-canvas { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; transition: filter 0.4s var(--ease); }
+
+/* Светлая схема: модель шара — по сути «ночная Земля» (см.
+   globeCanvas.js — цвет материала намеренно не трогаем, только свет).
+   Текстура (public/globe.glb, вшитый PNG) вскрыта и промерена:
+   океан — почти чёрный (яркость ~20–50 из 255, это ~80% полотна),
+   суша светлее (~60–116), рельеф/лёд — самое яркое, что там вообще
+   есть. Диапазон целиком зажат в тёмную четверть шкалы — на светлом
+   фоне .atlas-night океан читался чужеродным чёрным пятном.
+
+   Простой invert() тут не работает: он честно зеркалит эту узкую
+   тёмную полосу в такую же узкую светлую (океан → ~205–230, суша →
+   ~140–165) — весь рельеф остаётся почти одного оттенка, картинка
+   плоская, «как луна», без океана/суши не разобрать. Нужно сперва
+   растянуть узкий исходный диапазон на всю шкалу (brightness+contrast
+   как ручной «levels»: чёрная точка ~25, белая ~105 → 0…255), и
+   только потом инвертировать — тогда океану достаётся весь светлый
+   край шкалы, а рельефу суши/льду — весь тёмный, графитовый.
+   Финальный contrast(0.75) снимает жёсткость чистых 0/255 (не плоский
+   чёрный и не бумажный белый), hue-rotate(180deg) после invert —
+   стандартный приём «инверсия без порчи цвета»: оранжевые точки
+   городов возвращаются к тёплому оттенку вместо ухода в синий. */
+html[data-scheme="light"] .atlas-canvas {
+  filter: brightness(1.9) contrast(1.6) invert(1) hue-rotate(180deg) contrast(0.75) saturate(1.1);
+}
+
+/* Радиальная «ночь» светлее всего у нижней кромки сцены (центр
+   градиента вынесен под кадр, см. .atlas-night) — а следом сразу флэт
+   var(--surface) секции #products, шов был виден жёсткой линией. Гасим
+   последние пиксели обратно в --surface тем же приёмом, что и сама
+   ночь: слоем, а не сменой самого градиента. Сама ночь (см.
+   .atlas-night выше) — застывшие hex-стопы, не var(--surface): смена
+   базового графита сайта (2026-07-21) её сознательно не задевает. */
+.atlas-stage::after {
+  content: '';
+  position: absolute; inset: auto 0 0 0; z-index: 1;
+  height: min(18vh, 160px);
+  background: linear-gradient(to bottom, transparent, var(--surface));
+  pointer-events: none;
+}
+
+/* Левая колонка держит два состояния в одной точке кадра: рубрику раздела
+   (акт I) и строку про Россию (акт II). Место одно, потому что смысл один —
+   это заголовок сцены; состояния перекрёстно гаснут по классу .is-night. */
+.atlas-copy {
+  position: absolute; z-index: 3;
+  left: var(--gut); top: clamp(56px, 11vh, 130px);
+  /* Было 48% (правый край на 52% ширины .atlas-stage, т.е. #about,
+     секция без своего --gut) — заголовок «Реализуем проекты по всей
+     России» заходил далеко за розовую .align-guide (100%/3). 2/3 —
+     то же самое расстояние от правого края, что даёт левый край ровно
+     на границе 1/3, где стоит линия. */
+  right: calc(100% * 2 / 3);
+}
+
+/* Заголовок сцены — сама строка про Россию, не «Ключевые цифры»: это и
+   есть ответ на «зачем тут глобус». Базовый текст стоит приглушённым
+   (--ink-faint), поверх лежит точная копия того же текста, ярко-белая,
+   разбитая на слова — у каждого свой clip-path, поэтому заливка идёт
+   слово за словом (внутри слова — буква за буквой тем же клипом), а не
+   сплошной полосой поперёк переносов строки. Ведёт слова aboutScene.js
+   тем же прогрессом, что доворачивает шар (--w-fill на каждом слове,
+   0…1). aria-hidden на копии — screen reader читает текст один раз,
+   из настоящего узла h2. */
+.atlas-geo {
+  position: relative;
+  font-weight: 700;
+  font-size: var(--fs-7); line-height: 1.04;
+  letter-spacing: -0.035em; text-transform: uppercase;
+  color: var(--ink-faint); margin-top: 4px;
+  transition: color 0.5s var(--ease);
+}
+.atlas-geo-fill {
+  position: absolute; inset: 0; z-index: 1;
+  color: var(--ink);
+}
+.atlas-geo-word {
+  display: inline-block;
+  clip-path: inset(0 calc((1 - var(--w-fill, 0)) * 100%) 0 0);
+}
+.atlas-head .eyebrow,
+.atlas-head .lead { transition: color 0.5s var(--ease); }
+.atlas-head .lead { margin-top: clamp(14px, 1.6vw, 22px); max-width: 30ch; font-size: var(--fs-2); }
+.atlas-head .pill {
+  position: relative; display: inline-flex; margin-top: clamp(18px, 2.2vw, 28px);
+  border-radius: 0;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: color 0.5s var(--ease), border-color 0.5s var(--ease), box-shadow 0.25s var(--ease);
+}
+.atlas-head .pill:hover, .atlas-head .pill:focus-visible {
+  background: transparent; color: var(--ink); border-color: transparent;
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.atlas-head .pill:hover .btn-corners i, .atlas-head .pill:focus-visible .btn-corners i { opacity: 1; transform: translate(0, 0); }
+
+/* ── Донастройка заголовка под синюю ночь ──
+   Текст светлый уже на чёрном старте (--ink чёрной темы), поэтому
+   здесь не смена тона, а его усиление под сгущающуюся синеву: чуть
+   выше непрозрачность, свой оттенок лазури у номера рубрики. Класс
+   .is-night ставит aboutScene.js, когда ночь набрала силу; переход
+   плавный, поэтому шов смены не читается. */
+.atlas-stage.is-night .atlas-geo { color: rgba(238, 242, 247, 0.34); }
+.atlas-stage.is-night .atlas-geo-fill { color: #eef2f7; }
+.atlas-stage.is-night .atlas-head .eyebrow { color: rgba(238, 242, 247, 0.66); }
+.atlas-stage.is-night .atlas-head .ey-no { color: #4db4e8; }
+.atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(238, 242, 247, 0.46); }
+.atlas-stage.is-night .atlas-head .lead { color: rgba(238, 242, 247, 0.72); }
+.atlas-stage.is-night .atlas-head .pill { color: #eef2f7; border-color: rgba(238, 242, 247, 0.28); }
+
+/* Светлая схема — тот же приём «усиления», но от тёмного текста, а не
+   от светлого: --ink здесь и так тёмный с самого старта (акт I тоже
+   светлый), .is-night лишь чуть поднимает контраст/непрозрачность и
+   даёт номеру рубрики синий акцент, как и в тёмной версии. Дублируем
+   явно, а не полагаемся на var(--ink) — правила выше жёстко прибиты
+   к белому и наследование их не пересчитает. */
+html[data-scheme="light"] .atlas-stage.is-night .atlas-geo { color: rgba(20, 23, 28, 0.40); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-geo-fill { color: #14171c; }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .eyebrow { color: rgba(20, 23, 28, 0.72); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no { color: #0369a1; }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(20, 23, 28, 0.50); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .lead { color: rgba(20, 23, 28, 0.78); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-head .pill { color: #14171c; border-color: rgba(20, 23, 28, 0.32); }
+
+/* ── Стеклянная карточка-факт ──
+   Одна панель на все три факта: они лежат друг на друге в grid-слоте
+   (высота слота = самая высокая карточка), видима ровно одна — её ведёт
+   скролл. Панель НЕ уходит и держится на том же месте всю сцену: тёмное
+   стекло на чёрной заливке акта I, свой ледяной рецепт под синей ночью
+   акта II (см. `.is-night .atlas-deck` ниже). */
+.atlas-deck {
+  position: absolute; z-index: 3;
+  right: var(--gut); top: 50%; transform: translateY(-50%);
+  width: min(40vw, 460px);
+  padding: clamp(20px, 2vw, 30px);
+  transition: background 0.6s var(--ease), box-shadow 0.6s var(--ease), border-color 0.6s var(--ease);
+}
+/* Подписывает саму карточку, а не сцену: раньше «Ключевые цифры» стояли
+   заголовком слева, над строкой про Россию, — и цифры справа оставались
+   без подписи в глазах читателя. */
+.atlas-deck-kicker {
+  display: block; margin-bottom: clamp(12px, 1.4vw, 18px);
+  font-size: var(--fs-0); letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Ночная тональность стекла — свой рецепт поверх общего.
+   Общий тёмный рецепт (38% почти-чёрного) в акте I в самый раз: под
+   стеклом нейтральная чёрная заливка, разбавлять нечего. Когда сцена
+   светлеет к графиту, стекло берёт ровно тот же рецепт, что у
+   `[data-theme="graphite"]` (themes.css) — единственная тёмная
+   заливка на сайте, кроме чёрной; никакого цветного (синего) тона
+   здесь больше нет. */
+.atlas-stage.is-night .atlas-deck {
+  --glass-bg:    rgba(30, 37, 47, 0.38);
+  --glass-blur:  20px;
+  --glass-sat:   180%;
+  --glass-hl:    rgba(255, 255, 255, 0.22);
+  --glass-lo:    rgba(0, 0, 0, 0.32);
+  --glass-line:  rgba(255, 255, 255, 0.16);
+  --glass-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 24px 64px -14px rgba(0, 0, 0, 0.5);
+}
+/* Светлая схема: карточка над светло-синей .atlas-night (см. выше) —
+   тот же общий светлый рецепт стекла, что у html[data-scheme="light"]
+   в остальном сайте (см. «СВЕТЛАЯ СХЕМА»), а не тёмный ледяной. Акт I
+   уже на нём же (общий рецепт из html[data-scheme="light"]) — здесь
+   просто явный повтор, чтобы .is-night не откатывал обратно на дефолт
+   :root (та же причина, по которой темна версия дублирует его выше). */
+html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
+  --glass-bg:    rgba(255, 255, 255, 0.48);
+  --glass-blur:  20px;
+  --glass-sat:   180%;
+  --glass-hl:    rgba(255, 255, 255, 0.85);
+  --glass-lo:    rgba(20, 23, 28, 0.10);
+  --glass-line:  rgba(20, 23, 28, 0.14);
+  --glass-shadow:
+    0 1px 2px rgba(20, 23, 28, 0.06),
+    0 16px 48px -12px rgba(20, 23, 28, 0.16);
+}
+
+.atlas-slot { display: grid; }
+.atlas-card {
+  grid-area: 1 / 1;
+  display: grid; grid-template-columns: auto 1fr; gap: clamp(16px, 1.6vw, 26px);
+  align-items: start;
+  opacity: 0; transition: opacity 0.45s var(--ease);
+}
+.atlas-card.is-on { opacity: 1; }
+.ac-shot {
+  width: clamp(84px, 7vw, 120px); aspect-ratio: 1;
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line); background: var(--panel-2);
+}
+.ac-shot img { width: 100%; height: 100%; object-fit: cover; }
+.ac-big {
+  font-weight: 700; font-variant-numeric: tabular-nums;
+  font-size: clamp(2rem, 3.4vw, 3rem); line-height: 0.94; letter-spacing: -0.035em;
+  color: var(--brand); display: inline-flex; align-items: baseline; gap: 0.16em;
+}
+.ac-unit { font-size: 0.3em; font-weight: 500; letter-spacing: 0.04em; color: var(--ink-dim); text-transform: uppercase; }
+.ac-kicker {
+  display: block; font-family: var(--font-mono);
+  font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-faint); margin-top: 12px;
+}
+.ac-text { color: var(--ink-dim); line-height: 1.6; margin-top: 12px; font-size: var(--fs-2); }
+
+/* нижняя строка панели: счётчик и стрелки листания */
+.atlas-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: clamp(18px, 2vw, 26px); gap: var(--s-2);
+}
+.atlas-count { font-size: var(--fs-1); letter-spacing: 0.06em; }
+.atlas-count b { font-weight: 500; color: var(--ink); }
+.atlas-count i { font-style: normal; color: var(--ink-faint); }
+.atlas-nav { display: flex; gap: 8px; }
+.atlas-arrow {
+  width: 38px; height: 34px; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); border-radius: 0;
+  background: transparent; color: var(--ink); cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, opacity 0.2s;
+}
+.atlas-arrow svg { width: 18px; height: 18px; }
+.atlas-arrow:hover { background: var(--brand-soft); border-color: var(--brand-line); }
+.atlas-arrow:active { transform: scale(0.94); }
+.atlas-arrow[disabled] { opacity: 0.3; cursor: default; }
+
+/* ── Фолбэк: без WebGL, при reduced-motion или экономии трафика ──
+   Прибивать сцену нечем и незачем — шар не рисуется. Обёртка схлопывается
+   в обычный поток: заголовок раздела и три факта списком, без синевы.
+   Класс ставит aboutScene.js. */
+.atlas.is-static { height: auto; }
+.atlas.is-static .atlas-stage {
+  position: static; height: auto; overflow: visible;
+  padding: 0 var(--gut) var(--section-y);
+}
+.atlas.is-static .atlas-night,
+.atlas.is-static .atlas-canvas,
+.atlas.is-static .atlas-bar { display: none; }
+.atlas.is-static .atlas-copy {
+  position: static; right: auto; top: auto;
+}
+/* Заливку вести нечем без скролл-прогресса (aboutScene.js дальше setup'а
+   не идёт в этом режиме) — строка просто показывается уже прочитанной. */
+.atlas.is-static .atlas-geo { color: var(--ink); }
+.atlas.is-static .atlas-geo-fill { display: none; }
+.atlas.is-static .atlas-deck {
+  position: static; transform: none; width: auto;
+  margin-top: clamp(28px, 5vh, 56px);
+}
+.atlas.is-static .atlas-slot { display: block; }
+.atlas.is-static .atlas-card { opacity: 1; }
+.atlas.is-static .atlas-card + .atlas-card {
+  margin-top: clamp(20px, 3vh, 32px);
+  padding-top: clamp(20px, 3vh, 32px); border-top: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .atlas { height: 188svh; }
+  /* колонка уводится во всю ширину, карточка ложится на низ кадра */
+  .atlas-copy { right: var(--gut); }
+  .atlas-deck {
+    top: auto; bottom: clamp(24px, 6vh, 64px);
+    left: var(--gut); right: var(--gut); width: auto;
+    transform: none;
+  }
+  /* на узкой панели остаются число, кикер и превью — абзац снимаем */
+  .ac-text { display: none; }
+}
+
+/* Блок ГЛОБУС отдельным разделом больше не стоит: земной шар — это
+   часть сцены «О компании» (см. .atlas выше). Стили сцены глобуса,
+   подписи и синей ночи переехали туда. */
+

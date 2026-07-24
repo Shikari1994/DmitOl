@@ -1,0 +1,429 @@
+/* ════════════════════════════════════════════════
+   ПРОГРАММНЫЙ КОМПЛЕКС · DRILL MONITOR
+   ════════════════════════════════════════════════ */
+/* Шапка раздела на общей сетке: заголовок держит левую половину,
+   приписка встаёт с восьмой колонки. Разрыв в одну колонку между ними
+   намеренный — в швейцарской раскладке пустая колонка работает как
+   разделитель, и он читается лучше вертикальной черты. Эйбрау вынесен
+   из сетки отдельной строкой сверху (как у .prod-head) — иначе его
+   переменная высота (перенос на 2 строки на узких экранах) сбивала бы
+   выравнивание заголовка и лида по общей строке. */
+.sw-head {
+  align-items: start; margin-bottom: var(--s-6);
+  row-gap: var(--s-4);
+}
+.sw-head > *:first-child {
+  grid-column: 1 / span 6;
+  /* Заголовок (h-title) не должен заходить за временную розовую
+     .align-guide (calc(100%/3) от .page-shell). Ячейка сетки (6 из 12
+     колонок) сама по себе шире этой отметки, поэтому граница — не через
+     span/%, а абсолютной длиной: min(100vw, var(--maxw)) — это и есть
+     ширина .page-shell, смещение центрирования (100vw−W)/2 у неё и у
+     .container одинаковое и в разности сокращается, остаётся
+     W/3 − gut — та же формула, что и в других подогнанных секциях. */
+  max-width: calc(min(100vw, var(--maxw)) / 3 - var(--gut));
+  /* Надстрочный интервал строки (half-leading) у .h-title (line-height
+     1.04) и .lead (1.7) разный, из-за чего их первая строка стартует на
+     разной высоте при равном верхнем крае колонок. Вместо подогнанного
+     на глаз px убираем half-leading у каждого формулой
+     (1 − line-height) / 2 × его собственный кегль — тогда текст обоих
+     блоков всегда упирается в верх строки сетки, на любом кегле. */
+  margin-top: calc((1 - 1.04) * 0.5em);
+}
+.sw-head > *:last-child  { grid-column: 8 / span 5; }
+.sw-head-side { display: flex; flex-direction: column; gap: 26px; }
+.sw-head-side .lead { max-width: 480px; margin-top: calc((1 - 1.7) * 0.5em); }
+.sw-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* Видео-плашка «мобильной экосистемы», буквальный перенос из Dmit
+   (секция «МОБИЛЬНАЯ ЭКОСИСТЕМА» перед скриншотами) — ролик на фоне и
+   три плитки с текстом поверх него внизу кадра. Заголовок Dmit
+   («Контроль параметров в любой точке мира») не переносится: здесь
+   его роль уже играет .sw-head выше. Без рамки и скругления (в отличие
+   от .sw-frame ниже) — верх/низ растворяются градиентом-блюром в фон,
+   любая обводка контейнера возвращала бы жёсткую границу поверх этого
+   фейда. */
+.sw-eco {
+  position: relative; overflow: hidden;
+  height: clamp(380px, 36vw, 520px);
+  margin-top: clamp(28px, 3vw, 40px);
+  display: flex; align-items: flex-end;
+}
+.sw-eco-media { position: absolute; inset: 0; z-index: 0; }
+.sw-eco-video {
+  width: 100%; height: 100%; object-fit: cover;
+}
+/* .sw-eco — обычный участок #software, ничем не заперт, идёт вместе
+   с общим тумблером секции (2026-07-22).
+   ::before/::after ниже по-прежнему растворяют верх/низ в var(--surface)
+   без изменений в самой формуле: в тёмной схеме это чёрный #141414
+   (виден тёмный ecosystem.mp4), в светлой — #eef0f3 (виден white.mp4) —
+   оба ролика подмешиваются в цвет реального фона секции на своей схеме.
+   Светлый ролик прячется через display:none, поэтому не грузится
+   лениво (video[data-lazy-video] в motion.js наблюдает через
+   IntersectionObserver, а у display:none нет геометрии — грузится
+   только после переключения темы). */
+.sw-eco-video--light { display: none; }
+html[data-scheme="light"] .sw-eco-video--dark { display: none; }
+html[data-scheme="light"] .sw-eco-video--light { display: block; }
+.sw-eco-media::before, .sw-eco-media::after {
+  content: ''; position: absolute; inset-inline: 0; z-index: 1; height: 24%;
+  pointer-events: none;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.sw-eco-media::before {
+  top: 0;
+  /* var(--surface), не --bg-raised: --bg-raised — это цвет приподнятой
+     панели (#1c1c1c), а реальный фон секции — var(--surface) (#141414).
+     Плашка красилась не в тот серый, и на границе была видна граница —
+     разница в 1-2 шага, но заметная на градиентном затухании к 0%. */
+  background: linear-gradient(to bottom, var(--surface), transparent);
+  mask-image: linear-gradient(to bottom, black, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+}
+.sw-eco-media::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--surface), transparent);
+  mask-image: linear-gradient(to top, black, transparent);
+  -webkit-mask-image: linear-gradient(to top, black, transparent);
+}
+
+.sw-eco-tiles {
+  position: relative; z-index: 2;
+  /* Первая колонка подогнана так, чтобы правый край первой плитки шёл
+     точно по временной розовой .align-guide (calc(100%/3) от
+     .page-shell). .sw-eco сидит в .container (поля --gut), а у самих
+     .sw-eco-tiles есть свой padding — тот же вывод, что у .sw-slide в
+     Software: (100% − gut − padding) / 3, где 100% — контент-бокс
+     .sw-eco-tiles. Второй и третий тайл делят остаток поровну (1fr 1fr). */
+  display: grid;
+  grid-template-columns: calc((100% - var(--gut) - clamp(16px, 2vw, 24px)) / 3) 1fr 1fr;
+  gap: clamp(12px, 1.4vw, 18px);
+  width: 100%;
+  padding: clamp(16px, 2vw, 24px);
+}
+/* Свой, более прозрачный --glass-bg поверх общего рецепта .glass:
+   дефолтный (0.38 тёмный / 0.48 светлый) плотнее, чем у хиро и .rig-row
+   на тех же видео-фонах — здесь тот же уровень (sections/hero.css, sections/equipment.css),
+   чтобы три набора карточек поверх видео читались одним стеклом. */
+.sw-eco-tile {
+  --glass-bg: rgba(20, 20, 20, 0.07);
+  padding: 18px 20px;
+}
+html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); }
+.sw-eco-tile-n {
+  display: block; margin-bottom: 8px;
+  font-size: var(--fs-0); letter-spacing: 0.14em; color: var(--accent);
+}
+.sw-eco-tile p { font-size: var(--fs-2); line-height: 1.55; color: var(--text-dim); }
+
+@media (max-width: 900px) {
+  .sw-eco { height: auto; }
+  .sw-eco-tiles { grid-template-columns: 1fr; }
+}
+
+/* Один кадр на всю ширину секции, вкладки переключают модуль. Раньше
+   пять скриншотов делили сетку на герой-плитку (2 доли) и четыре
+   огрызка сбоку — КНБК (2.70:1) в узкой колонке превращался в
+   нечитаемую полоску, читаемым оставался только один кадр из пяти.
+   Теперь у каждого модуля по очереди вся ширина: .sw-frame держит
+   рамку и приборный уголок instr-frame один раз, а не пять — активная
+   .sw-slide подставляет свой скриншот через display, снятые с рамки
+   .bento-bar/.bento-body работают как раньше, просто внутри вкладки. */
+.sw-stage { margin-top: clamp(28px, 3vw, 40px); }
+
+/* Вкладки вторят собственной верхней навигации Drill Monitor (см.
+   app-drilling.webp) — тот же приём подчёркивания, что у scrollspy
+   в шапке (.nav-links a.active), не новая форма. */
+.sw-tabs {
+  display: flex; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: clamp(20px, 2.2vw, 30px);
+}
+.sw-tab {
+  position: relative;
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 0 clamp(14px, 1.6vw, 22px) 14px;
+  margin-right: clamp(8px, 1vw, 16px);
+  background: none; border: 0; cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--text-dim);
+  transition: color 0.25s;
+}
+.sw-tab:first-child { padding-left: 0; }
+.sw-tab::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 2px; background: var(--accent);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease);
+}
+.sw-tab:hover { color: var(--text-dim); }
+.sw-tab.is-active { color: var(--ink); }
+.sw-tab.is-active::after { transform: scaleX(1); }
+.sw-tab-n { color: var(--live); }
+.sw-tab-label { font-family: var(--font-text); letter-spacing: 0.01em; }
+
+@media (max-width: 640px) {
+  /* Пять вкладок в один ряд на узком экране не помещаются без переноса
+     на вторую строку — вместо этого лента прокручивается горизонтально,
+     как собственная вкладочная навигация приложения на телефоне. */
+  .sw-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .sw-tabs::-webkit-scrollbar { display: none; }
+  .sw-tab { flex: 0 0 auto; }
+}
+
+.sw-frame {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--line); border-radius: 0;
+  background: var(--bg-raised);
+  box-shadow: 0 40px 80px -34px rgba(0,0,0,0.7);
+}
+/* 2026-07-22: сама рамка (.bento-shot внутри) уже светлая — но эта тень
+   вокруг НЕЁ, не на скриншоте, до сих пор была плоским чёрным 70% вне
+   зависимости от схемы. На тёмной секции терялась в фоне, на светлой
+   читалась полосой/ореолом рядом с кадром, а не тенью под ним — тот же
+   диагноз, что у .mob-phone img и .bento-shot выше. */
+html[data-scheme="light"] .sw-frame {
+  box-shadow: 0 30px 70px -30px rgba(20, 23, 28, 0.20);
+}
+
+/* Скрытые вкладки не участвуют в раскладке (display: none), поэтому
+   рамка всегда высотой ровно в кадр активного модуля — даже когда
+   пропорции соседних скриншотов различаются в разы (1.72:1 у пульта
+   бурения против 2.70:1 у таблицы КНБК).
+
+   Внутри — не стопка «шапка на весь экран сверху, подпись строкой
+   снизу» (там огромный кадр отрывался от своей же подписи и текст
+   читался поодаль от того, что описывает), а асимметричный сплит:
+   скриншот и подпись сидят рядом, колонками.
+
+   Колонка подписи сужена до содержимого (260–380px, не доля от
+   ширины) — освободившуюся ширину забирает скриншот (1fr).
+   align-items: start — обе колонки садятся на общий верхний край,
+   ни одна не тянется и не центрируется по высоте соседа: у
+   скриншота своя, у подписи своя. */
+.sw-slide { display: none; position: relative; }
+/* Подпись переставлена влево, скриншот вправо (2026-07-21, разметка
+   поменяна местами в Software.astro — .bento-body теперь первая в DOM,
+   .sw-slide-shot вторая; без этого grid-auto-placement уводил второй
+   элемент на новую строку, если у него column меньше, чем у первого).
+   Граница колонок — временная розовая .align-guide, calc(100%/3) от
+   .page-shell. Секция сидит в .container с полями --gut с обеих сторон
+   (в отличие от #how/#economics, где сплит без контейнера), поэтому в
+   локальных % (100% = ширина .sw-slide = W − 2·gut) та же абсолютная
+   точка даёт (100% − gut) / 3: W/3 = Wl/3 + 2gut/3, первая колонка
+   (текст) = W/3 − gut = (Wl − gut)/3. gap между колонками убран —
+   картинка должна начинаться ровно на линии, без зазора; воздух перед
+   ней теперь только справа у текста (см. margin .bento-body ниже). */
+.sw-slide.is-active {
+  display: grid;
+  grid-template-columns: calc((100% - var(--gut)) / 3) 1fr;
+  align-items: start;
+  gap: 0;
+  animation: sw-slide-in 0.35s var(--ease);
+}
+@keyframes sw-slide-in { from { opacity: 0 } to { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .sw-slide.is-active { animation: none; }
+}
+
+.sw-slide-shot { position: relative; overflow: hidden; min-width: 0; }
+
+/* Кадр держит СВОЮ пропорцию (задана на .bt-<key> ниже) и никогда не
+   растягивается флексом — высота считается из width: 100% и
+   aspect-ratio, а не выдаётся родителем. object-fit: contain остаётся
+   подстраховкой на случай долей пикселя, а не рабочим механизмом:
+   рамка и кадр по построению совпадают. */
+.bento-shot {
+  display: block; width: 100%; height: auto; z-index: 0;
+  object-fit: contain; object-position: center;
+  background: #05080f;
+}
+/* 2026-07-22: сам скриншот/видео (реальный тёмный UI прибора) не
+   перекрашивается — это решение остаётся в силе (см. память). Но у
+   app-*.webp/mp4 внутри собственного кадра есть прозрачные поля вокруг
+   устройств (ноутбук+телефон не заполняют прямоугольник целиком) — в
+   них просвечивал этот фон-заглушка #05080f. На тёмной секции он
+   сливался с окружением, на светлой читался чёрным ореолом вокруг
+   мокапа. Здесь — не перекраска картинки, а замена подложки под её
+   прозрачными полями на тон окружающей светлой поверхности. */
+html[data-scheme="light"] .bento-shot { background: var(--surface); }
+.bt-drilling .bento-shot { aspect-ratio: 1.724; }
+.bt-survey   .bento-shot { aspect-ratio: 1.812; }
+.bt-bha      .bento-shot { aspect-ratio: 2.698; }
+.bt-logging  .bento-shot { aspect-ratio: 1.835; }
+.bt-park     .bento-shot { aspect-ratio: 2.258; }
+
+/* верхний readout-бар — тонкий оверлей поверх скриншота */
+/* Бар поверх скриншота. Стеклянный, а не градиентный: градиент вниз
+   притемнял верх кадра и на светлых снимках всё равно не спасал подпись,
+   а стекло размывает ровно то, что под ним, и подпись читается на любом
+   кадре. Кромки только нижняя — бар прижат к трём краям кадра.
+
+   Тёмный ВСЕГДА, вне зависимости от html[data-scheme]: бар лежит не на
+   заливке секции, а на самом скриншоте Drill Monitor (.sw-slide-shot),
+   а тот тёмный по построению (реальный UI прибора, картинкой не
+   перекрашивается, см. .bento-shot ниже). 2026-07-22: до этого момента
+   всю тьму держала секция целиком (`black-fixed`), затем — вложенный
+   data-theme="graphite" на .sw-stage; оба подхода красили заодно и
+   вкладки, и текст описания, которым полагается идти светлыми вместе
+   с остальным #software. Здесь — точечный оверрайд ровно на баре: те
+   же токены, что раньше жили в :root/[data-theme="black"], объявлены
+   локально и потому не зависят от того, что происходит выше по дереву. */
+.bento-bar {
+  --ink:         #eef2f7;  --text:       #eef2f7;
+  --ink-dim:     rgba(238,242,247,0.66);  --text-dim:   rgba(238,242,247,0.66);
+  --ink-faint:   rgba(238,242,247,0.46);  --text-faint: rgba(238,242,247,0.46);
+  --glass-bg:     rgba(20,20,20,0.38);
+  --glass-solid:  #1e1e1e;
+  --glass-line:   rgba(255,255,255,0.14);
+  --glass-hl:     rgba(255,255,255,0.30);
+  --glass-lo:     rgba(0,0,0,0.22);
+  --glass-shadow: 0 1px 2px rgba(0,0,0,0.30), 0 16px 48px -12px rgba(0,0,0,0.55);
+  position: absolute; top: 0; left: 0; right: 0; z-index: 3;
+  display: flex; align-items: center; gap: var(--s-1);
+  padding: 12px 16px;
+  border-radius: 0;
+  border-top: 0; border-left: 0; border-right: 0;
+  border-bottom-color: var(--glass-line);
+  box-shadow: inset 0 1px 0 var(--glass-hl);
+  contain: paint;
+}
+.bento-kicker {
+  margin-left: 12px; font-size: var(--fs-0); letter-spacing: 0.16em;
+  color: var(--text-faint); text-transform: uppercase;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+}
+.bento-live {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.16em;
+  color: var(--ok); text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+}
+.bento-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+
+/* подпись — колонка рядом со снимком, не подвал под ним. Плоская,
+   без собственного фона/рамки: обрамление уже даёт .sw-frame вокруг
+   всего кадра, вторая рамка поверх неё была бы лишней. */
+.bento-body {
+  position: relative; z-index: 3;
+  padding: clamp(20px, 2.2vw, 30px) clamp(18px, 2vw, 26px);
+  /* Было 0 слева (соседствовал со скриншотом через grid gap, свой отступ
+     нужен только от правого края рамки). Теперь подпись слева, скриншот
+     справа: gap между колонками снят (картинка должна начинаться ровно
+     на линии-границе), весь воздух между текстом и линией — здесь,
+     margin-right. */
+  margin: clamp(16px, 2vw, 24px);
+  min-width: 0;
+}
+.bento-body h3 {
+  font-weight: 700; letter-spacing: -0.02em; line-height: 1.16;
+  font-size: var(--fs-3); margin-bottom: 0;
+}
+.bento-body p {
+  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.6;
+  max-width: 56ch; margin-top: var(--s-1);
+}
+.bento-body .tag-row { margin-top: 16px; }
+
+/* ── Жизненный цикл оборудования ──
+   Продолжение раздела, а не новая секция: тот же чёрный фон, отбивка
+   сверху отделяет его от кадра с вкладками.
+
+   2026-07-21: раньше — колонки с волосяной чертой, плашек намеренно не
+   было («спорили бы с кадром за внимание»). По просьбе — обратно в
+   карточки, для единого языка с .bento-body и .sw-eco-tile выше:
+   раз в разделе уже есть стеклянные карточки, разнобой «тут карточка,
+   тут просто колонка» читается сильнее, чем конкуренция с кадром за
+   внимание. Разделитель — gap между карточками, а не border-left. */
+.sw-life {
+  margin-top: clamp(48px, 5.5vw, 84px);
+  padding-top: clamp(32px, 3.5vw, 52px);
+  border-top: 1px solid var(--line);
+}
+.sw-life-head { margin-bottom: clamp(28px, 3vw, 44px); }
+.sw-life-kicker {
+  display: block; margin-bottom: 14px;
+  font-size: var(--fs-0); letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent);
+}
+.sw-life-title {
+  font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;
+  max-width: 22ch;
+}
+.sw-life-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2vw, 24px);
+}
+.sw-life-item {
+  padding: clamp(22px, 2.4vw, 30px);
+  /* Рамка для .sw-life-sheen ниже: блик — реальный узел внутри карточки,
+     а не декор поверх нее, и обязан обрезаться по её же кромке, не съезжая
+     за скруглённый угол .glass. */
+  position: relative;
+  overflow: hidden;
+}
+/* ── Скролл-подсветка по стеклу ──
+   Сам рецепт .glass (backdrop-filter) на сплошном чёрном фоне ничего не
+   размывает — под карточкой нет контента, и стекло читается просто как
+   тёмная плашка с рамкой. Первая версия этого узла была резкой диагональной
+   полосой (glossy shine-sweep) — но остальное стекло сайта (nav, bento-bar)
+   матовое, и чёткий блик на его фоне читался чужеродно глянцевым.
+   Метафора заменена: не отражение НА поверхности, а рассеянный свет,
+   будто движущийся ЗА матовым стеклом. Поэтому форма мягкая и бесформенная
+   (radial + сильный blur, а не полоса с ровными краями), а mix-blend-mode
+   вместо простой прозрачности — пятно проступает сквозь матовость, а не
+   ложится поверх неё отдельным слоем.
+   Движение ведёт scripts/motion.js (scrub по прогрессу скролла карточки
+   через вьюпорт, без цикла, без курсора) — здесь только форма и цвет.
+   В покое (opacity 0) и без JS узел не виден вовсе. */
+.sw-life-sheen {
+  position: absolute;
+  top: -50%; bottom: -50%; left: -35%;
+  width: 65%;
+  background: radial-gradient(closest-side, var(--glass-hl), transparent 72%);
+  filter: blur(28px);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  pointer-events: none;
+}
+.sw-life-n {
+  display: block; margin-bottom: 16px;
+  font-size: var(--fs-0); letter-spacing: 0.16em; color: var(--text-faint);
+}
+.sw-life-item h4 {
+  font-size: var(--fs-2); font-weight: 600;
+  letter-spacing: -0.01em; line-height: 1.3; margin-bottom: 12px;
+}
+.sw-life-item p {
+  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7;
+}
+
+/* Три колонки текста по 40 слов на планшете дают полосу в 20 символов —
+   читать нечем. Ниже 1180px блок переходит в столбик карточек. */
+@media (max-width: 1180px) {
+  .sw-life-grid { grid-template-columns: 1fr; }
+  .sw-life-title { max-width: none; }
+}
+
+@media (max-width: 900px) {
+  /* Колонок нет — раскладывать нечего: сетка распускается в поток,
+     и спаны обязаны сняться вместе с ней, иначе блок с «grid-column: 8»
+     уедет в несуществующую восьмую колонку. */
+  .sw-head { grid-template-columns: 1fr; gap: var(--s-3); align-items: start; }
+  .sw-head > *:first-child,
+  .sw-head > *:last-child { grid-column: auto; }
+  .sw-head > *:first-child { max-width: none; margin-top: 0; }
+  /* Сплит скриншот/подпись в узкую колонку прожимает кадр слишком узко
+     на планшете — та же причина, по которой .split здесь тоже
+     возвращается в один столбец. Подпись обратно под кадр, полной
+     шириной. */
+  .sw-slide.is-active { grid-template-columns: 1fr; }
+  /* В разметке подпись теперь стоит раньше кадра (см. Software.astro) —
+     на мобильном порядок остаётся прежним, кадр сверху: order возвращает
+     его первым в потоке. */
+  .sw-slide-shot { order: -1; }
+  .bento-body { margin: clamp(16px, 2vw, 24px); }
+  .bento-body p { max-width: none; }
+}
+

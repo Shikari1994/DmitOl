@@ -1,0 +1,42 @@
+/* ════════════════════════════════════════════════
+   BARREL · сборка стилей GTN
+   ────────────────────────────────────────────────
+   Единственная точка входа CSS (её импортирует Layout.astro). Порядок
+   @import НИЖЕ повторяет прежний порядок секций внутри монолитного
+   index.css один-в-один — а в CSS порядок объявления и есть каскад.
+   Поэтому переставлять строки нельзя: партиалы независимы по смыслу,
+   но не по приоритету. Файлы лежат по полочкам:
+
+     tokens / themes / scheme-light / base / glass  — фундамент;
+     sections/*                                     — по разделу страницы;
+     responsive / a11y / mobile-polish              — сквозные слои,
+       намеренно стоят в тех же местах, где стояли в исходнике.
+   ════════════════════════════════════════════════ */
+
+/* ── Фундамент ── */
+@import './tokens.css';        /* :root — токены дизайн-системы + стекло */
+@import './themes.css';        /* [data-theme] — темы секций */
+@import './scheme-light.css';  /* html[data-scheme="light"] — светлая схема */
+@import './base.css';          /* reset, типографика, контейнер, сетка, кнопки, marquee */
+@import './glass.css';         /* рецепт стекла и фолбэки */
+
+/* ── Разделы страницы (порядок = сверху вниз по макету и по каскаду) ── */
+@import './sections/nav.css';
+@import './sections/atlas.css';        /* «О компании» · прибитая сцена глобуса */
+@import './sections/hero.css';
+@import './sections/about.css';
+@import './sections/chips.css';
+@import './sections/how.css';
+@import './sections/economics.css';
+@import './sections/services.css';
+@import './sections/footer.css';
+@import './sections/equipment.css';
+@import './sections/specs-drawer.css';
+@import './responsive.css';            /* стоял между specs-drawer и software — так и оставлен */
+@import './sections/software.css';
+@import './sections/software-signature.css';
+@import './sections/mobile.css';
+@import './sections/instrument.css';   /* приборный слой: фрейм, LED, каротаж */
+@import './a11y.css';
+@import './mobile-polish.css';
+@import './sections/side-nav.css';

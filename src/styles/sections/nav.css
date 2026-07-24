@@ -1,0 +1,174 @@
+/* ════════════════════════════════════════════════
+   НАВИГАЦИЯ
+   ════════════════════════════════════════════════ */
+/* Шапка живёт в той же колоночной сетке, что и линии --rail-*:
+   каждый пункт меню начинается сразу за своей направляющей.
+   Поэтому боковых полей у самой шапки нет — их несут крайние
+   ячейки, иначе проценты считались бы от content-box и меню
+   разъехалось бы с линиями. */
+nav.nav {
+  /* left/right: 0 растягивают полосу на весь вьюпорт, а max-width +
+     margin: auto тут же её обрезают и центрируют — тот же трюк, что
+     держит .page-shell, но для fixed-элемента, у которого центрирующий
+     предок не работает по определению. Иначе на широком мониторе шапка
+     осталась бы во всю ширину экрана поверх зауженных секций. */
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  max-width: var(--maxw); margin: 0 auto;
+  display: grid;
+  grid-template-columns: var(--rail-1) repeat(5, calc((var(--rail-6) - var(--rail-1)) / 5)) 1fr;
+  align-items: center;
+  padding: 22px 0;
+  /* 2026-07-21: раньше шапка была прозрачной, пока страницу не
+     проскроллят на 40px (см. .scrolled ниже) — пользователь явно
+     попросил не «исчезать» при запуске: пункты меню должны читаться
+     сразу поверх hero-видео, а не только после скролла. Стеклянная
+     заливка и геометрия полосы (только нижняя кромка, без скруглений
+     и боковых линий — крайним ячейкам сетки нечего скруглять) теперь
+     постоянные; .scrolled ниже отвечает только за сжатие паддинга. */
+  border-radius: 0; border-top: 0; border-left: 0; border-right: 0;
+  border-bottom: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 var(--glass-hl);
+  transition: padding 0.4s var(--ease), background 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+/* Внешняя тень-отбивка — только после скролла: у самого верха страницы
+   под шапкой ещё нет контента, который ей нужно «отрывать» от полосы,
+   а сама тень поверх hero-видео читалась плитой/зазором (жалоба
+   пользователя на «зазор» между шапкой и плиткой). */
+nav.nav.scrolled {
+  padding: 14px 0;
+  box-shadow:
+    inset 0 1px 0 var(--glass-hl),
+    0 12px 32px -16px rgba(0,0,0,0.5);
+}
+
+/* ── Шапка перекрашивается под тему секции, проходящей под ней ──
+   data-theme проставляет motion.js: токены темы наследуются, и вместе
+   с --ink шапка получает текст в тон текущей секции. Заливка стеклянная
+   всегда (см. выше) — здесь только цвет текста/иконок. */
+nav.nav[data-theme] { color: var(--ink); }
+nav.nav[data-theme] .nav-burger span { background: var(--ink); }
+.nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; padding-left: var(--gut); }
+.nav-logo img { height: 34px; width: auto; }
+.nav-logo-text { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+/* ul растворяется, чтобы каждый li стал ячейкой сетки шапки */
+.nav-links { display: contents; list-style: none; }
+.nav-links li { min-width: 0; padding-left: clamp(10px, 1vw, 18px); }
+.nav-links a { position: relative; color: var(--text-dim); text-decoration: none; font-size: var(--fs-1); letter-spacing: 0.04em; font-weight: 500; transition: color 0.25s; white-space: nowrap; }
+.nav-links a::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 100%; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease); }
+.nav-links a:hover { color: var(--text); }
+.nav-links a:hover::after { transform: scaleX(1); }
+/* grid-column закреплена явно: после удаления пункта «Магазин ЗИП»
+   (2026-07-21) пунктов меню меньше, чем средних колонок сетки, и без
+   явного номера авто-расстановка утащила бы .nav-tail в первую
+   свободную колонку вместо крайней правой. Span на две колонки (6..конец),
+   а не только последнюю 1fr — часам + переключателю темы + пилюле
+   «Связаться» одной узкой 1fr-колонки не хватало, и хвост вылезал за
+   правый край шапки. */
+.nav-tail { grid-column: 6 / -1; justify-self: end; margin-right: var(--gut); display: flex; align-items: center; gap: clamp(16px, 1.6vw, 26px); }
+/* часы — тот же приборный микро-регистр, что у readout'ов Drill Monitor
+   в hero: mono, разрядка, приглушённый тон, табличные цифры не прыгают
+   по ширине посекундно */
+.nav-clock {
+  font-size: 0.72rem; letter-spacing: 0.08em;
+  color: var(--ink-faint); white-space: nowrap;
+}
+/* Уголки-прицелы на hover — буквально тот же рецепт, что у идентичной
+   пилюли «связаться» в About.astro (.atlas-head .pill): квадратный
+   контур, на hover заливка уходит в прозрачность, а не в белую инверсию
+   базового .pill:hover, и её место занимает синяя inset-рамка + прицелы. */
+/* .pill.nav-cta — не .nav-cta в одиночку: у .pill ниже по файлу тот же
+   уровень специфичности (один класс), и при равенстве побеждает
+   порядок в файле, а не наше намерение — border-radius: 0 просто
+   перебивался бы. Составной селектор поднимает специфичность выше. */
+.pill.nav-cta { position: relative; border-radius: 0; transition: color 0.25s var(--ease), border-color 0.25s var(--ease), box-shadow 0.25s var(--ease); }
+.pill.nav-cta:hover, .pill.nav-cta:focus-visible {
+  background: transparent; color: var(--ink); border-color: transparent;
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.pill.nav-cta:hover .btn-corners i, .pill.nav-cta:focus-visible .btn-corners i { opacity: 1; transform: translate(0, 0); }
+
+/* ─── ТУМБЛЕР СВЕТЛОЙ/ТЁМНОЙ СХЕМЫ ───
+   Состояние живёт в html[data-scheme], а не в собственном классе кнопки:
+   один атрибут на корне разом красит и .theme-toggle в шапке, и его копию
+   в .nav-mobile (scripts/nav.js вешает клик на оба через querySelectorAll,
+   держать их в паре не нужно — атрибут общий). Иконка солнца/луны — какую
+   схему ПОЛУЧИТЕ по клику, не какая активна сейчас: солнце в тёмной теме
+   («нажми — станет светло»), луна в светлой. */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; padding: 0; flex: 0 0 auto;
+  background: transparent; border: 1px solid var(--line-strong);
+  border-radius: 999px; color: var(--ink); cursor: pointer;
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--brand); color: var(--brand); }
+.theme-toggle-icon { width: 17px; height: 17px; }
+.theme-toggle-icon--moon { display: none; }
+html[data-scheme="light"] .theme-toggle-icon--sun { display: none; }
+html[data-scheme="light"] .theme-toggle-icon--moon { display: block; }
+.nav-mobile .theme-toggle { width: 44px; height: 44px; }
+.nav-mobile .theme-toggle-icon { width: 20px; height: 20px; }
+
+/* ─── PILL · маленькая кнопка-таблетка строчными ───
+   Приём первоисточника: единственная «кнопочная» форма на сайте.
+   Всё остальное — линии и типографика, никаких плашек. */
+.pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 18px 10px; border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  font-size: var(--fs-1); font-weight: 500; letter-spacing: 0.01em;
+  color: var(--ink); text-decoration: none; white-space: nowrap;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.pill:hover { background: var(--ink); color: var(--surface, var(--bg)); border-color: var(--ink); }
+.pill--solid { background: var(--brand); border-color: var(--brand); color: #fff; }
+.pill--solid:hover { background: var(--brand-strong); border-color: var(--brand-strong); color: #fff; }
+
+/* Замер: 24px полосок плюс 8px полей давали кнопку 40×32 — единственный
+   орган управления навигацией на телефоне был меньше пальца. Полоски и
+   их ритм те же, увеличена только область нажатия. */
+.nav-burger {
+  display: none; background: none; border: none; cursor: pointer;
+  width: 44px; height: 44px; padding: 0;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 5px; z-index: 101;
+}
+.nav-burger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+.nav-burger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.nav-burger.open span:nth-child(2) { opacity: 0; }
+.nav-burger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* Прокрутка и поля под вырезы: в альбомной ориентации телефона высоты
+   вьюпорта (~390px) на шесть пунктов и пилюлю не хватает, и при
+   justify-content:center панель обрезала крайние пункты без всякой
+   возможности до них добраться. */
+.nav-mobile {
+  display: none; position: fixed; inset: 0;
+  /* Заливка и размытие — из общего рецепта стекла. Здесь только
+     геометрия панели во весь экран: скруглять и обводить нечего,
+     кромок у неё нет. Прежняя заливка была почти непрозрачной (0.97),
+     то есть размытие под ней всё равно не работало; теперь меню и
+     правда стеклянное, а читаемость держит --glass-solid в фоллбэках. */
+  border: 0; border-radius: 0; box-shadow: none;
+  /* Плотность своя, выше панельной. Панель рецепта размером с плашку,
+     и под ней небольшой кусок фона; здесь под стеклом ВСЯ страница —
+     на 0.55 сквозь меню читался бы текст секции, и пункты пришлось бы
+     выискивать. Взамен размытие сильнее: чем плотнее материал, тем
+     дальше от него должен быть виден фон. */
+  background: color-mix(in srgb, var(--glass-solid) 86%, transparent);
+  -webkit-backdrop-filter: blur(28px) saturate(var(--glass-sat));
+          backdrop-filter: blur(28px) saturate(var(--glass-sat));
+  z-index: 99; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s-5);
+  overflow-y: auto; overscroll-behavior: contain;
+  padding:
+    calc(84px + env(safe-area-inset-top)) env(safe-area-inset-right)
+    calc(36px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+}
+.nav-mobile.open { display: flex; }
+.nav-mobile ul { list-style: none; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+/* область нажатия по всей ширине панели, а не по буквам */
+.nav-mobile li { display: flex; }
+.nav-mobile a { color: var(--text); text-decoration: none; font-size: var(--fs-3); font-weight: 600; letter-spacing: 0.04em; opacity: 0.85; transition: opacity 0.2s; padding: var(--s-1) var(--s-3); }
+.nav-mobile a:hover { opacity: 1; }
+

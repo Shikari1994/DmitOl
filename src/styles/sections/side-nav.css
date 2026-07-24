@@ -1,0 +1,111 @@
+/* ════════════════════════════════════════════════
+   БОКОВАЯ НАВИГАЦИЯ · плавающий быстрый переход
+   ────────────────────────────────────────────────
+   Шесть меток вдоль тонкой направляющей — те же
+   номера 01…06, что уже стоят в eyebrow-шапках
+   разделов (see components/SideNav.astro). Панель
+   скрыта на hero (там подсвечивать нечего) и
+   проявляется, как только он уходит за половину
+   экрана — переключает .visible scripts/sideNav.js.
+
+   Подпись у метки — .glass: тот же список плавающей
+   хромы, что у шапки и меню (см. блок «СТЕКЛО» выше),
+   поэтому она получает ту же заливку/блюр/кромку без
+   повторного объявления и попадает в оба фоллбэка
+   (без backdrop-filter, prefers-reduced-transparency)
+   автоматически.
+   ════════════════════════════════════════════════ */
+.side-nav {
+  position: fixed;
+  top: 50%;
+  right: clamp(14px, 2vw, 28px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(6px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.side-nav.visible { opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0); }
+
+.side-nav ul {
+  list-style: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-block: 6px;
+}
+/* направляющая линия за метками — тот же приём, что у --rail-* на фоне страницы */
+.side-nav ul::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 1px;
+  background: var(--line-strong);
+  transform: translateX(-50%);
+}
+
+.side-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  margin: -7px 0;
+}
+
+.side-nav-tick {
+  position: relative; z-index: 1;
+  width: 9px; height: 9px;
+  background: var(--ink-faint);
+  transition: background-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.side-nav a:hover .side-nav-tick,
+.side-nav a:focus-visible .side-nav-tick {
+  background: var(--ink);
+  transform: scale(1.4);
+}
+.side-nav a.active .side-nav-tick {
+  background: var(--accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* подпись всплывает слева от метки — только по hover/фокусу */
+.side-nav-tip {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  font-size: var(--fs-0);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-50%) translateX(6px);
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+}
+.side-nav-tip-num {
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+}
+.side-nav a:hover .side-nav-tip,
+.side-nav a:focus-visible .side-nav-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* На планшете/мобильном полный список разделов уже есть в бургер-меню —
+   боковая панель здесь лишь отъедала бы ширину у зауженного контента. */
+@media (max-width: 1024px) {
+  .side-nav { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-nav, .side-nav-tick, .side-nav-tip { transition: none; }
+}
+

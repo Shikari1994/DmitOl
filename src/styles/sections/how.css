@@ -1,0 +1,42 @@
+/* ════════════════════════════════════════════════
+   КАК РАБОТАЕТ
+   ════════════════════════════════════════════════ */
+/* ── SPLIT · базовая раскладка раздела по направляющим ──
+   Слева прибитая колонка с названием раздела, справа содержимое.
+   Граница колонок совпадает с --rail-2, поэтому текст садится
+   ровно на линию сетки. Центрированных «островков» посреди
+   широкого экрана на странице больше нет нигде. */
+/* Ширина первой колонки подобрана так, чтобы .how-line (см. ниже,
+   left: 27px внутри .split-main) вставала ровно на временную розовую
+   направляющую .align-guide (calc(100%*4/12) от .page-shell — .split
+   идёт во всю его ширину, section/main боковых полей не добавляют).
+   Была --rail-2 (34%), линия оказывалась на 45–75px правее мерной;
+   вычитаем те же отступы (padding-left .split-main + 27px), которыми
+   реально смещена линия, и весь .split-main — точки, текст — сдвигается
+   вместе с ней, а не только сама линия. */
+.split { display: grid; grid-template-columns: calc(100%/3 - clamp(16px, 2vw, 36px) - 27px) 1fr; }
+.split-aside {
+  padding-left: var(--gut); padding-right: clamp(16px, 2vw, 36px);
+  position: sticky; top: clamp(120px, 18vh, 220px); align-self: start;
+}
+.split-title {
+  font-weight: 700; text-transform: uppercase;
+  font-size: var(--fs-6); line-height: 1.06; letter-spacing: -0.03em;
+  margin-top: 18px;
+}
+.split-aside .lead { margin-top: var(--s-3); max-width: none; font-size: var(--fs-2); }
+.split-aside .pill { margin-top: clamp(20px, 2.4vw, 30px); }
+.split-main { padding-left: clamp(16px, 2vw, 36px); padding-right: var(--gut); min-width: 0; }
+.steps { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.how-line { position: absolute; left: 27px; top: 18px; bottom: 18px; width: 1px; background: var(--line); }
+.how-line-fill { position: absolute; left: 27px; top: 18px; width: 1px; height: 0; background: var(--accent); }
+.step { position: relative; display: grid; grid-template-columns: 56px 1fr; gap: var(--s-4); padding: var(--s-3) 0; }
+.step-node { width: 56px; height: 56px; border-radius: 0; position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; background: var(--bg-raised); border: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--fs-2); font-weight: 500; color: var(--ink-faint); transition: color 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease), background-color 0.4s var(--ease); }
+.step.is-visible .step-node {
+  color: var(--accent); background: var(--bg-raised-2); border-color: var(--accent-line);
+  box-shadow: 0 0 0 3px var(--accent-line), 0 0 22px rgba(14,143,212,0.35);
+}
+.step-content { padding-top: 6px; }
+.step h3 { font-size: var(--fs-3); font-weight: 700; margin-bottom: var(--s-1); }
+.step p { font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 62ch; }
+

@@ -1,0 +1,96 @@
+/* ════════════════════════════════════════════════
+   ПРИБОРНЫЙ СЛОЙ · фрейм, LED, каротаж
+   ════════════════════════════════════════════════ */
+
+/* угловые засечки — «прицел/прибор», вписаны внутрь рамки */
+.instr-frame { position: relative; }
+.instr-frame::after {
+  content: ''; position: absolute; inset: 8px; pointer-events: none; z-index: 4;
+  --t: 11px; --c: var(--line-strong);
+  background:
+    linear-gradient(var(--c), var(--c)) left top    / var(--t) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left top    / 1px var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) right top    / var(--t) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right top    / 1px var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom  / var(--t) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom  / 1px var(--t) no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / var(--t) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / 1px var(--t) no-repeat;
+}
+
+/* — пульсирующий LED статуса «LIVE» — */
+@keyframes led-pulse {
+  0%, 100% { opacity: 1;    box-shadow: 0 0 0 0 var(--live-soft); }
+  50%      { opacity: 0.5;  box-shadow: 0 0 0 5px transparent; }
+}
+.bento-live-dot { animation: led-pulse 1.8s var(--ease) infinite; }
+
+/* ── How: «бурящийся» таймлайн с метками глубины ──
+   Свечения сняты: зелёный и ореолы — сигналы прибора, а не украшение
+   интерфейса сайта. Линия и точка идут одним брендовым тоном. */
+.step-depth {
+  display: inline-block; margin-bottom: 8px;
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 0.66rem; letter-spacing: 0.12em; color: var(--brand);
+}
+.how-line-fill::after {
+  content: ''; position: absolute; left: 50%; bottom: -3px; transform: translateX(-50%);
+  width: 9px; height: 9px; border-radius: 50%; background: var(--brand);
+}
+
+/* ── завершение проходки: полоса дошла до низа → «цель достигнута» ── */
+.steps.is-complete .step:last-child .step-node {
+  border-color: var(--brand-line); color: var(--brand);
+}
+/* ── ФИНАЛ ПРОХОДКИ ──
+   Линия дошла до устья → снизу разворачивается правило во всю колонку,
+   за ним поднимается крупная строка. Плашек и рамок нет: событие
+   отбивается типографикой и одной линией, как в первоисточнике.
+   Элементы выходят по очереди, чтобы читалось как «прибытие». */
+.how-done { display: grid; margin-top: clamp(32px, 4vw, 56px); }
+.how-done-rule {
+  height: 1px; background: var(--brand);
+  margin-left: 27px;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.9s var(--ease-out);
+}
+.how-done.show .how-done-rule { transform: scaleX(1); }
+
+.how-done-label, .how-done-title, .how-done-meta {
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+.how-done.show .how-done-label { opacity: 1; transform: none; transition-delay: 0.35s; }
+.how-done.show .how-done-title { opacity: 1; transform: none; transition-delay: 0.48s; }
+.how-done.show .how-done-meta  { opacity: 1; transform: none; transition-delay: 0.62s; }
+
+.how-done-label {
+  margin-top: clamp(16px, 2vw, 24px);
+  padding-left: 27px;
+  font-size: var(--fs-0); letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--brand);
+}
+.how-done-title {
+  font-weight: 700; text-transform: uppercase;
+  font-size: var(--fs-8); line-height: 1.02; letter-spacing: -0.035em;
+  color: var(--ink); margin-top: 12px;
+  padding-left: 27px;
+}
+.how-done-meta {
+  margin-top: clamp(14px, 1.8vw, 22px);
+  padding-left: 27px;
+  font-size: var(--fs-0); letter-spacing: 0.08em; color: var(--ink-faint);
+}
+.how-done-meta b { color: var(--ink); font-weight: 500; }
+
+@media (max-width: 900px) {
+  .split { grid-template-columns: 1fr; gap: clamp(36px, 6vw, 64px); }
+  .split-aside { position: static; padding-right: var(--gut); }
+  .split-main { padding-left: var(--gut); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-live-dot { animation: none; }
+  .how-done { transition: opacity 0.2s; transform: none; }
+}
+
