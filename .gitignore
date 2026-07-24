@@ -15,6 +15,11 @@ whitefon.mp4
 # исходники моделей в корне: на сайт едет только public/globe.glb.
 /*.glb
 
+# неиспользуемые PNG-исходники (в проде только .webp)
+/public/All.png
+/public/Kitbox2.png
+/public/dkd.png
+
 # служебные скрипты/дампы отладочных сессий
 1gemini-code-*.html
 _check_align*.mjs
