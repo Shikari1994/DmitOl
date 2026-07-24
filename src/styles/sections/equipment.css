@@ -133,6 +133,19 @@ html[data-scheme="light"] .prod-head-row { background-color: rgba(255, 255, 255,
   --rn: clamp(32px, 3.2vw, 48px);
   --rg: clamp(20px, 2.6vw, 40px);
   --rp: clamp(24px, 3vw, 40px);
+  /* Единая «порция» роста карточки на hover — по просьбе высота
+     раскрытия у 01/02/04/05/06 должна совпадать с 04 (резистивиметр):
+     --rig-media-h — высота самого кадра (была разной: 46/90/70px у
+     04/05/06 — теперь одно значение, используется всеми тремя ниже),
+     --rig-media-add — она же + общий margin-top кадра (см. .rig-media--
+     accordion img), это и есть фактический прирост высоты строки у
+     04/05/06 (grid-template-rows 0fr→1fr добавляет ровно margin+высоту
+     кадра). У 01/02 (mwd/decoder) кадр — абсолютный оверлей, там строка
+     растёт не по кадру, а через padding у :has(), поэтому там та же
+     --rig-media-add продублирована как прибавка к padding-top/bottom
+     (пополам на каждую сторону), чтобы общий прирост высоты совпал. */
+  --rig-media-h: clamp(36px, 3.6vw, 58px);
+  --rig-media-add: calc(clamp(14px, 1.8vw, 20px) + var(--rig-media-h));
   display: grid;
   /* .rig-text (третья колонка) должна начинаться ровно на розовой
      .align-guide. Считаем в абсолютных единицах: min(100vw, var(--maxw))
@@ -148,7 +161,16 @@ html[data-scheme="light"] .prod-head-row { background-color: rgba(255, 255, 255,
     calc(min(100vw, var(--maxw)) / 3 - var(--gut) - var(--rp) - var(--rn) - (2 * var(--rg)))
     1fr auto;
   align-items: center;
-  gap: var(--rg);
+  /* row-gap: 0, не var(--rg) — .rig-media--accordion (04/05/06) ложится
+     второй, обычно нулевой по высоте grid-строкой ниже строки контента
+     (см. комментарий у .rig-media--accordion выше); gap-шорткод давал
+     row-gap той же ширины, что и column-gap, и он прибавлялся даже к
+     схлопнутой (0fr) строке — карточки с аккордеон-фото были на var(--rg)
+     (~40px) выше карточек без него (01/02/07), хотя контент — тот же.
+     Зазор перед раскрытым фото на hover уже даёт margin-top у самого
+     img (.rig-media--accordion img), row-gap тут не нужен. */
+  column-gap: var(--rg);
+  row-gap: 0;
   width: 100%; text-align: left;
   padding: var(--rp);
   color: inherit; font: inherit;
@@ -203,7 +225,13 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
 .rig-title { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); transition: color 0.3s var(--ease); }
 .rig-row:hover .rig-title, .rig-row:focus-within .rig-title { color: var(--brand); }
 .rig-line { font-size: var(--fs-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
-.rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim); max-width: 62ch; }
+/* min-height: 2 строки текста всегда зарезервированы, даже если описание
+   короче (01 GT-NAVIGATOR — одна строка) — иначе базовая высота карточки
+   у него была на ~6px меньше остальных (align-items: center у .rig-row
+   центрирует контент внутри своей высоты, а сама высота auto-считается
+   по самой высокой колонке; без резерва короткий текст давал более
+   низкую колонку и, как следствие, более низкую строку целиком). */
+.rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; min-height: 3.2em; color: var(--text-dim); max-width: 62ch; }
 
 /* Кнопка-«загрузка»: наведение на саму кнопку (не на всю карточку)
    заливает её белым слева направо — не плавно, а рублеными шагами
@@ -304,64 +332,15 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   .rig-row, .rig-cube-fill, .rig-corners i, .rig-cube-corners i { transition: none; }
 }
 
-/* ── Эксперимент: выезд фото узла (2026-07-24) ──
-   Две карточки пробуют разный приём для одной и той же идеи — сравниваем
-   вживую, что смотрится лучше, дальше решаем по одному варианту на всё. */
-
-/* «mwd» (01) и «decoder» (02): кнопка «Подробнее» убрана, её место в
-   сетке (4-я колонка, auto) занимает .rig-media--flyout тех же габаритов,
-   что раньше был .rig-cube — раскладка строки не съезжает в покое. Само
-   фото сидит внутри абсолютом и крупнее этой плашки: в покое сдвинуто
-   вправо за край и невидимо, на hover/focus едет влево на своё место.
-   .rig-row--flyout сам вырезает overflow:hidden — кадр обрезается по
-   границе своей строки, не вылезая поверх соседних сверху/снизу (был
-   вариант с вылетом наружу, по повторной просьбе убран).
-   Единая высота на оба кадра (decoder почти портрет, mwd — вытянутая
-   диагональ) держит одинаковую полосу обрезки на обеих плашках — по
-   ширине кадры расходятся сами, это ок. */
-.rig-row--flyout { cursor: pointer; appearance: none; -webkit-appearance: none; overflow: hidden; }
-.rig-media--flyout {
-  position: relative;
-  width: clamp(148px, 15vw, 172px);
-  height: 44px;
-  justify-self: end;
-}
-.rig-media--flyout img {
-  position: absolute;
-  top: 50%; right: 0;
-  height: clamp(160px, 15vw, 220px); width: auto; max-width: none;
-  transform: translate(30px, -50%);
-  opacity: 0;
-  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.5));
-  transition: transform 0.5s var(--ease), opacity 0.4s ease;
-  pointer-events: none;
-}
-.rig-row--flyout:hover .rig-media--flyout img,
-.rig-row--flyout:focus-visible .rig-media--flyout img {
-  transform: translate(0, -50%);
-  opacity: 1;
-}
-/* mwd (Kitbox2) широкий кадр (2.8:1) — на общей высоте decoder (до 220px)
-   выезжает слишком широким и тяжёлым, здесь высота меньше. top/right —
-   точечная подгонка по месту (чуть выше и правее общей позиции). */
-.rig-media--mwd img {
-  height: clamp(100px, 10vw, 140px);
-  top: 44%;
-  right: -16px;
-}
-
-/* decoder (dkd) — та же точечная подгонка, только по высоте. */
-.rig-media--decoder img {
-  top: 38%;
-}
-
-/* «resistivimeter» (04) и «pulsator» (06): аккордеон — .rig-media--accordion
-   сам по себе grid с единственным треком-строкой (0fr → 1fr), это
-   стандартный приём анимировать высоту «до auto» без JS: .rig-media-inner
-   внутри со своим overflow:hidden схлопывается вместе с треком, а не
-   обрезается поверх готовой высоты. Фото внутри — обычный translateX +
-   opacity, с небольшой задержкой, чтобы не выезжало раньше, чем
-   откроется место. Высота — по модификатору на конкретный id: кадры
+/* ── Выезд фото узла на hover (2026-07-24) ──
+   Карточки с фото (ACCORDION_IMAGES в Showcase.astro) раздвигаются вниз:
+   .rig-media--accordion сам по себе grid с единственным треком-строкой
+   (0fr → 1fr) — стандартный приём анимировать высоту «до auto» без JS:
+   .rig-media-inner внутри со своим overflow:hidden схлопывается вместе
+   с треком, а не обрезается поверх готовой высоты. Кнопка «Подробнее»
+   остаётся на месте как у остальных плашек. Фото внутри — обычный
+   translateX + opacity, с небольшой задержкой, чтобы не выезжало раньше,
+   чем откроется место. Высота — по модификатору на конкретный id: кадры
    совсем разного формата (pulsator обычный, resistivimeter — кадр 33:1,
    почти линия, общий clamp был бы либо крошечным, либо непомерно
    широким на другом). */
@@ -369,6 +348,14 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   grid-column: 1 / -1;
   display: grid;
   grid-template-rows: 0fr;
+  /* min-height:0 обязателен здесь же, не только на .rig-media-inner ниже:
+     без него сам этот grid-item иногда держит собственный auto-минимум по
+     контенту (известный краевой случай трюка «0fr → 1fr» для анимации до
+     auto-высоты) — родительский .rig-row тогда резервирует лишнюю высоту
+     под строку уже в свёрнутом состоянии. У resistivimeter (кадр 33:1,
+     самый нестандартный формат) это было заметно: плашка 4 по умолчанию
+     оказывалась выше 1/2/3/7, хотя картинка ещё скрыта до hover. */
+  min-height: 0;
   transition: grid-template-rows 0.45s var(--ease);
 }
 .rig-row--accordion:hover .rig-media--accordion,
@@ -382,7 +369,6 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   margin-top: clamp(14px, 1.8vw, 20px);
   transform: translateX(-32px);
   opacity: 0;
-  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.5));
   transition: transform 0.5s var(--ease) 0.05s, opacity 0.4s ease 0.05s;
 }
 .rig-row--accordion:hover .rig-media--accordion img,
@@ -390,20 +376,157 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   transform: translateX(0);
   opacity: 1;
 }
-/* 2026-07-24 №3: левый край кадра прижат к границе плашки — компенсирует
-   собственный padding строки (var(--rp)) отрицательным отступом, только
-   у pulsator (не общее правило .rig-media--accordion, чтобы не подвинуть
-   заодно resistivimeter). */
-.rig-media--pulsator { margin-left: calc(-1 * var(--rp)); }
-.rig-media--pulsator img { height: clamp(90px, 9vw, 130px); }
-.rig-media--resistivimeter img { height: clamp(28px, 3vw, 46px); }
+/* 2026-07-25: pulsator сменил кадр на pulser-rod.webp — тот же приём, что
+   у resistivimeter (плотно обрезанный по объекту, соотношение ~21:1,
+   почти линия), без прежней компенсации отступа под старую композицию
+   кадра — просто высота-клапан, ширина тянется по aspect-ratio. */
+.rig-media--resistivimeter img { height: var(--rig-media-h); }
+/* generator/pulsator раньше были выше resistivimeter (90px/70px против
+   46px) — карточка на hover раскрывалась на разную высоту у каждой из
+   трёх. По прямой просьбе высота раскрытия всех плашек с фото должна
+   совпадать с 04 (резистивиметр), поэтому здесь та же --rig-media-h:
+   картинка просто отображается мельче (ширина тянется по aspect-ratio),
+   а не диктует свою высоту строке. */
+.rig-media--generator img { height: var(--rig-media-h); filter: none; }
+.rig-media--pulsator img { height: var(--rig-media-h); filter: none; }
 
-@media (max-width: 820px) {
-  .rig-media--flyout { justify-self: start; }
+/* .rig-media--right сейчас не используется ни одной карточкой (01 и 02
+   переведены на .rig-media--mwd/--decoder ниже, своя раскладка), оставлен
+   на случай будущей accordion-картинки того же старого типа — узкая
+   полоса, выезжающая справа под текстом, а не крупный оверлей-cover. */
+.rig-media--right { margin-right: calc(-1 * var(--rp)); }
+.rig-media--right img {
+  margin-left: auto;
+  transform: translateX(32px);
+}
+.rig-row--accordion:hover .rig-media--right img,
+.rig-row--accordion:focus-within .rig-media--right img {
+  transform: translateX(0);
+}
+
+/* ── 01 (mwd / GT-NAVIGATOR): та же логика, что у 02 (decoder) ──
+   2026-07-25: по прямой просьбе «исправь первую плашку по такой же
+   логике» — тот же приём, что ниже у .rig-media--decoder: абсолютный
+   оверлей во всю высоту плашки справа, строго обрезанный по её рамкам
+   (overflow:hidden, никакого выноса наружу), картинка залита через
+   object-fit:cover. Строка не раздвигается вниз (грид-трек аккордеона
+   отключён), вместо этого сама плашка чуть подрастает на hover через
+   :has() ниже — так же, как у decoder. gtn-kit.webp (1400×943,
+   альбомная) — object-position подобран так же эмпирически, как у
+   decoder (см. правки «уменьши»/«подними выше» в истории), стартуем с
+   center 50%, дальше подстроится по обратной связи. */
+.rig-media--mwd {
+  position: absolute;
+  top: 0; bottom: 0; right: 0; left: auto;
+  width: min(32%, 340px);
+  display: block;
+  grid-template-rows: none;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-32px);
+}
+.rig-media--mwd .rig-media-inner {
+  position: absolute; inset: 0;
+  overflow: hidden;
+}
+.rig-media--mwd img {
+  width: 100%; height: 100%; max-width: none; margin: 0;
+  object-fit: cover;
+  object-position: 10% 50%;
+  transform: scale(1.12);
+  opacity: 0;
+  transition: transform 0.6s var(--ease) 0.03s, opacity 0.45s ease 0.03s;
+}
+.rig-row--accordion:hover .rig-media--mwd img,
+.rig-row--accordion:focus-within .rig-media--mwd img {
+  transform: scale(1);
+  opacity: 1;
+}
+.rig-row--accordion:has(.rig-media--mwd) {
+  transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease),
+              transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
+              padding 0.4s var(--ease);
+}
+.rig-row--accordion:has(.rig-media--mwd):hover,
+.rig-row--accordion:has(.rig-media--mwd):focus-within {
+  padding-top: calc(var(--rp) + var(--rig-media-add) / 2);
+  padding-bottom: calc(var(--rp) + var(--rig-media-add) / 2);
+}
+
+/* ── 02 (decoder / НАДЗЕМКА): крупный оверлей вместо мелкого фото ──
+   2026-07-24: по прямой просьбе (скрин) кадр не раздвигает строку вниз
+   мелким фото, а на hover разворачивается крупным оверлеем во всю
+   высоту плашки справа, с выносом за её верх/низ и правый край.
+   Поэтому выбиваем его из grid-аккордеона (.rig-media--accordion →
+   absolute): строка при этом остаётся компактной (медиа больше не
+   занимает grid-трек, поэтому .rig-row вниз не растёт). z-index ниже
+   текста/кнопки (у них z-index:1): фото уходит вправо ЗА .rig-cube, а
+   текст слева читается поверх. Не в MEDIA_RIGHT — своя раскладка,
+   а не общий .rig-media--right (см. Showcase.astro).
+   2026-07-25: ребрендинг — dkd.webp (старый логотип «OIL SERVICE», белый
+   фон) заменён на gtn-decoder.webp (логотип GTN, исходник с прозрачным
+   фоном, обрезан по границе кейса скриптом на playwright/canvas — в
+   проекте нет sharp/imagemagick). Пропорции кадра близки к прежним
+   (портрет ~0.82 против ~0.79), поэтому object-position ниже не менялся. */
+.rig-media--decoder {
+  position: absolute;
+  top: 0; bottom: 0; right: 0; left: auto;
+  width: min(38%, 400px);
+  display: block;
+  grid-template-rows: none;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-32px);
+}
+.rig-media--decoder .rig-media-inner {
+  position: absolute; inset: 0;
+  overflow: hidden;
+}
+/* gtn-decoder.webp — портретный кадр (900×1094). На референсе кадр
+   крупный, во всю правую часть плашки и СТРОГО в её рамках (обрезан по
+   краям, а не вылезает наружу). Поэтому контейнер выше клипует
+   (overflow:hidden) правую часть плашки во всю её высоту, а img кроем
+   object-fit:cover заполняет этот прямоугольник — крышка кейса сверху и
+   бока уходят под обрез, а панель с вентиляторами/экраном/портами видна
+   крупно. object-position 75% по Y уводит обрез в крышку, оставляя
+   панель с логотипом GTN в кадре. На hover — лёгкий зум с 1.12 к 1,
+   вместо прежнего выезда сбоку. */
+.rig-media--decoder img {
+  width: 100%; height: 100%; max-width: none; margin: 0;
+  object-fit: cover;
+  object-position: 10% 75%;
+  transform: scale(1.12);
+  opacity: 0;
+  transition: transform 0.6s var(--ease) 0.03s, opacity 0.45s ease 0.03s;
+}
+.rig-row--accordion:hover .rig-media--decoder img,
+.rig-row--accordion:focus-within .rig-media--decoder img {
+  transform: scale(1);
+  opacity: 1;
+}
+/* Плашка НАДЗЕМКА на hover чуть подрастает по высоте (симметрично сверху
+   и снизу через padding — текст по центру, поэтому не съезжает). Контейнер
+   кадра тянется top:0/bottom:0, так что фото заодно получает больше
+   вертикального места. Целимся точечно через :has(.rig-media--decoder) —
+   остальные accordion-плашки растут иначе (выезд фото вниз), их не трогаем.
+   Переопределяем и transition базовой .rig-row, добавив в него padding. */
+.rig-row--accordion:has(.rig-media--decoder) {
+  transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease),
+              transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
+              padding 0.4s var(--ease);
+}
+.rig-row--accordion:has(.rig-media--decoder):hover,
+.rig-row--accordion:has(.rig-media--decoder):focus-within {
+  padding-top: calc(var(--rp) + var(--rig-media-add) / 2);
+  padding-bottom: calc(var(--rp) + var(--rig-media-add) / 2);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .rig-media--accordion { transition: none; }
-  .rig-media--flyout img, .rig-media--accordion img { transition: none; }
+  .rig-media--accordion img { transition: none; }
 }
 

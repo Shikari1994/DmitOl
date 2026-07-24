@@ -95,15 +95,21 @@ const PRODUCTS = [
    в шторку ТТХ — для расходников нет технических характеристик,
    только запрос перечня, поэтому это отдельная ссылка, а не запись
    в PRODUCTS/specs-панелях. */
-const FLYOUT_IMAGES = {
-  mwd: '/Kitbox2.webp',
-  decoder: '/dkd.webp',
+const ACCORDION_IMAGES = {
+  mwd: '/gtn-kit.webp',
+  decoder: '/gtn-decoder.webp',
+  resistivimeter: '/Res.webp',
+  generator: '/gnom6-crop.webp',
+  pulsator: '/pulser-rod.webp',
 }
 
-const ACCORDION_IMAGES = {
-  resistivimeter: '/Res.webp',
-  pulsator: '/pulser.webp',
-}
+/* Ни 01 (mwd), ни 02 (decoder) — не в этом наборе: у обоих своя
+   раскладка (крупный абсолютный оверлей во всю высоту плашки, обрезан
+   по её рамкам, .rig-media--mwd / .rig-media--decoder в equipment.css),
+   а не общий .rig-media--right (тот теперь не используется ни одной
+   карточкой, оставлен на случай будущей accordion-картинки того же
+   старого типа — выезд узкой полосой под текстом). */
+const MEDIA_RIGHT = new Set()
 
 const PARTS = {
   n: '07', title: 'ЗАПЧАСТИ', line: 'Для телесистем любого типа',
@@ -144,50 +150,33 @@ const PARTS = {
 
   <div class="rig-stage">
     <div class="rig-list reveal">
-      {/* 2026-07-24: эксперимент с выездом фото узла на карточках
-          (см. equipment.css) — сравниваем два приёма, выбор по месту:
-          «mwd» (01) и «decoder» (02) — кнопка убрана целиком, фото
-          занимает её место и вылетает справа налево, кликабельна вся
-          плашка; «resistivimeter» (04) и «pulsator» (06) — аккордеон,
-          строка раздвигается вниз и там выезжает фото слева, кнопка
-          «Подробнее» остаётся как была. */}
+      {/* Кликабельна только сама кнопка — карточка целиком лишь
+          подсвечивается на hover/focus-within (см. .rig-row:hover
+          в equipment.css), открывает шторку ТТХ только клик по кубу.
+          У карточек с фото узла (ACCORDION_IMAGES) строка на hover
+          раздвигается вниз и там выезжает фото слева. */}
       {PRODUCTS.map((p) => (
-        FLYOUT_IMAGES[p.id] ? (
-          <button type="button" class="rig-row rig-row--flyout" data-specs-open={p.id}>
-            <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-            <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
-            <span class="rig-head">
-              <span class="rig-title">{p.title}</span>
-              <span class="rig-line mono">{p.line}</span>
-            </span>
-            <span class="rig-text">{p.text}</span>
-            <span class={`rig-media rig-media--flyout rig-media--${p.id}`} aria-hidden="true">
-              <img src={asset(FLYOUT_IMAGES[p.id])} alt="" loading="lazy" draggable="false" />
-            </span>
+        <div class={ACCORDION_IMAGES[p.id] ? 'rig-row rig-row--accordion' : 'rig-row'}>
+          <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
+          <span class="rig-head">
+            <span class="rig-title">{p.title}</span>
+            <span class="rig-line mono">{p.line}</span>
+          </span>
+          <span class="rig-text">{p.text}</span>
+          <button type="button" class="rig-cube" data-specs-open={p.id}>
+            <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <span class="rig-cube-label">Подробнее</span>
+            <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">Подробнее<span class="rig-cube-caret">_</span></span></span>
           </button>
-        ) : (
-          <div class={ACCORDION_IMAGES[p.id] ? 'rig-row rig-row--accordion' : 'rig-row'}>
-            <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-            <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
-            <span class="rig-head">
-              <span class="rig-title">{p.title}</span>
-              <span class="rig-line mono">{p.line}</span>
-            </span>
-            <span class="rig-text">{p.text}</span>
-            <button type="button" class="rig-cube" data-specs-open={p.id}>
-              <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              <span class="rig-cube-label">Подробнее</span>
-              <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">Подробнее<span class="rig-cube-caret">_</span></span></span>
-            </button>
-            {ACCORDION_IMAGES[p.id] && (
-              <span class={`rig-media rig-media--accordion rig-media--${p.id}`} aria-hidden="true">
-                <span class="rig-media-inner">
-                  <img src={asset(ACCORDION_IMAGES[p.id])} alt="" loading="lazy" draggable="false" />
-                </span>
+          {ACCORDION_IMAGES[p.id] && (
+            <span class={`rig-media rig-media--accordion rig-media--${p.id}${MEDIA_RIGHT.has(p.id) ? ' rig-media--right' : ''}`} aria-hidden="true">
+              <span class="rig-media-inner">
+                <img src={asset(ACCORDION_IMAGES[p.id])} alt="" loading="lazy" draggable="false" />
               </span>
-            )}
-          </div>
-        )
+            </span>
+          )}
+        </div>
       ))}
       <div class="rig-row">
         <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>

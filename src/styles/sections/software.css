@@ -290,11 +290,11 @@ html[data-scheme="light"] .sw-frame {
    мокапа. Здесь — не перекраска картинки, а замена подложки под её
    прозрачными полями на тон окружающей светлой поверхности. */
 html[data-scheme="light"] .bento-shot { background: var(--surface); }
-.bt-drilling .bento-shot { aspect-ratio: 1.724; }
-.bt-survey   .bento-shot { aspect-ratio: 1.812; }
-.bt-bha      .bento-shot { aspect-ratio: 2.698; }
-.bt-logging  .bento-shot { aspect-ratio: 1.835; }
-.bt-park     .bento-shot { aspect-ratio: 2.258; }
+.bt-drilling .bento-shot { aspect-ratio: 2.098; }
+.bt-survey   .bento-shot { aspect-ratio: 2.083; }
+.bt-bha      .bento-shot { aspect-ratio: 2.089; }
+.bt-logging  .bento-shot { aspect-ratio: 2.071; }
+.bt-park     .bento-shot { aspect-ratio: 2.089; }
 
 /* верхний readout-бар — тонкий оверлей поверх скриншота */
 /* Бар поверх скриншота. Стеклянный, а не градиентный: градиент вниз
