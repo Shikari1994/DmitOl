@@ -44,12 +44,21 @@
    любая обводка контейнера возвращала бы жёсткую границу поверх этого
    фейда. */
 .sw-eco {
-  position: relative; overflow: hidden;
+  position: relative;
   height: clamp(380px, 36vw, 520px);
   margin-top: clamp(28px, 3vw, 40px);
   display: flex; align-items: flex-end;
 }
-.sw-eco-media { position: absolute; inset: 0; z-index: 0; }
+/* Видео пробивает поля .container и идёт до кромки .page-shell (те же
+   волосяные border-left/right на всей высоте страницы, base.css) — это
+   и есть «граница сайта» по горизонтали. .sw-eco остаётся в размере
+   .container (тайлы ниже не двигаются), поэтому вместо inset:0
+   расширяем только media на var(--gut) в обе стороны; overflow:hidden
+   на .sw-eco убран — иначе он подрезал бы этот выступ обратно. */
+.sw-eco-media {
+  position: absolute; top: 0; bottom: 0; z-index: 0;
+  left: calc(-1 * var(--gut)); right: calc(-1 * var(--gut));
+}
 .sw-eco-video {
   width: 100%; height: 100%; object-fit: cover;
 }
@@ -112,9 +121,22 @@ html[data-scheme="light"] .sw-eco-video--light { display: block; }
   padding: 18px 20px;
 }
 html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); }
+/* Заголовок сидит прямо на видео сквозь почти прозрачное стекло тайла
+   (--glass-bg выше), поэтому синий --accent то тонет, то засвечивается
+   в зависимости от кадра ролика под ним (см. попытки поднять контраст
+   без затемнения всей карточки — обсуждалось явно, 2026-07-24). Вместо
+   игры с цветом текста — свой маленький бейдж-чип с независимым тёмным
+   фоном и blur: контраст всегда стабилен, а карточка остаётся такой же
+   прозрачной, как была. */
 .sw-eco-tile-n {
-  display: block; margin-bottom: 8px;
-  font-size: var(--fs-0); letter-spacing: 0.14em; color: var(--accent);
+  display: inline-block; margin-bottom: 8px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: rgba(8, 10, 14, 0.24);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: var(--fs-0); letter-spacing: 0.14em; font-weight: 600;
+  color: #fff;
 }
 .sw-eco-tile p { font-size: var(--fs-2); line-height: 1.55; color: var(--text-dim); }
 
@@ -161,6 +183,10 @@ html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); 
 .sw-tab.is-active { color: var(--ink); }
 .sw-tab.is-active::after { transform: scaleX(1); }
 .sw-tab-n { color: var(--live); }
+/* Мелкий mono с letter-spacing на светлом фоне читается бледнее, чем
+   --text-dim держит номинально — подписи вкладок нужны на пару шагов
+   темнее именно здесь. */
+html[data-scheme="light"] .sw-tab { color: rgba(20, 23, 28, 0.8); }
 .sw-tab-label { font-family: var(--font-text); letter-spacing: 0.01em; }
 
 @media (max-width: 640px) {

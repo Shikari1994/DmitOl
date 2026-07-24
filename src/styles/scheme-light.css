@@ -52,7 +52,7 @@ html[data-scheme="light"] {
   --ink-dim:     rgba(20,23,28,0.66);   --text-dim:   rgba(20,23,28,0.66);
   --ink-faint:   rgba(20,23,28,0.46);   --text-faint: rgba(20,23,28,0.46);
 
-  --line:        rgba(20,23,28,0.14);
+  --line:        rgba(20,23,28,0.20);
   --line-soft:   rgba(20,23,28,0.07);
   --line-strong: rgba(20,23,28,0.26);
 
@@ -88,11 +88,21 @@ html[data-scheme="light"] [data-theme="black"] {
   --ink:         #14171c;  --text:       #14171c;
   --ink-dim:     rgba(20,23,28,0.66);   --text-dim:   rgba(20,23,28,0.66);
   --ink-faint:   rgba(20,23,28,0.46);   --text-faint: rgba(20,23,28,0.46);
-  --line:        rgba(20,23,28,0.14);
+  --line:        rgba(20,23,28,0.20);
   --line-soft:   rgba(20,23,28,0.07);
   --line-strong: rgba(20,23,28,0.26);
   --panel:       #ffffff;  --bg-raised:   #ffffff;
   --panel-2:     #fbfcfd;  --bg-raised-2: #fbfcfd;
+  /* [data-theme="black"] сам по себе не трогает --accent/--brand — секция
+     наследует их от :root (тёмный #0e8fd4), а не от html[data-scheme="light"]
+     (там уже стоит затемнённый до AA #0b78b4, см. блок выше). Без этой
+     строки циан на светлом стекле/видео (.sw-eco-tile-n и т.п.) читается
+     плохо — тот же AA-фикс, что и на верхнем уровне, только доведённый
+     внутрь запертых по цвету секций. */
+  --brand:        #0b78b4;   --accent:        #0b78b4;
+  --brand-strong: #095f91;   --accent-strong: #095f91;
+  --brand-soft:   rgba(14,143,212,0.10);  --accent-soft: rgba(14,143,212,0.10);
+  --brand-line:   rgba(14,143,212,0.32);  --accent-line: rgba(14,143,212,0.32);
 }
 
 /* Откат стекла для запертых секций — держится про запас (см. пояснение

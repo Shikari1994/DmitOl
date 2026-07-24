@@ -8,8 +8,10 @@
    клик по всей строке поднимает шторку ТТХ. corner-marks проявляются
    на hover тем же приёмом, что .hero-tile-corners на hero-плитках.
 
-   Шапка (.prod-head) — эйбрау отдельной строкой сверху, ниже строка
-   «Продукция» + лид в двух колонках через волосяную вертикальную черту.
+   Шапка (.prod-head) — эйбрау отдельной строкой сверху (обычная
+   надпись раздела, вне карточки), ниже строка «Продукция» + лид в
+   двух колонках — это и есть стеклянная карточка .prod-head-row
+   (2026-07-24: гасящая волосяная черта между колонками убрана).
    Эйбрау вынесен из колонки заголовка (2026-07-21 №2), чтобы не сбивать
    центровку: раньше заголовок и лид были в одной grid-строке, но
    заголовок лежал в стеке с эйбрау над ним, из-за чего «Продукция»
@@ -67,51 +69,61 @@ html[data-scheme="light"] .prod-media-video { opacity: 0.32; }
    18vh, полосой вылезал бы поверх видео ниже неё. */
 #products > .prod-head, #products > .rig-stage { position: relative; z-index: 2; }
 
-.prod-head {
-  border-bottom: 1px solid var(--line);
-  margin-bottom: clamp(28px, 3.6vw, 48px);
-}
+/* 2026-07-24: серые волосяные линии (border-bottom всей шапки и
+   border-left между заголовком и лидом) убраны по прямой просьбе.
+   Эйбрау «Аппаратные комплексы» — заголовок раздела, в карточку не
+   входит, остаётся обычной надписью. Стеклянной карточкой становится
+   только .prod-head-row («Продукция» + лид) — несёт её в общий рецепт
+   .glass (см. glass.css), инсет var(--gut) по бокам тем же приёмом,
+   что .rig-list у карточек ниже. Заливка — тот же прозрачный уровень
+   поверх .glass, что у .rig-row/.sw-eco-tile (единое стекло на
+   видео-фоне секции). */
 .prod-head-eyebrow { padding: clamp(28px, 3.6vw, 48px) var(--gut) 0; }
 .prod-head-row {
   display: grid;
-  /* 34% → calc(100%/3): серая линия — border-left у .prod-head-lead
-     ниже — переведена на розовую .align-guide. #products без .container,
-     своей ширины не режет, поэтому 100% здесь = 100% .page-shell. */
+  /* 34% → calc(100%/3): раньше здесь стояла граница-ориентир для
+     серой border-left у .prod-head-lead (убрана), пропорция колонок
+     сохранена как есть — переносить её на .align-guide не требуется,
+     линии-ориентира на макете больше нет. */
   grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
-  padding-bottom: clamp(28px, 3.6vw, 48px);
+  /* 2026-07-24 №2: колонки центрируются по вертикали друг относительно
+     друга (align-items) — заголовок в одну строку и лид в три должны
+     делить карточку пополам, а не упираться в общий верх. Раньше верх
+     выравнивался вручную (компенсация half-leading на .h-title/.lead),
+     это больше не нужно и убрано вместе с асимметричным padding-bottom,
+     из-за которого карточка читалась смещённой вниз. */
+  align-items: center;
+  margin: clamp(20px, 2.4vw, 32px) var(--gut) clamp(28px, 3.6vw, 48px);
+  padding: clamp(24px, 3vw, 40px) 0;
+  background-color: rgba(20, 20, 20, 0.07);
 }
+html[data-scheme="light"] .prod-head-row { background-color: rgba(255, 255, 255, 0.14); }
 .prod-head-title {
-  padding: clamp(16px, 2vw, 24px) clamp(20px, 2.4vw, 32px) 0 var(--gut);
+  padding: 0 clamp(20px, 2.4vw, 32px) 0 clamp(24px, 3vw, 40px);
 }
-.prod-head-title .h-title { margin-top: calc((1 - 1.04) * 0.5em); }
 .prod-head-lead {
-  padding: clamp(16px, 2vw, 24px) var(--gut) 0 clamp(28px, 3.2vw, 44px);
-  border-left: 1px solid var(--line);
+  padding: 0 clamp(24px, 3vw, 40px) 0 clamp(28px, 3.2vw, 44px);
 }
 .prod-head-lead .lead {
   border-left: 2px solid var(--brand);
   padding-left: clamp(16px, 1.8vw, 22px);
   max-width: 58ch;
   margin: 0;
-  /* Надстрочный интервал строки (half-leading) у .h-title (line-height
-     1.04) и .lead (1.7) разный, из-за чего их первая строка стартует на
-     разной высоте при равном верхнем крае колонок. Вместо подогнанного
-     на глаз px убираем half-leading у каждого формулой
-     (1 − line-height) / 2 × его собственный кегль — тогда текст обоих
-     блоков всегда упирается в верх строки сетки, на любом кегле. */
-  margin-top: calc((1 - 1.7) * 0.5em);
-  /* 2026-07-22: под шапкой сквозь неё видно .prod-media-video (вейвы),
-     на светлой схеме местами светлее текста и режет читаемость — блюр
-     сглаживает фактуру фона под абзацем, не добавляя видимой заливки/рамки. */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  /* 2026-07-24: точечный blur(10px) под абзацем убран — теперь весь
+     .prod-head-row стеклянный (blur var(--glass-blur), 20px), свой
+     блюр поверх него был избыточен. */
 }
 
 .rig-list {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; gap: clamp(14px, 1.8vw, 22px);
   margin: 0 var(--gut);
-  padding: clamp(24px, 3vw, 48px) 0;
+  /* Нижний паддинг равен зоне затухания .prod-media-video (mask-image:
+     min(8vh, 90px) снизу) — без этого фейд заезжал на последнюю плашку
+     «Запчасти», видео гасло ещё до конца её текста. Теперь чёткая часть
+     видео заканчивается ровно на нижнем крае последней строки, а гаснет
+     уже в этом резервном «хвосте» под ней, до конца секции. */
+  padding: clamp(24px, 3vw, 48px) 0 min(8vh, 90px);
 }
 .rig-row {
   position: relative;
@@ -141,7 +153,6 @@ html[data-scheme="light"] .prod-media-video { opacity: 0.32; }
   padding: var(--rp);
   color: inherit; font: inherit;
   text-decoration: none;
-  cursor: pointer;
   border-radius: 0;
   /* Своя, более прозрачная заливка поверх общего рецепта .glass (glass.css):
      под строками едет то же видео дорожки, что и под .hero-teasers, и там
@@ -158,13 +169,12 @@ html[data-scheme="light"] .prod-media-video { opacity: 0.32; }
    буквально текущее --hero-glass светлой схемы (#hero), чтобы карточки
    правда совпадали с хиро, а не просто были «тоже светлыми». */
 html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14); }
-.rig-row:hover, .rig-row:focus-visible {
+.rig-row:hover, .rig-row:focus-within {
   border-color: var(--brand);
   background: var(--bg-raised);
   transform: translateY(-4px);
   box-shadow: 0 0 25px rgba(0, 144, 223, 0.15);
 }
-.rig-row:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 /* Уголки-прицелы — тот же приём, что .hero-tile-corners на hero. */
 .rig-corners { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
@@ -173,21 +183,25 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
   opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
   border-color: var(--brand);
 }
-.rig-row:hover .rig-corners i, .rig-row:focus-visible .rig-corners i { opacity: 1; transform: translate(0, 0); }
+.rig-row:hover .rig-corners i, .rig-row:focus-within .rig-corners i { opacity: 1; transform: translate(0, 0); }
 .rig-corners i:nth-child(1) { top: 6px; left: 6px; border-top: 2px solid; border-left: 2px solid; transform: translate(4px, 4px); }
 .rig-corners i:nth-child(2) { top: 6px; right: 6px; border-top: 2px solid; border-right: 2px solid; transform: translate(-4px, 4px); }
 .rig-corners i:nth-child(3) { bottom: 6px; left: 6px; border-bottom: 2px solid; border-left: 2px solid; transform: translate(4px, -4px); }
 .rig-corners i:nth-child(4) { bottom: 6px; right: 6px; border-bottom: 2px solid; border-right: 2px solid; transform: translate(-4px, -4px); }
+/* 2026-07-24: пробовали белые уголки карточки на светлой теме (даже с
+   drop-shadow-обводкой) — на сплошном белом фоне hover (var(--bg-raised))
+   всё равно практически не видно, по факту отменено обратно на
+   var(--brand), заданный в базовом правиле выше. */
 
 .rig-num {
   position: relative; z-index: 1;
   font-size: var(--fs-0); letter-spacing: 0.12em; color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
-.rig-row:hover .rig-num, .rig-row:focus-visible .rig-num { color: var(--brand); }
+.rig-row:hover .rig-num, .rig-row:focus-within .rig-num { color: var(--brand); }
 .rig-head { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; }
 .rig-title { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); transition: color 0.3s var(--ease); }
-.rig-row:hover .rig-title, .rig-row:focus-visible .rig-title { color: var(--brand); }
+.rig-row:hover .rig-title, .rig-row:focus-within .rig-title { color: var(--brand); }
 .rig-line { font-size: var(--fs-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
 .rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim); max-width: 62ch; }
 
@@ -196,9 +210,11 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
    (steps() вместо ease), как прогресс-бар терминала, а не css-твин.
    Моно-гарнитура и мигающий курсор `_` в хвосте текста — тот же
    приборный/командный язык, что у .rig-num/.rig-line (IT-компания,
-   не декоративная анимация). Клавиатурный фокус держит вся строка
-   .rig-row (span кнопки нефокусируем), поэтому focus-visible
-   остаётся на ней — иначе эффект был бы недоступен с клавиатуры.
+   не декоративная анимация). 2026-07-24: клик по всей строке убран
+   по прямой просьбе — открывает шторку ТТХ только сам .rig-cube,
+   теперь это настоящая кнопка/ссылка; .rig-row лишь подсвечивается
+   на hover/focus-within (курсор pointer больше не висит на всей
+   строке, раз она не кликабельна).
    Раньше здесь был 3D-флип куба на 4 гранях, затем — плавная синяя
    заливка справа налево; текущая версия — по прямой просьбе. */
 .rig-cube {
@@ -207,9 +223,12 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
   display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--line-strong);
   background: var(--panel);
+  color: inherit; font: inherit; text-decoration: none;
+  cursor: pointer;
   transition: border-color 0.3s var(--ease);
 }
-.rig-cube:hover, .rig-row:focus-visible .rig-cube { border-color: var(--brand); }
+.rig-cube:hover, .rig-cube:focus-visible { border-color: var(--brand); }
+.rig-cube:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .rig-cube-label, .rig-cube-fill-text {
   font-family: var(--font-mono);
   font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
@@ -221,10 +240,19 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
   display: flex; align-items: center; justify-content: center;
   background: #fff; color: var(--bg);
   clip-path: inset(0 100% 0 0);
-  /* 9 шагов на весь ход — заметная «пиксельная» ступенька, а не смаз */
-  transition: clip-path 0.7s steps(9, jump-end);
+  /* 9 шагов на весь ход — заметная «пиксельная» ступенька, а не смаз.
+     2026-07-24: 0.7s ощущался лагом на быстрый hover, ускорено до 0.3s. */
+  transition: clip-path 0.3s steps(9, jump-end);
 }
-.rig-cube:hover .rig-cube-fill, .rig-row:focus-visible .rig-cube-fill {
+/* 2026-07-24: белая заливка на светлой теме сливалась и с самой кнопкой
+   (.rig-cube там тоже белый, var(--panel) #fff), и с текстом (color:
+   var(--bg) в светлой схеме — почти белый #eef0f3) — сама анимация и
+   текст поверх неё были не видны. Пробовали чёрную — смотрелась чужеродно
+   рядом с голубой подсветкой карточки (.rig-row:hover, border-color:
+   var(--brand)); заливка здесь тем же фирменным голубым, текст — белым
+   для контраста. */
+html[data-scheme="light"] .rig-cube-fill { background: var(--brand); color: #fff; }
+.rig-cube:hover .rig-cube-fill, .rig-cube:focus-visible .rig-cube-fill {
   clip-path: inset(0 0 0 0);
 }
 .rig-cube-caret {
@@ -243,7 +271,7 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
   position: absolute; width: 10px; height: 10px;
   opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.rig-cube:hover .rig-cube-corners i, .rig-row:focus-visible .rig-cube-corners i { opacity: 1; transform: translate(0, 0); }
+.rig-cube:hover .rig-cube-corners i, .rig-cube:focus-visible .rig-cube-corners i { opacity: 1; transform: translate(0, 0); }
 /* Цвет — прямо в шорткоде border-top/border-left, а не отдельным
    border-color на родительском правиле: border-top без указания цвета
    сбрасывает border-top-color на currentColor (это часть спецификации
@@ -254,6 +282,15 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
 .rig-cube-corners i:nth-child(2) { top: 4px; right: 4px; border-top: 2px solid #000; border-right: 2px solid #000; transform: translate(-3px, 3px); }
 .rig-cube-corners i:nth-child(3) { bottom: 4px; left: 4px; border-bottom: 2px solid #000; border-left: 2px solid #000; transform: translate(3px, -3px); }
 .rig-cube-corners i:nth-child(4) { bottom: 4px; right: 4px; border-bottom: 2px solid #000; border-right: 2px solid #000; transform: translate(-3px, -3px); }
+/* 2026-07-24: на светлой теме заливка теперь var(--brand) (голубая), а не
+   белая — чёрные прицелы на ней смотрелись тускло рядом с белым текстом
+   .rig-cube-fill-text. Прицелы тоже в белый, той же парой с текстом. */
+html[data-scheme="light"] .rig-cube-corners i:nth-child(1),
+html[data-scheme="light"] .rig-cube-corners i:nth-child(2),
+html[data-scheme="light"] .rig-cube-corners i:nth-child(3),
+html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
+  border-color: #fff;
+}
 @media (prefers-reduced-motion: reduce) {
   .rig-cube-caret { animation: none; }
 }

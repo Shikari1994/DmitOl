@@ -61,7 +61,15 @@ img { display: block; max-width: 100%; }
    от вьюпорта, поэтому шапка (см. nav.nav — она position:fixed и
    выровнена тем же max-width+margin:auto) и секции под ней читают
    одну и ту же ширину и не расходятся. */
-.page-shell { max-width: var(--maxw); margin: 0 auto; position: relative; }
+/* Боковые грани — 1:1 с Dmit (`border-x` на корневой обёртке): полоса
+   набора очерчена волосяными линиями слева и справа на всю высоту
+   страницы, а не только внутри отдельных секций. Тот же --line, что и
+   у внутренних разделителей, поэтому кромка не выделяется отдельным
+   цветом и просто продолжает шапку (nav.nav того же --maxw) вниз. */
+.page-shell {
+  max-width: var(--maxw); margin: 0 auto; position: relative;
+  border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+}
 
 .container { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gut); }
 

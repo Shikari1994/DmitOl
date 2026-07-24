@@ -50,7 +50,8 @@
 html[data-scheme="light"] #software .eyebrow .ey-no,
 html[data-scheme="light"] #mobile   .eyebrow .ey-no,
 html[data-scheme="light"] .sw-life-kicker,
-html[data-scheme="light"] .sw-life-n { color: #166534; }
+html[data-scheme="light"] .sw-life-n,
+html[data-scheme="light"] .sw-tab-n { color: #166534; }
 html[data-scheme="light"] #software .eyebrow::before,
 html[data-scheme="light"] #mobile   .eyebrow::before {
   background: linear-gradient(90deg, rgba(21,128,61,0.18), transparent);

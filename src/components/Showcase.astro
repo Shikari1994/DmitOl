@@ -64,26 +64,39 @@ const PRODUCTS = [
     ],
   },
   {
-    id: 'generators', n: '05', title: 'ГЕНЕРАТОРЫ, ПУЛЬСАТОРЫ', line: 'Узлы формирования сигнала',
-    text: 'Силовые генераторы и гидравлические пульсаторы для формирования и передачи телеметрического сигнала по буровому раствору.',
+    id: 'generator', n: '05', title: 'ГЕНЕРАТОР', line: 'Силовой узел телесистемы',
+    text: 'Силовой генератор преобразует энергию потока бурового раствора в электропитание для скважинной электроники.',
     specIndex: 'ИРИ // 05',
-    specTitle: 'Генераторы и гидравлические пульсаторы',
+    specTitle: 'Силовой генератор',
+    specs: [
+      ['Рабочая температура', 'до +150°C (опция +175°C)'],
+      ['Канал передачи данных', 'Автономное электропитание скважинных модулей'],
+      ['Тип узла', 'Силовой генератор (турбогенератор)'],
+      ['Совместимость платформ', 'Большинство телесистем MWD/LWD'],
+      ['Виброустойчивость', 'Высокая (до 30 g)'],
+    ],
+  },
+  {
+    id: 'pulsator', n: '06', title: 'ПУЛЬСАТОР', line: 'Узел формирования сигнала',
+    text: 'Гидравлический пульсатор формирует и передаёт телеметрический сигнал по буровому раствору.',
+    specIndex: 'ИРИ // 06',
+    specTitle: 'Гидравлический пульсатор',
     specs: [
       ['Рабочая температура', 'до +150°C (опция +175°C)'],
       ['Канал передачи данных', 'Гидравлический (формирование сигнала в буровом растворе)'],
-      ['Тип узла', 'Силовой генератор + гидравлический пульсатор'],
+      ['Тип узла', 'Гидравлический пульсатор'],
       ['Совместимость платформ', 'Большинство телесистем MWD/LWD'],
       ['Виброустойчивость', 'Высокая (до 30 g)'],
     ],
   },
 ]
 
-/* 06 «Запчасти» ведёт на внешний перечень (oklimashov.fvds.ru), а не
+/* 07 «Запчасти» ведёт на внешний перечень (oklimashov.fvds.ru), а не
    в шторку ТТХ — для расходников нет технических характеристик,
    только запрос перечня, поэтому это отдельная ссылка, а не запись
    в PRODUCTS/specs-панелях. */
 const PARTS = {
-  n: '06', title: 'ЗАПЧАСТИ', line: 'Для телесистем любого типа',
+  n: '07', title: 'ЗАПЧАСТИ', line: 'Для телесистем любого типа',
   text: 'Сменные узлы, платы и расходные компоненты — совместимость с оборудованием большинства производителей телесистем.',
   cta: 'Запросить перечень',
 }
@@ -97,7 +110,7 @@ const PARTS = {
   <div class="prod-media" aria-hidden="true">
     <video
       class="prod-media-video"
-      data-lazy-video={asset('/hero-scan.mp4')}
+      data-lazy-video={asset('/back2.mp4')}
       muted
       loop
       playsinline
@@ -122,7 +135,7 @@ const PARTS = {
   <div class="rig-stage">
     <div class="rig-list reveal">
       {PRODUCTS.map((p) => (
-        <button class="rig-row" data-specs-open={p.id} type="button">
+        <div class="rig-row">
           <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
           <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
           <span class="rig-head">
@@ -130,14 +143,18 @@ const PARTS = {
             <span class="rig-line mono">{p.line}</span>
           </span>
           <span class="rig-text">{p.text}</span>
-          <span class="rig-cube" aria-hidden="true">
+          {/* Кликабельна только сама кнопка — карточка целиком лишь
+              подсвечивается на hover/focus-within (см. .rig-row:hover
+              в equipment.css), но открывает шторку ТТХ теперь только
+              клик по кубу, а не по всей строке. */}
+          <button type="button" class="rig-cube" data-specs-open={p.id}>
             <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
             <span class="rig-cube-label">Смотреть ТТХ →</span>
-            <span class="rig-cube-fill"><span class="rig-cube-fill-text">Смотреть ТТХ →<span class="rig-cube-caret">_</span></span></span>
-          </span>
-        </button>
+            <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">Смотреть ТТХ →<span class="rig-cube-caret">_</span></span></span>
+          </button>
+        </div>
       ))}
-      <a class="rig-row" href="https://oklimashov.fvds.ru/" target="_blank" rel="noopener noreferrer">
+      <div class="rig-row">
         <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         <span class="rig-num mono" aria-hidden="true">{PARTS.n} /</span>
         <span class="rig-head">
@@ -145,12 +162,12 @@ const PARTS = {
           <span class="rig-line mono">{PARTS.line}</span>
         </span>
         <span class="rig-text">{PARTS.text}</span>
-        <span class="rig-cube" aria-hidden="true">
+        <a class="rig-cube" href="https://oklimashov.fvds.ru/" target="_blank" rel="noopener noreferrer">
           <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
           <span class="rig-cube-label">{PARTS.cta} →</span>
-          <span class="rig-cube-fill"><span class="rig-cube-fill-text">{PARTS.cta} →<span class="rig-cube-caret">_</span></span></span>
-        </span>
-      </a>
+          <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">{PARTS.cta} →<span class="rig-cube-caret">_</span></span></span>
+        </a>
+      </div>
     </div>
   </div>
 </section>

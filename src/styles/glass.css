@@ -38,6 +38,7 @@ nav.nav,
 .sw-life-item,
 .atlas-deck,
 .rig-row,
+.prod-head-row,
 .glass {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
@@ -87,6 +88,7 @@ nav.nav,
   .bento-bar,
   .atlas-deck,
   .rig-row,
+  .prod-head-row,
   .glass {
     background: var(--glass-solid);
     -webkit-backdrop-filter: none;

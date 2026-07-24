@@ -294,7 +294,16 @@ html[data-scheme="light"] #hero .hero-media-scrim {
    встроена, но подчинена этому покою: скрыта, пока курсор не на карточке,
    и выезжает ТОЛЬКО на hover/focus, чистым CSS-переходом, без JS и без
    разового жеста на загрузке. Зона сцены начинается НИЖЕ строки
-   лейбл/статус — там ей ничто не мешает читаться даже в открытом виде. */
+   лейбл/статус — там ей ничто не мешает читаться даже в открытом виде.
+
+   2026-07-24: пятно за текстом (blur/ореол/панель) пробовалось трижды и
+   откачено каждый раз — все три были заплаткой поверх настоящей причины,
+   пересечения зоны сцены с колонкой текста (.hero-tile-foot, max-width:
+   60%). Тронутый следом left/маска контейнера тоже откачен — right:0
+   не менялся, поэтому сцена не двигалась, только резалась маской слева
+   же. Решение — просто translateX вправо на .hero-tile-stage (см. ниже,
+   только для этой плитки), картинку уносит за правый край плитки, там
+   её обрезает обычный overflow:hidden .hero-tile, а не своя маска. */
 .hero-tile-art {
   position: absolute; z-index: 0; pointer-events: none;
   left: 0; right: 0; bottom: 0; top: 32%;
@@ -308,6 +317,11 @@ html[data-scheme="light"] #hero .hero-media-scrim {
 .hero-tile:hover .hero-tile-art,
 .hero-tile:focus-visible .hero-tile-art {
   opacity: 1;
+}
+/* Только сцена «ноутбук + телефон» (не .hero-tile--sky/rig) — простой
+   сдвиг вправо, без обрезки и без уменьшения. */
+.hero-tile:not(.hero-tile--sky) .hero-tile-stage {
+  transform: translateX(110px);
 }
 .hero-tile-stage { position: relative; height: 100%; max-width: 100%; aspect-ratio: 1157 / 774; }
 .hero-tile-note {
@@ -351,7 +365,7 @@ html[data-scheme="light"] .hero-tile-phone img {
 .hero-tile-rig {
   transform: translateX(8%);
   transition: transform 0.55s ease;
-  margin-right: -160px;
+  margin-right: -260px;
   margin-bottom: 14px;
 }
 .hero-tile-rig img {
@@ -366,6 +380,7 @@ html[data-scheme="light"] .hero-tile-phone img {
 @media (prefers-reduced-motion: reduce) {
   .hero-tile-art { transition: none; }
   .hero-tile-note, .hero-tile-phone-move, .hero-tile-rig { transition: none; transform: none; }
+  .hero-tile-foot::before { transition: none; }
 }
 
 @media (max-width: 700px) {
