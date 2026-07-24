@@ -204,20 +204,41 @@ html[data-scheme="light"] #hero .hero-media-scrim {
 
 .hero-tile {
   position: relative; overflow: hidden;
+  /* Картинка кит-бокса ниже (.hero-tile-rig img) считает свой размер
+     в vw, но плитка занимает всю ширину секции только до 1024px —
+     с этой отметки .hero-grid уводит .hero-teasers в 5/12 колонки
+     (см. ниже), и та же доля от vw вдруг оказывается вдвое больше
+     реальной ширины плитки: картинка не уменьшается вместе с ней и
+     наезжает на текст ровно на границе брейкпоинта. container-type
+     переводит такие формулы на cqw — долю от фактической ширины
+     плитки, а не окна — поэтому одна и та же формула остаётся верной
+     по обе стороны любого брейкпоинта, без подбора отдельных чисел. */
+  container-type: inline-size;
   display: flex; flex-direction: column; justify-content: space-between;
   gap: 24px;
   padding: 32px;
   text-decoration: none; color: inherit;
   border-bottom: 1px solid var(--hero-line);
-  /* инсет-тень вместо border-width на hover: рамка не толкает паддинги */
-  box-shadow: inset 0 0 0 0 transparent;
-  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hero-tile:last-child { border-bottom: 0; }
 .hero-tile:hover,
 .hero-tile:focus-visible {
   background: var(--hero-tile-hover);
+}
+/* Рамка на hover — псевдоэлемент, а не box-shadow самой плитки: box-shadow
+   рисуется в слое фона/рамки хозяина и всегда оказывается ПОД детьми
+   (в т.ч. .hero-tile-art с картинкой), даже если у тех z-index:0 — child
+   stacking красит поверх собственного border/background родителя вне
+   зависимости от z-index. ::after — самостоятельный слой с своим z-index,
+   которому можно встать выше картинки. */
+.hero-tile::after {
+  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-tile:hover::after,
+.hero-tile:focus-visible::after {
   box-shadow: inset 0 0 0 2px var(--hero-blue);
 }
 
@@ -355,22 +376,19 @@ html[data-scheme="light"] .hero-tile-phone img {
   transform: translateX(0);
 }
 
-/* ── Сцена в плитке GT-NAVIGATOR: снаряд из двух модулей ──
-   Тот же кадр, что был снарядом первого экрана прежней колоды: две
-   компоновки друг под другом читаются как «модуль наверху / модуль
-   снизу». Тот же покой-до-hover, что у сцены выше. Ширина изображения
-   не ограничена — кадр бесконечно длинный, тайл его обрезает своим
-   overflow:hidden, наружная маска мягко проявляет левую кромку. */
-.hero-tile-art--rig { align-items: center; padding: 0; }
+/* ── Сцена в плитке GT-NAVIGATOR: кит-бокс на рельсе ──
+   Тот же покой-до-hover, что у сцены выше. Ширина изображения не
+   ограничена (width:auto), тайл обрезает его своим overflow:hidden,
+   наружная маска мягко проявляет левую кромку. */
+.hero-tile-art--rig { align-items: flex-start; padding: 0; }
 .hero-tile-rig {
   transform: translateX(8%);
   transition: transform 0.55s ease;
-  margin-right: -260px;
+  margin-right: -12px;
   margin-bottom: 14px;
 }
 .hero-tile-rig img {
-  display: block; height: clamp(60px, 6vw, 118px); width: auto; max-width: none;
-  transform: rotate(180deg);
+  display: block; height: clamp(220px, 19cqw, 300px); width: auto; max-width: none;
 }
 .hero-tile:hover .hero-tile-rig,
 .hero-tile:focus-visible .hero-tile-rig {
@@ -385,6 +403,6 @@ html[data-scheme="light"] .hero-tile-phone img {
 
 @media (max-width: 700px) {
   .hero-tile-foot { max-width: 68%; }
-  .hero-tile-rig img { height: clamp(52px, 14vw, 88px); }
+  .hero-tile-rig img { height: clamp(70px, 20cqw, 130px); }
 }
 

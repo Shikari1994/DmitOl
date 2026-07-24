@@ -241,8 +241,10 @@ html[data-scheme="light"] .sw-frame {
    поменяна местами в Software.astro — .bento-body теперь первая в DOM,
    .sw-slide-shot вторая; без этого grid-auto-placement уводил второй
    элемент на новую строку, если у него column меньше, чем у первого).
-   Граница колонок — временная розовая .align-guide, calc(100%/3) от
-   .page-shell. Секция сидит в .container с полями --gut с обеих сторон
+   Граница колонок проверялась по временной розовой .align-guide,
+   calc(100%/3) от .page-shell — сама линия теперь border-left на
+   .sw-slide-shot (см. ниже), .align-guide как оверлей больше не нужна.
+   Секция сидит в .container с полями --gut с обеих сторон
    (в отличие от #how/#economics, где сплит без контейнера), поэтому в
    локальных % (100% = ширина .sw-slide = W − 2·gut) та же абсолютная
    точка даёт (100% − gut) / 3: W/3 = Wl/3 + 2gut/3, первая колонка
@@ -261,7 +263,13 @@ html[data-scheme="light"] .sw-frame {
   .sw-slide.is-active { animation: none; }
 }
 
-.sw-slide-shot { position: relative; overflow: hidden; min-width: 0; }
+.sw-slide-shot {
+  position: relative; overflow: hidden; min-width: 0;
+  /* Та же граница колонок, что у .econ-head-lead/.econ-algos и
+     .footer-cell-b — сплошная волосяная линия на стыке текста и кадра,
+     вместо временной розовой .align-guide (см. комментарий выше). */
+  border-left: 1px solid var(--line);
+}
 
 /* Кадр держит СВОЮ пропорцию (задана на .bt-<key> ниже) и никогда не
    растягивается флексом — высота считается из width: 100% и
@@ -456,7 +464,7 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
   /* В разметке подпись теперь стоит раньше кадра (см. Software.astro) —
      на мобильном порядок остаётся прежним, кадр сверху: order возвращает
      его первым в потоке. */
-  .sw-slide-shot { order: -1; }
+  .sw-slide-shot { order: -1; border-left: 0; }
   .bento-body { margin: clamp(16px, 2vw, 24px); }
   .bento-body p { max-width: none; }
 }

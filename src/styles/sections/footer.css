@@ -76,9 +76,10 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 }
 .footer-bar-cell:first-child {
   /* 33.3333% = 4/12 колонки — граница совпадает с .footer-cell-b выше
-     (border-left той же ячейки) и с временной розовой .align-guide. */
+     (border-left той же ячейки) и с временной розовой .align-guide.
+     padding-left небольшой (не 0), чтобы текст не липнул к кромке. */
   flex: 0 0 33.3333%;
-  border-left: 0; padding-left: 0;
+  border-left: 0; padding-left: var(--s-5);
 }
 .footer-bar-link {
   flex-direction: row; align-items: center; justify-content: space-between; gap: var(--s-2);
