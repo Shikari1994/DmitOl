@@ -20,29 +20,12 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
 .footer-cell { padding: clamp(28px, 3.2vw, 56px) var(--gut); }
 .footer-cell-a { grid-column: span 4; }
 .footer-cell-b { grid-column: span 8; border-left: 1px solid var(--line); }
-/* Строка «Направление сервиса»: правая ячейка (footer-cell-b) шире,
-   текст в ней переносится иначе, чем в левой — при равном верхнем крае
-   абзацы разной длины сдвигают ссылки под ними на разную высоту. Ячейки
-   и так растянуты по общей высоте строки (grid stretch по умолчанию),
-   поэтому колонкой + margin-top: auto на ссылке прижимаем обе к одному
-   нижнему краю, независимо от числа строк в абзаце. */
-.footer-row-services .footer-cell { display: flex; flex-direction: column; }
-.footer-row-services .services-link { margin-top: auto; }
 
 .footer-tag {
   display: block; font-size: var(--fs-0); letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--text-faint); font-weight: 700;
   margin-bottom: var(--s-3);
 }
-.footer-services-title { font-size: var(--fs-6); font-weight: 700; letter-spacing: -0.02em; }
-.footer-quote { display: flex; align-items: center; }
-.footer-quote p {
-  border-left: 2px solid var(--brand); padding-left: var(--s-3);
-  color: var(--text-dim); font-size: var(--fs-2); line-height: 1.7; max-width: 56ch;
-}
-.footer-cell-a h3, .footer-cell-b h3 { font-size: var(--fs-4); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
-.footer-cell-a p, .footer-cell-b p { font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 56ch; margin-bottom: var(--s-4); }
-
 .footer-contact-title { font-size: var(--fs-5); font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--s-4); }
 .footer-form { display: flex; flex-direction: column; gap: var(--s-4); }
 .footer-form label { display: flex; flex-direction: column; gap: var(--s-2); }

@@ -69,31 +69,13 @@ html[data-scheme="light"] .atlas-night {
   background:
     radial-gradient(130% 95% at 50% 118%, #eaf1f8 0%, #cfe0ee 34%, #a9c3dc 64%, #82a5c7 100%);
 }
-.atlas-canvas { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; transition: filter 0.4s var(--ease); }
+.atlas-canvas { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; }
 
-/* Светлая схема: модель шара — по сути «ночная Земля» (см.
-   globeCanvas.js — цвет материала намеренно не трогаем, только свет).
-   Текстура (public/globe.glb, вшитый PNG) вскрыта и промерена:
-   океан — почти чёрный (яркость ~20–50 из 255, это ~80% полотна),
-   суша светлее (~60–116), рельеф/лёд — самое яркое, что там вообще
-   есть. Диапазон целиком зажат в тёмную четверть шкалы — на светлом
-   фоне .atlas-night океан читался чужеродным чёрным пятном.
-
-   Простой invert() тут не работает: он честно зеркалит эту узкую
-   тёмную полосу в такую же узкую светлую (океан → ~205–230, суша →
-   ~140–165) — весь рельеф остаётся почти одного оттенка, картинка
-   плоская, «как луна», без океана/суши не разобрать. Нужно сперва
-   растянуть узкий исходный диапазон на всю шкалу (brightness+contrast
-   как ручной «levels»: чёрная точка ~25, белая ~105 → 0…255), и
-   только потом инвертировать — тогда океану достаётся весь светлый
-   край шкалы, а рельефу суши/льду — весь тёмный, графитовый.
-   Финальный contrast(0.75) снимает жёсткость чистых 0/255 (не плоский
-   чёрный и не бумажный белый), hue-rotate(180deg) после invert —
-   стандартный приём «инверсия без порчи цвета»: оранжевые точки
-   городов возвращаются к тёплому оттенку вместо ухода в синий. */
-html[data-scheme="light"] .atlas-canvas {
-  filter: brightness(1.9) contrast(1.6) invert(1) hue-rotate(180deg) contrast(0.75) saturate(1.1);
-}
+/* Светлая/тёмная схема шара больше не через CSS-фильтр: точки суши,
+   маркеры городов и атмосфера красятся токенами темы (--ink-faint,
+   --globe-accent, см. tokens.css) прямо в globeCanvas.js — там же
+   MutationObserver ловит переключение html[data-scheme] и перекрашивает
+   материалы. */
 
 /* Радиальная «ночь» светлее всего у нижней кромки сцены (центр
    градиента вынесен под кадр, см. .atlas-night) — а следом сразу флэт
@@ -253,29 +235,25 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
 .atlas-slot { display: grid; }
 .atlas-card {
   grid-area: 1 / 1;
-  display: grid; grid-template-columns: auto 1fr; gap: clamp(16px, 1.6vw, 26px);
-  align-items: start;
   opacity: 0; transition: opacity 0.45s var(--ease);
 }
 .atlas-card.is-on { opacity: 1; }
-.ac-shot {
-  width: clamp(84px, 7vw, 120px); aspect-ratio: 1;
-  border-radius: 14px; overflow: hidden;
-  border: 1px solid var(--line); background: var(--panel-2);
-}
-.ac-shot img { width: 100%; height: 100%; object-fit: cover; }
-.ac-big {
-  font-weight: 700; font-variant-numeric: tabular-nums;
-  font-size: clamp(2rem, 3.4vw, 3rem); line-height: 0.94; letter-spacing: -0.035em;
-  color: var(--brand); display: inline-flex; align-items: baseline; gap: 0.16em;
-}
-.ac-unit { font-size: 0.3em; font-weight: 500; letter-spacing: 0.04em; color: var(--ink-dim); text-transform: uppercase; }
 .ac-kicker {
-  display: block; font-family: var(--font-mono);
+  display: block;
   font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--ink-faint); margin-top: 12px;
+  color: var(--ink-faint);
 }
+.ac-title { font-size: var(--fs-4); margin-top: 12px; }
 .ac-text { color: var(--ink-dim); line-height: 1.6; margin-top: 12px; font-size: var(--fs-2); }
+.ac-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: clamp(16px, 1.8vw, 22px);
+  font-size: var(--fs-0); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--brand); text-decoration: none;
+}
+.ac-link svg { width: 15px; height: 15px; transition: transform 0.25s var(--ease); }
+.ac-link:hover { color: var(--ink); }
+.ac-link:hover svg { transform: translateX(3px); }
 
 /* нижняя строка панели: счётчик и стрелки листания */
 .atlas-bar {
@@ -336,8 +314,6 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
     left: var(--gut); right: var(--gut); width: auto;
     transform: none;
   }
-  /* на узкой панели остаются число, кикер и превью — абзац снимаем */
-  .ac-text { display: none; }
 }
 
 /* Блок ГЛОБУС отдельным разделом больше не стоит: земной шар — это

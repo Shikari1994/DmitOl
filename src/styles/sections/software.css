@@ -75,6 +75,14 @@
 .sw-eco-video--light { display: none; }
 html[data-scheme="light"] .sw-eco-video--dark { display: none; }
 html[data-scheme="light"] .sw-eco-video--light { display: block; }
+/* z-index:2, выше ::before (1) — верхний фейд-градиент не размывает
+   логотип, тот остаётся чётким поверх видео независимо от кадра ролика. */
+.sw-eco-logo {
+  position: absolute; z-index: 2;
+  top: clamp(16px, 2vw, 24px); right: clamp(16px, 2vw, 24px);
+  height: clamp(56px, 5.6vw, 76px); width: auto;
+  pointer-events: none;
+}
 .sw-eco-media::before, .sw-eco-media::after {
   content: ''; position: absolute; inset-inline: 0; z-index: 1; height: 24%;
   pointer-events: none;

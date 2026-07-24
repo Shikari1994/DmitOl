@@ -3,8 +3,7 @@
    ════════════════════════════════════════════════ */
 @media (max-width: 700px) {
   /* (шапка уходит в бургер ниже 1200 — см. блок «МОБИЛЬНАЯ ОГРАНКА») */
-  .car-head { flex-direction: column; align-items: flex-start; gap: 24px; }
-  .car-head .h-title, .prod-head .h-title { font-size: clamp(1.55rem, 6.3vw, 2.0rem); }
+  .prod-head .h-title { font-size: clamp(1.55rem, 6.3vw, 2.0rem); }
   .prod-head-row { grid-template-columns: 1fr; }
   .prod-head-lead { padding-left: clamp(24px, 3vw, 40px); margin-top: 16px; padding-top: 16px; }
   .step { grid-template-columns: 44px 1fr; gap: 18px; }

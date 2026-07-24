@@ -1,58 +1,15 @@
 ---
 /* 2026-07-21: футер переписан дословно по структуре и тексту подвала
-   D:\Projects\Dmit (Услуги → Контакты → нижний бар) — пользователь
-   явно попросил копию 1:1, а не парафраз. Секции Services.astro и
-   Contact.astro удалены целиком, их содержимое живёт здесь, как у
-   Dmit. Жёсткая чертёжная рамка (grid-border) и corner-marks-прицелы
-   сознательно не перенесены — по просьбе пользователя оставлены только
-   тонкие разделительные линии var(--line), см. память
-   dmit-sibling-reference / redesign-direction. */
+   D:\Projects\Dmit (Контакты → нижний бар) — пользователь явно попросил
+   копию 1:1, а не парафраз. Жёсткая чертёжная рамка (grid-border) и
+   corner-marks-прицелы сознательно не перенесены — по просьбе
+   пользователя оставлены только тонкие разделительные линии var(--line),
+   см. память dmit-sibling-reference / redesign-direction.
+   2026-07-24: блок «Услуги» отсюда убран — переехал в карточки сцены
+   «О компании» (About.astro, .atlas-slot), см. aboutScene.js. */
 ---
 
 <footer>
-  <div class="footer-row">
-    <div class="footer-cell footer-cell-a">
-      <span class="footer-tag mono">Сервисный центр</span>
-      <h2 class="footer-services-title">Услуги</h2>
-    </div>
-    <div class="footer-cell footer-cell-b footer-quote">
-      <p>
-        Полный цикл инженерно-технической поддержки: от сложного
-        компонентного ремонта железа на собственной базе до
-        онлайн-супервайзинга бурения.
-      </p>
-    </div>
-  </div>
-
-  <div class="footer-row footer-row-services">
-    <div class="footer-cell footer-cell-a">
-      <span class="services-n mono">Направление сервиса // 01</span>
-      <h3>Модернизация и ТО телесистем</h3>
-      <p>
-        Регламентное текущее обслуживание, калибровка инклинометров,
-        глубокий ремонт электронных модулей, замена датчиков и
-        восстановление геометрии корпусов телесистем.
-      </p>
-      <a class="services-link mono" href="#contact">
-        Отправить ТЗ на ремонт
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-      </a>
-    </div>
-    <div class="footer-cell footer-cell-b">
-      <span class="services-n mono">Направление сервиса // 02</span>
-      <h3>Онлайн-сопровождение бурения</h3>
-      <p>
-        Развёртывание систем удалённого контроля параметров проходки,
-        предиктивный анализ аварийных ситуаций, удалённый
-        супервайзинг и круглосуточная поддержка инженеров на объекте.
-      </p>
-      <a class="services-link mono" href="#contact">
-        Запросить мониторинг
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-      </a>
-    </div>
-  </div>
-
   <div id="contact" class="footer-row">
     <div class="footer-cell footer-cell-a">
       <span class="footer-tag mono">связь</span>

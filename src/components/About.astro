@@ -1,6 +1,4 @@
 ---
-import { asset } from '../lib/asset.js'
-
 /* ─── «О компании» — одна сцена, всё движется вместе ───
 
    Раньше здесь стояли два раздела подряд: штабель «Ключевых цифр» и вслед
@@ -32,25 +30,24 @@ import { asset } from '../lib/asset.js'
    эту карточку и подписывает. */
 const GEO_WORDS = 'Реализуем проекты по всей России'.split(' ')
 
-const FACTS = [
+const SERVICES = [
   {
-    big: '15', unit: 'лет', kicker: 'На рынке телеметрии',
-    text: 'Разрабатываем и производим системы MWD/LWD с 2010 года. Оборудование работает на объектах ведущих добывающих компаний России и СНГ.',
-    img: '/t1.png',
+    n: 'Направление сервиса // 01',
+    title: 'Модернизация и ТО телесистем',
+    text: 'Регламентное текущее обслуживание, калибровка инклинометров, глубокий ремонт электронных модулей, замена датчиков и восстановление геометрии корпусов телесистем.',
+    linkText: 'Отправить ТЗ на ремонт',
+    href: '#contact',
   },
   {
-    big: '200+', kicker: 'Скважин с MWD/LWD',
-    text: 'Пробурено с нашими телесистемами — от наклонно-направленных до горизонтальных стволов сложного профиля.',
-    img: '/t2.png',
-  },
-  {
-    big: '24/7', kicker: 'Инженерная поддержка',
-    text: 'Дежурная смена инженеров на связи круглосуточно, с удалённым доступом к данным буровой в реальном времени.',
-    img: '/t3.png',
+    n: 'Направление сервиса // 02',
+    title: 'Онлайн-сопровождение бурения',
+    text: 'Развёртывание систем удалённого контроля параметров проходки, предиктивный анализ аварийных ситуаций, удалённый супервайзинг и круглосуточная поддержка инженеров на объекте.',
+    linkText: 'Запросить мониторинг',
+    href: '#contact',
   },
 ]
 
-const total = String(FACTS.length).padStart(2, '0')
+const total = String(SERVICES.length).padStart(2, '0')
 ---
 
 <section id="about" data-theme="black">
@@ -105,24 +102,19 @@ const total = String(FACTS.length).padStart(2, '0')
       </div>
 
       <div class="atlas-deck">
-        <span class="atlas-deck-kicker mono">Ключевые цифры</span>
+        <span class="atlas-deck-kicker mono">Услуги</span>
         {/* Слот — grid в одну ячейку: карточки лежат друг на друге, высота
             слота равна самой высокой. Видима ровно одна — её ведёт скролл. */}
         <div class="atlas-slot">
-          {FACTS.map((f, i) => (
+          {SERVICES.map((s, i) => (
             <article class="atlas-card" data-atlas-card={i} aria-hidden={i !== 0} inert={i !== 0}>
-              <div class="ac-shot">
-                <img src={asset(f.img)} alt="" loading="lazy" draggable="false" />
-              </div>
-
-              <div class="ac-body">
-                <span class="ac-big">
-                  {f.big}
-                  {f.unit && <span class="ac-unit">{f.unit}</span>}
-                </span>
-                <span class="ac-kicker">{f.kicker}</span>
-                <p class="ac-text">{f.text}</p>
-              </div>
+              <span class="ac-kicker mono">{s.n}</span>
+              <h3 class="ac-title">{s.title}</h3>
+              <p class="ac-text">{s.text}</p>
+              <a class="ac-link mono" href={s.href}>
+                {s.linkText}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </a>
             </article>
           ))}
         </div>
