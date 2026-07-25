@@ -350,7 +350,33 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
    чем откроется место. Высота — по модификатору на конкретный id: кадры
    совсем разного формата (pulsator обычный, resistivimeter — кадр 33:1,
    почти линия, общий clamp был бы либо крошечным, либо непомерно
-   широким на другом). */
+   широким на другом).
+
+   ПРАВИЛО (закреплено по прямой просьбе, 2026-07-25): высота раскрытия
+   плашки на hover считается по «естественному» (auto) размеру контента
+   внутри .rig-media-inner — это и есть сам трюк 0fr→1fr. Значит ЛЮБОЙ
+   height, заданный напрямую на img (или на .rig-media-inner), НАПРЯМУЮ
+   двигает высоту плашки — увеличил картинку, увеличилась и плашка.
+   Договорённость: высота раскрытия у 04/05/06/07 должна визуально
+   совпадать. Если нужно изменить видимый размер картинки в отрыве от
+   высоты плашки — НЕ трогать height у img в потоке, а использовать
+   безопасный приём (см. .rig-media--parts и .rig-media--pulsator ниже
+   как готовые образцы для копирования):
+     1. .rig-media-inner { position: relative; }
+     2. .rig-media-inner::before — invisible spacer, display:block,
+        height которого = ЖЕЛАЕМАЯ высота раскрытия плашки (обычно
+        var(--rig-media-h) + clamp(14px,1.8vw,20px), как у 04/05/06) —
+        именно он, будучи в потоке, сообщает грид-треку «естественный»
+        размер вместо картинки.
+     3. img { position: absolute; ... } — картинка любого нужного
+        размера, вне потока, трек грида её не видит вообще.
+     4. overflow:hidden уже есть на .rig-media-inner — картинка обрежется
+        по границе спейсера/плашки, не раздувая и не вылезая наружу.
+   transform: scale() на .rig-media-inner для увеличения НЕ работает —
+   он визуально масштабирует и рамку overflow:hidden вместе с картинкой,
+   но не сам layout-размер, который видит грид; итог совпадает с высотой
+   плашки, но зато отмасштабированная картинка вываливается за реальную
+   (не увеличенную) рамку .rig-corners — проверено, не переизобретать. */
 .rig-media--accordion {
   grid-column: 1 / -1;
   display: grid;
@@ -383,22 +409,141 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   transform: translateX(0);
   opacity: 1;
 }
-/* 2026-07-25: pulsator сменил кадр на pulser-rod.webp — тот же приём, что
-   у resistivimeter (плотно обрезанный по объекту, соотношение ~21:1,
-   почти линия), без прежней компенсации отступа под старую композицию
-   кадра — просто высота-клапан, ширина тянется по aspect-ratio. */
-.rig-media--resistivimeter img { height: var(--rig-media-h); }
+/* 2026-07-25: 04/06 (резистивиметр/пульсатор) — правый край кадра всегда
+   должен упираться ровно в середину плашки, и при сужении экрана кадр
+   должен «уезжать» левее сам (больше скрываться), а не оставаться
+   привязанным к произвольной точке.
+   Первая попытка (translate на фиксированный %/px от левого края) была
+   ДВАЖДЫ сломана одним и тем же старым багом: базовый img-reset (base.css,
+   img{max-width:100%}) обрезает ширину картинки до ширины контейнера,
+   а высота остаётся фиксированной
+   — при контейнере УЖЕ собственной ширины кадра (а он теперь всего 50%
+   трека) пропорции разъезжались («лепёшка» у резистивиметра), а у
+   пульсатора translate на фиксированный px уводил уже сплющенную
+   (обрезанную по ширине) картинку целиком за левый край — отсюда
+   «пропала».
+   Рабочий приём — без единого магического числа: img { max-width: none }
+   отменяет тот самый глобальный сброс, возвращая картинке её реальную
+   (растянутую по высоте) ширину; правый край крепится к правому краю
+   контейнера (right: 0, а не left+translate) — контейнер и так кончается
+   ровно на середине плашки (см. margin-left/width ниже), значит и кадр
+   всегда кончается там же, ЛЮБАЯ его лишняя (левая) часть просто
+   обрезается overflow:hidden. При сужении экрана контейнер и высота кадра
+   (--rig-media-h) уменьшаются по-разному — картинка автоматически прячет
+   слева больше или меньше, без переиспользования каких-либо чисел. */
+.rig-media--resistivimeter,
+.rig-media--pulsator {
+  margin-left: calc(-1 * var(--rp));
+  width: calc(50% + var(--rp));
+  overflow: hidden;
+}
+.rig-media--resistivimeter .rig-media-inner,
+.rig-media--pulsator .rig-media-inner {
+  position: relative;
+}
+.rig-media--resistivimeter .rig-media-inner::before,
+.rig-media--pulsator .rig-media-inner::before {
+  content: '';
+  display: block;
+  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px));
+}
+.rig-media--resistivimeter img,
+.rig-media--pulsator img {
+  position: absolute;
+  top: 50%; right: 0;
+  max-width: none;
+  width: auto;
+  margin: 0;
+  transform: translateY(-50%);
+}
+.rig-media--resistivimeter img { height: calc(var(--rig-media-h) * 1.2); }
+/* ×1.45, а не ×1.2 — кадр pulser-rod (21:1) менее вытянутый, чем Res.webp
+   (33:1); без увеличения в кадре оставалось слишком много скучного
+   гладкого прутка и мало самого узла (соединитель/механизм). Число не
+   привязано к ширине контейнера (в отличие от старого приёма) —
+   регулирует только КОМПОЗИЦИЮ (сколько именно узла видно), не сам факт
+   «доезжает до середины» — это теперь гарантирует right:0. */
+.rig-media--pulsator img { height: calc(var(--rig-media-h) * 1.45); }
+/* Без переутверждения общий hover-селектор .rig-row--accordion:hover
+   .rig-media--accordion img (та же специфичность, но раньше по коду)
+   сбросил бы transform в translateX(0) на наведении — картинка потеряла
+   бы вертикальное центрирование. */
+.rig-row--accordion:hover .rig-media--resistivimeter img,
+.rig-row--accordion:focus-within .rig-media--resistivimeter img,
+.rig-row--accordion:hover .rig-media--pulsator img,
+.rig-row--accordion:focus-within .rig-media--pulsator img {
+  transform: translateY(-50%);
+}
 /* generator/pulsator раньше были выше resistivimeter (90px/70px против
    46px) — карточка на hover раскрывалась на разную высоту у каждой из
    трёх. По прямой просьбе высота раскрытия всех плашек с фото должна
    совпадать с 04 (резистивиметр), поэтому здесь та же --rig-media-h:
    картинка просто отображается мельче (ширина тянется по aspect-ratio),
    а не диктует свою высоту строке. */
-.rig-media--generator img { height: var(--rig-media-h); filter: none; }
-.rig-media--pulsator img { height: var(--rig-media-h); filter: none; }
-/* 2026-07-25: «Запчасти» получили фото (parts.webp) тем же приёмом —
-   без явной высоты аккордеон растянулся бы на натуральный размер кадра. */
-.rig-media--parts img { height: var(--rig-media-h); }
+.rig-media--generator .rig-media-inner { position: relative; }
+.rig-media--generator .rig-media-inner::before {
+  content: '';
+  display: block;
+  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px));
+}
+.rig-media--generator img {
+  position: absolute;
+  top: 50%; left: 0;
+  height: calc(var(--rig-media-h) * 1.7);
+  margin: 0;
+  filter: none;
+  transform: translateY(-50%) translateX(-32px);
+}
+.rig-row--accordion:hover .rig-media--generator img,
+.rig-row--accordion:focus-within .rig-media--generator img {
+  transform: translateY(-50%) translateX(0);
+}
+/* 2026-07-25: «Запчасти» (zip.png) — картинка крупнее контейнера, но
+   высота раскрытия плашки должна совпадать с 04/05/06. Прямой height на
+   img для этого не годится: это и есть тот layout-размер, по которому
+   .rig-media--accordion считает grid-template-rows: 1fr — росла бы и
+   картинка, и плашка вместе (как было). transform: scale() тоже не
+   годится — рамка плашки (.rig-corners) следует за реальным (маленьким)
+   размером трека, а отмасштабированная картинка визуально вываливается
+   за неё, на фон.
+   Промежуточный вариант — явная height на самом .rig-media-inner — тоже
+   сломал трюк: .rig-media-inner и есть тот grid-item, чей auto-размер
+   обнуляет min-height:0 при grid-template-rows:0fr (см. комментарий
+   выше «Выезд фото узла на hover»); явный height на НЁМ САМОМ отменяет
+   эту автоматическую обнулку — плашка застряла в открытом виде даже без
+   наведения.
+   Рабочий приём — spacer: невидимый ::before нужной высоты кладём В ПОТОК
+   внутри .rig-media-inner (как обычная img у 04/05/06 — тот же механизм,
+   just work), он и сообщает грид-треку «естественный» размер (совпадающий
+   с 04/05/06), корректно обнуляемый через min-height:0 при 0fr. Сама
+   увеличенная картинка — position:absolute, вне потока, трек её не видит
+   вообще, обрезается рамкой .rig-media-inner (overflow:hidden) — зум/кроп,
+   а не раздувание строки. */
+.rig-media--parts .rig-media-inner { position: relative; }
+.rig-media--parts .rig-media-inner::before {
+  content: '';
+  display: block;
+  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px));
+}
+.rig-media--parts img {
+  /* zip.png (в отличие от уже кадрированных webp-исходников других узлов)
+     содержит собственное белое поле слева от первой детали (~5% ширины
+     кадра, 2048×798). При масштабировании через height это поле растёт
+     вместе с картинкой и физически отодвигает деталь от цифры «07» —
+     поэтому left считаем не от 0, а с компенсирующим сдвигом, завязанным
+     на ту же переменную --parts-h, что и height, чтобы паддинг обрезался
+     независимо от текущего множителя. */
+  --parts-h: calc(var(--rig-media-h) * 5);
+  position: absolute;
+  top: 50%; left: calc(var(--parts-h) * -0.13);
+  height: var(--parts-h);
+  margin: 0;
+  transform: translateY(-50%) translateX(-32px);
+}
+.rig-row--accordion:hover .rig-media--parts img,
+.rig-row--accordion:focus-within .rig-media--parts img {
+  transform: translateY(-50%) translateX(0);
+}
 
 /* .rig-media--right сейчас не используется ни одной карточкой (01 и 02
    переведены на .rig-media--mwd/--decoder ниже, своя раскладка), оставлен
