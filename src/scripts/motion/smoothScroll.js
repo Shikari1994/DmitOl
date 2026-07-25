@@ -15,13 +15,18 @@ if (!reduce) {
   gsap.ticker.add((time) => lenis.raf(time * 1000))
   gsap.ticker.lagSmoothing(0)
 
+  /* 2026-07-25: ссылки шапки — теперь '/#about' (см. Nav.astro), не
+     голый '#about', ради страниц товара. a.href — уже разрешённый
+     браузером абсолютный URL; сравниваем его pathname с текущим —
+     перехватываем и скроллим лениsom только «свои» якоря (тот же
+     документ), а переход на другую страницу (со страницы товара на
+     '/#products') оставляем браузеру как обычную навигацию. */
   document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href^="#"]')
+    const a = e.target.closest('a[href*="#"]')
     if (!a) return
-    const id = a.getAttribute('href')
-    if (id.length > 1) {
-      e.preventDefault()
-      lenis.scrollTo(id, { offset: -70 })
-    }
+    const url = new URL(a.href, location.href)
+    if (url.pathname !== location.pathname || url.hash.length <= 1) return
+    e.preventDefault()
+    lenis.scrollTo(url.hash, { offset: -70 })
   })
 }

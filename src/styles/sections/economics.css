@@ -19,31 +19,55 @@
      обрезанным рядом аппаратов и шапкой «Экономики» читался лишний
      воздух, а не встык двух сцен одного рассказа. */
   padding-top: 0;
+  /* Снизу следом идёт #how той же чёрной темы: общий `section` навешивает
+     padding-bottom здесь и свой padding-top там, вместе оба --section-y
+     читались двойным зазором между «Промышленными алгоритмами» и
+     «Принципом работы». Держит отступ только следующая секция. */
+  padding-bottom: 0;
 }
 
 .econ-head {
-  /* 34% → calc(100%/3): линия (border-left у .econ-head-lead,
-     .econ-problem-text, .econ-algos ниже — общая сплошная черта на всю
-     секцию) переведена на розовую .align-guide (та же доля от
-     .page-shell, #economics своей ширины не режет — совпадает точно). */
+  /* 2026-07-25: шапка снята с плоской grid-border-таблицы и переведена
+     в стеклянную карточку — тем же приёмом, что .prod-head-row у секции
+     «Продукция» (см. equipment.css): та же пропорция колонок 1/3 · 2/3,
+     тот же .glass-рецепт (см. glass.css), тот же inset var(--gut) по
+     бокам вместо border-bottom на всю секцию. Волосяная граница между
+     колонками (border-left) убрана вместе с ней — в .prod-head-row её
+     тоже нет, левый край лида держит только акцентная кромка абзаца. */
   display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
-  border-bottom: 1px solid var(--line);
+  align-items: center;
+  margin: clamp(20px, 2.4vw, 32px) var(--gut) clamp(28px, 3.6vw, 48px);
+  padding: clamp(24px, 3vw, 40px) 0;
+  background-color: rgba(20, 20, 20, 0.07);
 }
+html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.14); }
 .econ-head-title {
-  padding: clamp(32px, 4vw, 56px) clamp(20px, 2.4vw, 32px) clamp(32px, 4vw, 56px) var(--gut);
-  display: flex; flex-direction: column; justify-content: center; gap: 16px;
+  padding: 0 clamp(20px, 2.4vw, 32px) 0 clamp(24px, 3vw, 40px);
+  display: flex; flex-direction: column; justify-content: center;
 }
+/* Кикер раздела — снаружи стеклянной карточки, как обычный .eyebrow
+   у остальных секций (см. .prod-head-eyebrow), а не строкой внутри неё:
+   это подпись самого раздела, а не часть заголовочной карточки. */
 .econ-kicker {
+  padding: clamp(28px, 3.6vw, 48px) var(--gut) clamp(16px, 2vw, 24px);
   font-size: var(--fs-0); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--econ-red);
+  display: flex; align-items: center; gap: var(--s-2);
 }
+/* Номер раздела — тот же приём, что у .eyebrow .ey-no в base.css
+   (see About/Software/Mobile/How), подключён отдельным правилом, а не
+   классом .eyebrow: тому нужен был бы свой margin-bottom и letter-spacing,
+   которые здесь уже держит .econ-kicker. */
+.econ-kicker .ey-no {
+  font-family: var(--font-mono); font-size: var(--fs-1);
+  letter-spacing: 0.04em; font-weight: 500; color: var(--brand);
+}
+.econ-kicker .ey-no .ey-den { color: var(--ink-faint); }
 .econ-head-lead {
-  display: flex; align-items: center;
-  padding: clamp(32px, 4vw, 56px) var(--gut) clamp(32px, 4vw, 56px) clamp(28px, 3.2vw, 44px);
-  border-left: 1px solid var(--line); background: var(--line-soft);
+  padding: 0 clamp(24px, 3vw, 40px) 0 clamp(28px, 3.2vw, 44px);
 }
 .econ-head-lead .lead {
-  border-left: 2px solid var(--econ-red); padding-left: clamp(16px, 1.8vw, 22px); max-width: 58ch;
+  border-left: 2px solid var(--econ-red); padding-left: clamp(16px, 1.8vw, 22px); max-width: 58ch; margin: 0;
 }
 
 .econ-problems { display: flex; flex-direction: column; border-bottom: 1px solid var(--line); }
@@ -55,7 +79,7 @@
 .econ-problem:first-child { border-top: 0; }
 .econ-problem:hover { background: var(--bg-raised); }
 .econ-problem-head {
-  padding: clamp(28px, 3.4vw, 48px) clamp(20px, 2.4vw, 32px) clamp(28px, 3.4vw, 48px) var(--gut);
+  padding: clamp(80px, 9.6vw, 142px) clamp(20px, 2.4vw, 32px) clamp(80px, 9.6vw, 142px) var(--gut);
   display: flex; flex-direction: column; justify-content: center; gap: 8px;
 }
 .econ-problem-kicker {
@@ -64,11 +88,47 @@
 }
 .econ-problem-head h3 { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
 .econ-problem-text {
+  position: relative;
   display: flex; align-items: center;
-  padding: clamp(28px, 3.4vw, 48px) var(--gut) clamp(28px, 3.4vw, 48px) clamp(28px, 3.2vw, 44px);
+  padding: clamp(80px, 9.6vw, 142px) var(--gut) clamp(80px, 9.6vw, 142px) clamp(28px, 3.2vw, 44px);
   border-left: 1px solid var(--line);
-  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 64ch;
 }
+.econ-problem-copy {
+  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 56ch;
+  padding-right: clamp(72px, 9vw, 150px); /* место под абсолютно спозиционированную иконку */
+}
+/* Иконка — инлайновый SVG (не <img>), каждый цвет узла заменён на
+   currentColor при чтении файла (см. loadMonoIcon в Economics.astro):
+   моно-силуэт наследует --ink секции и сам переключается чёрный/белый
+   со схемой. position: absolute — сознательно, а не участие в flex-
+   расчёте высоты ряда: любая высота, заданная иконке через flex/grid,
+   тянула за собой высоту (следовательно и рамку) всего ряда — что и
+   было жалобой пользователя. Абсолютное позиционирование выводит
+   иконку из потока целиком: высоту ряда держит только абзац, а SVG
+   можно увеличивать сколь угодно без изменения границ блока. */
+/* aspect-ratio на самом .econ-problem-icon (общий бокс под все три
+   файла, ради выравнивания левого края) убран 2026-07-25: связка
+   aspect-ratio + width:auto на absolute-блоке с одним заданным офсетом
+   (right, без left) в какой-то момент упирается в доступную ширину и
+   перестаёт расти по высоте вместе с ней — дальнейшие увеличения
+   height переставали визуально работать. Высота снова простым clamp'ом
+   прямо на <svg>, без искусственного общего бокса (проверенная схема
+   из более ранних правок этой секции). */
+.econ-problem-icon {
+  position: absolute; top: 50%; right: var(--gut);
+  transform: translateY(-50%);
+  color: var(--ink); opacity: 0.9; pointer-events: none;
+}
+.econ-problem-icon svg { display: block; width: auto; height: clamp(270px, 27vw, 400px); }
+/* circle1.svg (Проблема 01) визуально мельче двух других при той же
+   высоте бокса — у исходных файлов разное отношение «диаметр круга /
+   высота viewBox» (запас под подпись снизу у каждого свой), поэтому
+   одинаковый height даёт разный видимый размер самого круга. Точечная
+   поправка по первому ряду вместо пересчёта общей формулы. */
+.econ-problem:nth-child(1) .econ-problem-icon svg { height: clamp(282px, 28vw, 418px); }
+/* circle2.svg (Проблема 02) читается чуть левее первой и третьей —
+   точечный сдвиг вправо той же кистью, что и поправка размера выше. */
+.econ-problem:nth-child(2) .econ-problem-icon { transform: translate(10px, -50%); }
 
 .econ-synergy { display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr; }
 .econ-synergy-main {
@@ -105,7 +165,11 @@
 
 @media (max-width: 700px) {
   .econ-head, .econ-problem, .econ-synergy { grid-template-columns: 1fr; }
-  .econ-head-lead, .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); }
+  .econ-head-lead { padding-left: clamp(24px, 3vw, 40px); margin-top: 16px; padding-top: 16px; }
+  .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); flex-wrap: wrap; row-gap: 16px; }
+  .econ-problem-copy { padding-right: 0; }
+  .econ-problem-icon { position: static; transform: none; order: 2; margin-left: auto; }
+  .econ-problem-icon svg { height: 72px; }
   .econ-algos { border-left: none; }
 }
 

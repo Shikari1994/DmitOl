@@ -32,7 +32,7 @@
    за тем, как GLOBE_END/GEO_END/NIGHT_FULL в JS были раздвинуты к концу
    прогресса (см. globeCanvas.js, aboutScene.js) — теперь финал сцены
    приходится на последние ~10% этой длины, а не тонет в лишнем хвосте. */
-.atlas { position: relative; height: 240svh; }
+.atlas { position: relative; height: 190svh; }
 .atlas-stage {
   position: sticky; top: 0; height: 100svh; overflow: hidden;
   background: var(--surface);
@@ -311,7 +311,7 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
 }
 
 @media (max-width: 900px) {
-  .atlas { height: 188svh; }
+  .atlas { height: 150svh; }
   /* колонка уводится во всю ширину, карточка ложится на низ кадра */
   .atlas-copy { right: var(--gut); }
   .atlas-deck {

@@ -209,7 +209,13 @@ const LIFECYCLE = [
                 {m.tags.map((t) => <span class="tag">{t}</span>)}
               </div>
             </div>
-            <div class="sw-slide-shot">
+            <div
+              class="sw-slide-shot"
+              data-video-lightbox-trigger
+              role="button"
+              tabindex="0"
+              aria-label={`Открыть видео «${m.title}» на весь экран`}
+            >
               <video
                 class="bento-shot"
                 data-lazy-video={asset(m.video)}
@@ -224,9 +230,23 @@ const LIFECYCLE = [
                 <span class="bento-kicker mono"><span class="bento-n">{m.n}</span> · {m.tab}</span>
                 {m.live && <span class="bento-live"><span class="bento-live-dot" />LIVE</span>}
               </div>
+              <span class="sw-expand" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6" /></svg>
+              </span>
             </div>
           </figure>
         ))}
+      </div>
+    </div>
+
+    <div class="video-lightbox" data-video-lightbox aria-hidden="true">
+      <div class="video-lightbox-backdrop" data-video-lightbox-close></div>
+      <button type="button" class="video-lightbox-close" data-video-lightbox-close>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+        <span>Назад</span>
+      </button>
+      <div class="video-lightbox-stage" data-video-lightbox-stage>
+        <video class="video-lightbox-video" data-video-lightbox-video muted loop playsinline autoplay></video>
       </div>
     </div>
 

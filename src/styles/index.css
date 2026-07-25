@@ -30,8 +30,8 @@
 @import './sections/economics.css';
 @import './sections/footer.css';
 @import './sections/equipment.css';
-@import './sections/specs-drawer.css';
-@import './responsive.css';            /* стоял между specs-drawer и software — так и оставлен */
+@import './sections/product-page.css'; /* /products/[id] · страница товара, вместо бывшей шторки ТТХ */
+@import './responsive.css';
 @import './sections/software.css';
 @import './sections/software-signature.css';
 @import './sections/mobile.css';

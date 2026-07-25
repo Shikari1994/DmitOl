@@ -46,7 +46,10 @@ import { asset } from '../lib/asset.js'
       <div class="hero-copy-top">
         <span class="hero-tag mono">Научно-производственный комплекс</span>
         <div class="hero-brand">
-          <span class="hero-brand-mark mono">ГТН</span>
+          <span class="hero-brand-mark">
+            <img class="hero-brand-mark-img hero-brand-mark-img--dark" src={asset('/LOGO_white.png')} alt="ГТН" loading="eager" draggable="false" />
+            <img class="hero-brand-mark-img hero-brand-mark-img--light" src={asset('/LOGO_black.png')} alt="ГТН" loading="eager" draggable="false" />
+          </span>
           <h1 class="hero-brand-title">ГЕОТЕХ<br />НАВИГАЦИЯ</h1>
         </div>
       </div>

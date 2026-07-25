@@ -138,13 +138,20 @@ if (burger && menu) {
    ровно та секция, что сейчас идёт под шапкой. Отдельный наблюдатель,
    а не переиспользование того же в motion.js: nav.js грузится первым,
    до разбора Lenis и GSAP, и бургер не должен ждать несвязанный модуль
-   ради подсветки пункта меню. */
+   ради подсветки пункта меню.
+
+   2026-07-25: ссылки шапки теперь вида '/#about' (см. Nav.astro, ради
+   страниц товара) вместо голого '#about', поэтому вместо getAttribute +
+   slice(1) читаем a.href — свойство, не атрибут, браузер уже отдаёт его
+   абсолютным URL — и берём хвост после '#'. На страницах товара самих
+   секций (#about и т.д.) в DOM нет, sections/linkFor там просто останутся
+   пустыми и обсервер ниже не запустится — это ожидаемо. */
 {
-  const links = [...document.querySelectorAll('.nav-links a[href^="#"]')]
+  const links = [...document.querySelectorAll('.nav-links a[href*="#"]')]
   const sections = []
   const linkFor = new Map()
   links.forEach((a) => {
-    const el = document.getElementById(a.getAttribute('href').slice(1))
+    const el = document.getElementById(a.href.split('#')[1])
     if (el) {
       sections.push(el)
       linkFor.set(el, a)

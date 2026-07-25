@@ -1,0 +1,93 @@
+/* ════════════════════════════════════════════════
+   СТРАНИЦА ТОВАРА · /products/[id]
+   ────────────────────────────────────────────────
+   2026-07-25: раньше «Подробнее» на плашке продукции открывало шторку
+   ТТХ поверх текущей страницы (specs-drawer, удалена); теперь это
+   отдельная страница — фото, описание, полный список ТТХ и переключатель
+   между всей линейкой (правая колонка). Данные общие с Showcase.astro,
+   см. data/products.js. Глоссарий классов свой (product-*), не specs-*:
+   старый рецепт шторки удалён вместе с файлом. */
+
+.product-back {
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  font-size: var(--fs-1); font-weight: 600; letter-spacing: 0.02em;
+  color: var(--ink-dim); text-decoration: none;
+  transition: color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.product-back svg { width: 16px; height: 16px; }
+.product-back:hover { color: var(--brand); transform: translateX(-3px); }
+
+.product-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: clamp(32px, 4vw, 64px);
+  margin-top: clamp(24px, 3vw, 40px);
+  align-items: start;
+}
+
+.product-title { font-size: var(--fs-7); margin-top: var(--s-1); }
+.product-line {
+  margin-top: var(--s-2);
+  font-size: var(--fs-1); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.product-photo {
+  margin-top: clamp(28px, 3.4vw, 44px);
+  display: flex; justify-content: center; align-items: center;
+  max-height: min(48vh, 460px);
+  padding: clamp(20px, 2.4vw, 32px);
+  border: 1px solid var(--line); background: var(--panel);
+}
+.product-photo img { max-width: 100%; max-height: min(44vh, 420px); width: auto; object-fit: contain; }
+
+.product-text {
+  margin-top: clamp(24px, 3vw, 36px);
+  font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim); max-width: 62ch;
+}
+
+.product-specs-title {
+  margin-top: clamp(40px, 5vw, 64px);
+  font-size: var(--fs-4); font-weight: 700; letter-spacing: -0.02em;
+}
+.product-specs { margin-top: var(--s-3); border-top: 1px solid var(--line-soft); }
+.product-spec-row {
+  display: flex; justify-content: space-between; gap: var(--s-3);
+  padding: 14px 0; border-bottom: 1px solid var(--line-soft);
+}
+.product-spec-row dt { color: var(--ink-faint); font-size: var(--fs-1); }
+.product-spec-row dd { color: var(--ink); font-size: var(--fs-1); font-weight: 500; text-align: right; }
+
+.product-cta { margin-top: clamp(32px, 4vw, 48px); }
+
+/* ── Переключатель линейки ──
+   Плавающая панель-стекло (селектор добавлен в glass.css), sticky под
+   шапкой — со страницы одного узла на другой переходишь одним кликом,
+   без возврата на витрину. */
+.product-menu {
+  position: sticky; top: calc(var(--nav-h) + var(--s-4));
+  padding: clamp(20px, 2.4vw, 28px);
+}
+.product-menu-title {
+  display: block;
+  font-size: var(--fs-0); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: var(--s-3);
+}
+.product-menu ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.product-menu-link {
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: 10px 8px; text-decoration: none; color: var(--ink-dim);
+  border-left: 2px solid transparent;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+.product-menu-link:hover { color: var(--ink); background: var(--line-soft); }
+.product-menu-link.is-active { color: var(--brand); border-color: var(--brand); }
+.product-menu-num { font-size: var(--fs-0); color: var(--ink-faint); min-width: 1.6em; }
+.product-menu-link.is-active .product-menu-num { color: var(--brand); }
+.product-menu-label { font-size: var(--fs-1); font-weight: 600; letter-spacing: 0.01em; }
+.product-menu-link--external { margin-top: var(--s-2); border-top: 1px solid var(--line-soft); padding-top: 14px; }
+
+@media (max-width: 900px) {
+  .product-layout { grid-template-columns: 1fr; }
+  .product-menu { position: static; }
+}

@@ -157,14 +157,26 @@ html[data-scheme="light"] #hero .hero-media-scrim {
 }
 .hero-brand { display: flex; align-items: center; gap: 20px; }
 .hero-brand-mark {
-  flex: 0 0 auto; width: 64px; height: 64px;
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid var(--hero-ink);
-  font-family: var(--font-mono); font-weight: 800; font-size: 20px;
-  letter-spacing: -0.03em; text-transform: uppercase; color: var(--hero-ink);
+  position: relative;
+  flex: 0 0 auto;
+  /* Высота = высота блока .hero-brand-title (2 строки, line-height: 1,
+     значит высота = 2×font-size на каждом брейкпоинте ниже) — лого
+     ростом ровно с текст, а не отдельного произвольного размера.
+     Ширина — по родным пропорциям обрезанного PNG (1191:1004). */
+  height: 56px; width: calc(56px * 1191 / 1004);
 }
+.hero-brand-mark-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain;
+}
+.hero-brand-mark-img--light { display: none; }
+html[data-scheme="light"] .hero-brand-mark-img--dark { display: none; }
+html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
 @media (min-width: 640px) {
-  .hero-brand-mark { width: 80px; height: 80px; font-size: 24px; }
+  .hero-brand-mark { height: 88px; width: calc(88px * 1191 / 1004); }
+}
+@media (min-width: 1280px) {
+  .hero-brand-mark { height: 108px; width: calc(108px * 1191 / 1004); }
 }
 .hero-brand-title {
   font-family: var(--font-text); font-weight: 700;

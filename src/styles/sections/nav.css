@@ -1,11 +1,12 @@
 /* ════════════════════════════════════════════════
    НАВИГАЦИЯ
    ════════════════════════════════════════════════ */
-/* Шапка живёт в той же колоночной сетке, что и линии --rail-*:
-   каждый пункт меню начинается сразу за своей направляющей.
-   Поэтому боковых полей у самой шапки нет — их несут крайние
-   ячейки, иначе проценты считались бы от content-box и меню
-   разъехалось бы с линиями. */
+/* Шапка живёт в той же колоночной сетке, что и линии --rail-*: логотип,
+   блок пунктов меню и .nav-tail занимают свои трек-колонки этой сетки.
+   Поэтому боковых полей у самой шапки нет — их несут крайние ячейки,
+   иначе проценты считались бы от content-box и меню разъехалось бы с
+   линиями. Внутри самого блока пунктов (.nav-links) выравнивание по
+   трекам больше не используется — см. комментарий там же. */
 nav.nav {
   /* left/right: 0 растягивают полосу на весь вьюпорт, а max-width +
      margin: auto тут же её обрезают и центрируют — тот же трюк, что
@@ -15,7 +16,7 @@ nav.nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   max-width: var(--maxw); margin: 0 auto;
   display: grid;
-  grid-template-columns: var(--rail-1) repeat(5, calc((var(--rail-6) - var(--rail-1)) / 5)) 1fr;
+  grid-template-columns: var(--rail-1) repeat(6, calc((var(--rail-6) - var(--rail-1)) / 6)) 1fr;
   align-items: center;
   padding: 22px 0;
   /* 2026-07-21: раньше шапка была прозрачной, пока страницу не
@@ -50,21 +51,33 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; padding-left: var(--gut); }
 .nav-logo img { height: 34px; width: auto; }
 .nav-logo-text { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-/* ul растворяется, чтобы каждый li стал ячейкой сетки шапки */
-.nav-links { display: contents; list-style: none; }
-.nav-links li { min-width: 0; padding-left: clamp(10px, 1vw, 18px); }
+/* 2026-07-25: было display:contents — каждый li становился отдельной
+   ячейкой сетки шапки шириной в один rail-трек, а зазор между пунктами
+   получался «остатком трека после текста». Пока лейблы были короткие и
+   похожей длины, разница была незаметна; с добавлением «Экономика
+   бурения» (длиннее прочих) зазоры стали заметно неровными — у короткого
+   «О компании» трек почти пуст, у длинного соседний зазор почти нулевой.
+   Список теперь один flex-контейнер с фиксированным gap: ширина трека
+   больше не участвует в расстоянии между пунктами, оно всегда одинаковое
+   независимо от длины текста. grid-column повторяет прежнюю границу
+   auto-размещения (2 / 7 — те же пять трек-колонок 2..6, что раньше
+   занимали пять li, резервная шестая перед .nav-tail не тронута). */
+.nav-links { grid-column: 2 / 7; display: flex; align-items: center; gap: clamp(20px, 2vw, 38px); list-style: none; }
+.nav-links li { min-width: 0; }
 .nav-links a { position: relative; color: var(--text-dim); text-decoration: none; font-size: var(--fs-1); letter-spacing: 0.04em; font-weight: 500; transition: color 0.25s; white-space: nowrap; }
 .nav-links a::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 100%; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease); }
 .nav-links a:hover { color: var(--text); }
 .nav-links a:hover::after { transform: scaleX(1); }
-/* grid-column закреплена явно: после удаления пункта «Магазин ЗИП»
-   (2026-07-21) пунктов меню меньше, чем средних колонок сетки, и без
-   явного номера авто-расстановка утащила бы .nav-tail в первую
-   свободную колонку вместо крайней правой. Span на две колонки (6..конец),
-   а не только последнюю 1fr — часам + переключателю темы + пилюле
-   «Связаться» одной узкой 1fr-колонки не хватало, и хвост вылезал за
-   правый край шапки. */
-.nav-tail { grid-column: 6 / -1; justify-self: end; margin-right: var(--gut); display: flex; align-items: center; gap: clamp(16px, 1.6vw, 26px); }
+/* grid-column закреплена явно: пунктов меню меньше, чем средних колонок
+   сетки, и без явного номера авто-расстановка утащила бы .nav-tail в
+   первую свободную колонку вместо крайней правой. Span на две колонки
+   (7..конец), а не только последнюю 1fr — часам + переключателю темы +
+   пилюле «Связаться» одной узкой 1fr-колонки не хватало, и хвост вылезал
+   за правый край шапки. 2026-07-25: было «6 / -1» при 4 пунктах меню и
+   repeat(5, ...) в grid-template-columns выше; пункт «Экономика бурения»
+   занял пятую из этих колонок, резервная сдвинулась на шестую — грид
+   пересчитан на repeat(6, ...), здесь номер колонки сдвинут вслед за ней. */
+.nav-tail { grid-column: 7 / -1; justify-self: end; margin-right: var(--gut); display: flex; align-items: center; gap: clamp(16px, 1.6vw, 26px); }
 /* часы — тот же приборный микро-регистр, что у readout'ов Drill Monitor
    в hero: mono, разрядка, приглушённый тон, табличные цифры не прыгают
    по ширине посекундно */

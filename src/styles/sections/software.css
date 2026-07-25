@@ -367,6 +367,81 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
 }
 .bento-body .tag-row { margin-top: 16px; }
 
+/* ── Развёрнутое видео вкладки ──
+   Кадр вкладки узкий (asymmetric-сплит с подписью), на нём плохо видно
+   детали интерфейса — по клику тот же ролик (тот же src и текущее время,
+   не рестарт, см. videoLightbox.js) вырастает FLIP-переходом из своего
+   прямоугольника почти во весь экран, а не кросс-фейдом: должно быть
+   видно, ЧТО именно развернулось. Кнопка «назад» и клик по фону сжимают
+   его обратно туда же. z-index 320 — заведомо выше остальных плавающих
+   слоёв страницы (шапка 200-ых, оверлеи меню), запас на будущее. */
+.sw-slide-shot { cursor: pointer; }
+.sw-slide-shot:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.sw-expand {
+  position: absolute; z-index: 4; right: 14px; bottom: 14px;
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(8, 10, 14, 0.42);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  color: #fff; opacity: 0.7; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.sw-expand svg { width: 15px; height: 15px; }
+.sw-slide-shot:hover .sw-expand,
+.sw-slide-shot:focus-visible .sw-expand { opacity: 1; transform: scale(1.08); }
+
+.video-lightbox {
+  position: fixed; inset: 0; z-index: 320;
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(16px, 4vw, 56px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+.video-lightbox.is-open { opacity: 1; pointer-events: auto; }
+.video-lightbox-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(4, 6, 9, 0.86);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.video-lightbox-close {
+  position: absolute; z-index: 1;
+  top: clamp(16px, 2.4vw, 30px); left: clamp(16px, 2.4vw, 30px);
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 16px 9px 12px;
+  background: rgba(20, 20, 20, 0.5); border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px; cursor: pointer;
+  color: #eef2f7;
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.video-lightbox-close svg { width: 16px; height: 16px; }
+.video-lightbox-close:hover { border-color: rgba(255, 255, 255, 0.32); background: rgba(20, 20, 20, 0.72); }
+
+.video-lightbox-stage {
+  position: relative; z-index: 1;
+  width: min(96vw, 1600px, calc(88vh * 2.08));
+  aspect-ratio: 2.08;
+  transition: transform 0.42s var(--ease);
+  will-change: transform;
+}
+.video-lightbox-video {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; background: #05080f;
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 640px) {
+  .video-lightbox-close span { display: none; }
+  .video-lightbox-close { padding: 10px; border-radius: 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-lightbox { transition: none; }
+  .video-lightbox-stage { transition: none; }
+}
+
 /* ── Жизненный цикл оборудования ──
    Продолжение раздела, а не новая секция: тот же чёрный фон, отбивка
    сверху отделяет его от кадра с вкладками.
