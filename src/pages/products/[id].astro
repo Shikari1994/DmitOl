@@ -26,11 +26,13 @@ const { product } = Astro.props
           Продукция
         </a>
 
+        <div class="product-header">
+          <h1 class="h-title product-title reveal">{product.title}</h1>
+          <p class="product-line mono reveal">{product.line}</p>
+        </div>
+
         <div class="product-layout">
           <div class="product-main">
-            <h1 class="h-title product-title reveal">{product.title}</h1>
-            <p class="product-line mono reveal">{product.line}</p>
-
             {product.image && (
               <div class="product-photo reveal">
                 <img src={asset(product.image)} alt={product.title} loading="eager" />

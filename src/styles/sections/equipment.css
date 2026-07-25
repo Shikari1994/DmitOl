@@ -81,11 +81,15 @@ html[data-scheme="light"] .prod-media-video { opacity: 0.32; }
 .prod-head-eyebrow { padding: clamp(28px, 3.6vw, 48px) var(--gut) 0; }
 .prod-head-row {
   display: grid;
-  /* 34% → calc(100%/3): раньше здесь стояла граница-ориентир для
-     серой border-left у .prod-head-lead (убрана), пропорция колонок
-     сохранена как есть — переносить её на .align-guide не требуется,
-     линии-ориентира на макете больше нет. */
-  grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
+  /* 2026-07-25: calc(100%/3) → calc((100% - var(--gut)) / 3) — карточка
+     сама инсетится на var(--gut) от края секции (margin ниже), поэтому
+     её локальные 100% — это W − 2·gut, и старая формула клала границу
+     колонок (и акцентную кромку .prod-head-lead .lead) на W/3 + gut/3,
+     на треть отступа правее общей направляющей, на которой стоит вся
+     остальная сетка сайта (см. .footer-cell-b, .econ-synergy,
+     .sw-slide-shot). Вычитаем один gut перед делением — та же формула,
+     что уже даёт нужную границу у .sw-eco-tiles/.sw-slide-shot. */
+  grid-template-columns: minmax(240px, calc((100% - var(--gut)) / 3)) 1fr;
   /* 2026-07-24 №2: колонки центрируются по вертикали друг относительно
      друга (align-items) — заголовок в одну строку и лид в три должны
      делить карточку пополам, а не упираться в общий верх. Раньше верх
@@ -101,12 +105,15 @@ html[data-scheme="light"] .prod-head-row { background-color: rgba(255, 255, 255,
 .prod-head-title {
   padding: 0 clamp(20px, 2.4vw, 32px) 0 clamp(24px, 3vw, 40px);
 }
+/* 2026-07-25: кромка border-left переставлена с вложенного .lead на
+   саму ячейку — та же правка и по той же причине, что у .econ-head-lead
+   (economics.css): на .lead граница висела после padding-left ячейки
+   (28–44px) и стояла заметно правее границы колонки. */
 .prod-head-lead {
   padding: 0 clamp(24px, 3vw, 40px) 0 clamp(28px, 3.2vw, 44px);
+  border-left: 2px solid var(--brand);
 }
 .prod-head-lead .lead {
-  border-left: 2px solid var(--brand);
-  padding-left: clamp(16px, 1.8vw, 22px);
   max-width: 58ch;
   margin: 0;
   /* 2026-07-24: точечный blur(10px) под абзацем убран — теперь весь

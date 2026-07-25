@@ -34,7 +34,13 @@
      бокам вместо border-bottom на всю секцию. Волосяная граница между
      колонками (border-left) убрана вместе с ней — в .prod-head-row её
      тоже нет, левый край лида держит только акцентная кромка абзаца. */
-  display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr;
+  /* 2026-07-25: calc(100%/3) → calc((100% - var(--gut)) / 3) — та же
+     поправка, что у .prod-head-row (equipment.css): карточка инсечена
+     на var(--gut) от края секции, поэтому граница колонок (акцентная
+     кромка .econ-head-lead .lead) без вычитания gut ложилась на
+     W/3 + gut/3, правее общей направляющей сайта (.footer-cell-b,
+     .econ-synergy, .sw-slide-shot). */
+  display: grid; grid-template-columns: minmax(240px, calc((100% - var(--gut)) / 3)) 1fr;
   align-items: center;
   margin: clamp(20px, 2.4vw, 32px) var(--gut) clamp(28px, 3.6vw, 48px);
   padding: clamp(24px, 3vw, 40px) 0;
@@ -63,11 +69,17 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   letter-spacing: 0.04em; font-weight: 500; color: var(--brand);
 }
 .econ-kicker .ey-no .ey-den { color: var(--ink-faint); }
+/* 2026-07-25: кромка border-left переставлена с вложенного .lead на
+   саму ячейку — на .lead она висела ПОСЛЕ padding-left ячейки (28–44px)
+   и ложилась заметно правее границы колонки, а не на неё. У строк
+   .econ-problem-text ниже кромка стоит ровно на границе ячейки, текст
+   отступает от неё уже своим padding-left — тот же приём здесь. */
 .econ-head-lead {
   padding: 0 clamp(24px, 3vw, 40px) 0 clamp(28px, 3.2vw, 44px);
+  border-left: 2px solid var(--econ-red);
 }
 .econ-head-lead .lead {
-  border-left: 2px solid var(--econ-red); padding-left: clamp(16px, 1.8vw, 22px); max-width: 58ch; margin: 0;
+  max-width: 58ch; margin: 0;
 }
 
 .econ-problems { display: flex; flex-direction: column; border-bottom: 1px solid var(--line); }

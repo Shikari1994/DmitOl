@@ -17,14 +17,7 @@
 .product-back svg { width: 16px; height: 16px; }
 .product-back:hover { color: var(--brand); transform: translateX(-3px); }
 
-.product-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
-  gap: clamp(32px, 4vw, 64px);
-  margin-top: clamp(24px, 3vw, 40px);
-  align-items: start;
-}
-
+.product-header { margin-top: clamp(24px, 3vw, 40px); }
 .product-title { font-size: var(--fs-7); margin-top: var(--s-1); }
 .product-line {
   margin-top: var(--s-2);
@@ -32,8 +25,19 @@
   color: var(--ink-dim);
 }
 
-.product-photo {
+/* Заголовок вынесен из .product-main, чтобы верх .product-menu (align-items: start)
+   вставал вровень с верхом фото, а не с заголовком. */
+.product-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: clamp(32px, 4vw, 64px);
   margin-top: clamp(28px, 3.4vw, 44px);
+  align-items: start;
+}
+
+.product-main > :first-child { margin-top: 0; }
+
+.product-photo {
   display: flex; justify-content: center; align-items: center;
   max-height: min(48vh, 460px);
   padding: clamp(20px, 2.4vw, 32px);
