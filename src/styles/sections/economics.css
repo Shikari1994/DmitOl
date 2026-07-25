@@ -51,6 +51,15 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   padding: 0 clamp(20px, 2.4vw, 32px) 0 clamp(24px, 3vw, 40px);
   display: flex; flex-direction: column; justify-content: center;
 }
+/* Тот же перерасчёт кегля и по той же причине, что у .prod-head-title
+   (equipment.css): --fs-8 рассчитан на полноширинный заголовок, а эта
+   колонка зажата в minmax(240px, (100%−gut)/3) — «ЭКОНОМИКА» на fs-8
+   вылезала поверх лида справа на 700–1250px (баг-репорт со скриншотом
+   761px). Формула идентична .prod-head-title — оба заголовка живут в
+   колонке той же ширины. */
+@media (min-width: 701px) {
+  .econ-head-title .h-title { font-size: clamp(1.35rem, 0.7rem + 1.8vw, 3.4rem); }
+}
 /* Кикер раздела — снаружи стеклянной карточки, как обычный .eyebrow
    у остальных секций (см. .prod-head-eyebrow), а не строкой внутри неё:
    это подпись самого раздела, а не часть заголовочной карточки. */
@@ -105,9 +114,16 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   padding: clamp(80px, 9.6vw, 142px) var(--gut) clamp(80px, 9.6vw, 142px) clamp(28px, 3.2vw, 44px);
   border-left: 1px solid var(--line);
 }
+/* padding-right был отдельным числом (72–150px), не связанным с реальной
+   шириной иконки (270–418px высоты × ~0.82 её же viewBox, см. .econ-problem-icon
+   svg ниже) — при 800–1100px абзац доходил почти до самого центра круга,
+   слово оказывалось перекрыто линией контура (проверено скриншотами devtools
+   на 700/800/900/1000/1100/1280/1440). ch1 (nth-child(1)) — самый крупный
+   вариант (282–418px) и общий знаменатель резерва для всех трёх карточек:
+   резерв больше нужного для 02/03 — просто лишний воздух, не риск наложения. */
 .econ-problem-copy {
   font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 56ch;
-  padding-right: clamp(72px, 9vw, 150px); /* место под абсолютно спозиционированную иконку */
+  padding-right: calc(0.82 * clamp(282px, 28vw, 418px) + 40px);
 }
 /* Иконка — инлайновый SVG (не <img>), каждый цвет узла заменён на
    currentColor при чтении файла (см. loadMonoIcon в Economics.astro):
