@@ -331,6 +331,48 @@ function makeDotTexture(THREE) {
   return tex
 }
 
+// мягкое радиальное пятно на весь ореол/частицы — центр непрозрачный, к краю в ноль
+function makeHaloTexture(THREE) {
+  const size = 256
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const ctx = c.getContext('2d')
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+  g.addColorStop(0, 'rgba(255,255,255,0.6)')
+  g.addColorStop(0.35, 'rgba(255,255,255,0.22)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, size, size)
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
+/* Кольцевой градиент для атмосферы: центр прозрачный, узкий пик у кромки
+   планеты (~0.72 радиуса текстуры), плавное угасание наружу в ноль.
+   В отличие от makeHaloTexture (пятно ИЗ центра, рассеянная заливка за
+   шаром) здесь свет собран в ободок у силуэта — «сияние с угасанием от
+   краёв планеты», без резкой геометрической границы, которую давала бы
+   сфера. Внутренний склон (0.58→0.72) короче внешнего (0.72→1.0), поэтому
+   свечение прижато к кромке изнутри и мягко растворяется наружу. */
+function makeAtmosphereTexture(THREE) {
+  const size = 256
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const ctx = c.getContext('2d')
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+  g.addColorStop(0.0, 'rgba(255,255,255,0)')
+  g.addColorStop(0.6, 'rgba(255,255,255,0)')
+  g.addColorStop(0.72, 'rgba(255,255,255,0.32)')
+  g.addColorStop(0.82, 'rgba(255,255,255,0.08)')
+  g.addColorStop(1.0, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, size, size)
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
 const themeColor = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const progress = wrap ? makeProgress(wrap, stage) : () => 0
@@ -448,6 +490,135 @@ async function start() {
   glow.renderOrder = 1
   globe.add(glow)
 
+  /* ── Внешняя атмосфера: мягкое сияние у самой кромки шара ──
+     glowMat выше — тонкая fresnel-кромка на поверхности (радиус 1.02).
+     Хочется, чтобы свет чуть выходил ЗА силуэт и плавно угасал наружу,
+     без всякой геометрической границы. Сфера для этого не годится: у неё
+     жёсткий внешний край (свет обрывается на кромке геометрии, читается
+     дешёвым двойным кольцом). Поэтому это билборд-спрайт с КОЛЬЦЕВЫМ
+     градиентом (makeAtmosphereTexture): alpha=0 в центре, пик у кромки
+     планеты, плавно в 0 наружу — свечение обнимает силуэт и растворяется,
+     нигде не обрезаясь. Спрайт — ребёнок holder (как halo): наследует
+     позицию и масштаб шара, всегда развёрнут на камеру. Масштаб подобран
+     так, чтобы пик градиента (нормализованный радиус ~0.72 текстуры)
+     ложился ровно на кромку шара: 2 / 0.72 ≈ 2.8. */
+  const atmoTex = makeAtmosphereTexture(THREE)
+  const atmoMat = new THREE.SpriteMaterial({
+    map: atmoTex,
+    color: new THREE.Color(themeColor('--globe-accent')),
+    transparent: true,
+    opacity: 0.4,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+  })
+  const atmo = new THREE.Sprite(atmoMat)
+  atmo.scale.setScalar(2.6)
+  atmo.renderOrder = -1
+  holder.add(atmo)
+
+  /* ── Ореол: рассеянное свечение позади шара ──
+     Fresnel выше обрисовывает только тонкую кромку силуэта — сама сцена
+     вокруг шара (просьба пользователя 2026-07-25 «чтобы сцена не была
+     пустой») от него не заполняется. Это отдельное большое билборд-пятно
+     (Sprite всегда развёрнут на камеру — вращение holder/globe его не
+     касается, только позиция и масштаб, которые он наследует как ребёнок
+     holder). Рисуется раньше всего остального (renderOrder ниже нуля) и
+     без записи в depth — просто мягкая заливка на заднем плане. */
+  const haloTex = makeHaloTexture(THREE)
+  const haloMat = new THREE.SpriteMaterial({
+    map: haloTex,
+    color: new THREE.Color(themeColor('--globe-accent')),
+    transparent: true,
+    opacity: 0.45,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+  })
+  const halo = new THREE.Sprite(haloMat)
+  halo.scale.setScalar(3.4)
+  halo.renderOrder = -2
+  holder.add(halo)
+
+  /* ── Пыль: редкие частицы вокруг шара ──
+     Чисто декоративный слой (в отличие от суши/городов/границы — те
+     держатся реальных координат): равномерно раскиданы в сферическом
+     слое вокруг планеты, крутятся своим темпом, независимым от
+     SPIN_FROM→SPIN_TO — иначе довращение к России читалось бы вперемешку
+     с фоновым дрейфом. aPhase — случайная фаза мерцания на частицу, тем
+     же приёмом, что и пульс городов (см. makeSurfaceMaterial), но здесь
+     проще: обычный PointsMaterial + свой onBeforeCompile, без culling
+     задней стороны — частицы не лежат на поверхности, отбрасывать
+     заднюю половину нечего. Помимо мерцания у частиц есть разброс размера
+     (aScale) и примесь акцентного цвета (aMix): большинство — мелкая
+     нейтральная пыль, редкие — крупные голубоватые искры-«звёзды», отсюда
+     живой неоднородный слой вместо ровной сыпи одинаковых точек. */
+  const AMBIENT_COUNT = isMobile ? 220 : 520
+  const ambientPos = new Float32Array(AMBIENT_COUNT * 3)
+  const ambientPhase = new Float32Array(AMBIENT_COUNT)
+  const ambientScale = new Float32Array(AMBIENT_COUNT)
+  const ambientMix = new Float32Array(AMBIENT_COUNT)
+  for (let i = 0; i < AMBIENT_COUNT; i++) {
+    const u = Math.random() * 2 - 1
+    const theta = Math.random() * Math.PI * 2
+    const rXZ = Math.sqrt(1 - u * u)
+    // Степень >1 тянет радиус к нижней границе (rMin): большинство частиц
+    // ложится плотной оболочкой у самой поверхности шара, и лишь немногие
+    // залетают дальше — так вокруг планеты читается объём/корона, а не
+    // ровная россыпь звёзд по всему фону (просьба пользователя — сравнить
+    // с референсом, где пыль сгущена именно у краёв планеты).
+    const r = 1.12 + Math.pow(Math.random(), 2.4) * 1.5
+    ambientPos.set([r * rXZ * Math.cos(theta), r * u, r * rXZ * Math.sin(theta)], i * 3)
+    ambientPhase[i] = Math.random() * Math.PI * 2
+    // Степень >1 тянет разброс к нижнему краю: у большинства частиц масштаб
+    // мал, крупные искры редки — это и даёт «звёзды» среди пыли, а не ровный
+    // слой. То же для примеси акцента: aMix ≈ 0 у большинства, у немногих → 1.
+    ambientScale[i] = 0.45 + Math.pow(Math.random(), 2.2) * 2.6
+    ambientMix[i] = Math.pow(Math.random(), 2.5)
+  }
+  const ambientGeo = new THREE.BufferGeometry()
+  ambientGeo.setAttribute('position', new THREE.BufferAttribute(ambientPos, 3))
+  ambientGeo.setAttribute('aPhase', new THREE.BufferAttribute(ambientPhase, 1))
+  ambientGeo.setAttribute('aScale', new THREE.BufferAttribute(ambientScale, 1))
+  ambientGeo.setAttribute('aMix', new THREE.BufferAttribute(ambientMix, 1))
+  const ambientUniforms = {
+    uTime: { value: 0 },
+    uAccent: { value: new THREE.Color(themeColor('--globe-accent')) },
+  }
+  const ambientMat = new THREE.PointsMaterial({
+    size: isMobile ? 0.024 : 0.019,
+    map: dotTex,
+    color: new THREE.Color(themeColor('--ink-faint')),
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+  })
+  ambientMat.customProgramCacheKey = () => 'ambient-twinkle'
+  ambientMat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = ambientUniforms.uTime
+    shader.uniforms.uAccent = ambientUniforms.uAccent
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        'void main() {',
+        'attribute float aPhase;\nattribute float aScale;\nattribute float aMix;\nuniform float uTime;\nvarying float vTwinkle;\nvarying float vMix;\nvoid main() {',
+      )
+      .replace(
+        'gl_PointSize = size;',
+        'vTwinkle = 0.5 + 0.5 * sin(uTime * 0.6 + aPhase);\n\t\tvMix = aMix;\n\t\tgl_PointSize = size * aScale * (0.5 + vTwinkle * 0.9);',
+      )
+    shader.fragmentShader = shader.fragmentShader
+      .replace('void main() {', 'uniform vec3 uAccent;\nvarying float vTwinkle;\nvarying float vMix;\nvoid main() {')
+      .replace(
+        '#include <color_fragment>',
+        '#include <color_fragment>\n\tdiffuseColor.rgb = mix(diffuseColor.rgb, uAccent, vMix);\n\tdiffuseColor.a *= 0.35 + vTwinkle * 0.65;',
+      )
+  }
+  const ambient = new THREE.Points(ambientGeo, ambientMat)
+  ambient.renderOrder = -1
+  holder.add(ambient)
+
   // ── Города: акцентные точки поверх облака суши, крупнее и ярче ──
   const markerPos = new Float32Array(CITIES.length * 3)
   const markerIndex = new Float32Array(CITIES.length)
@@ -511,6 +682,44 @@ async function start() {
   })
   canvas.addEventListener('pointerleave', () => { hoverTarget = 0; schedule() })
 
+  /* ── Меридианы и параллели: широтно-долготная сетка поверх шара ──
+     Чисто декоративная навигационная сетка (просьба пользователя
+     2026-07-25) — в отличие от границы/городов не привязана ни к каким
+     реальным данным, только равномерные широты/долготы. Меридианы —
+     открытые дуги от полюса до полюса (не замкнутый круг: один меридиан —
+     половина большого круга, вторая половина уходит на противоположную
+     долготу отдельной дугой); параллели — замкнутые кольца на
+     фиксированной широте. Радиус между сушей (1) и границей (1.006) —
+     сетка не должна тонуть в точках земли, но и не спорить по глубине с
+     контуром России. cullBackface() обязателен по той же причине, что и
+     у border ниже: у THREE.Line нет собственного backface-culling,
+     дальняя половина сетки иначе просвечивала бы сквозь ближнюю.
+     renderOrder держим МЕНЬШЕ dotCloud (0): сетка рисуется раньше суши/
+     городов/границы, поэтому в океане (где точек суши нет) она видна, а
+     под континентами и маркерами — перекрыта ими, а не режет их поверх. */
+  const gridMat = new THREE.LineBasicMaterial({
+    color: new THREE.Color(themeColor('--ink-faint')),
+    transparent: true,
+    opacity: 0.16,
+    depthWrite: false,
+    depthTest: false,
+  })
+  cullBackface(gridMat)
+  const grid = new THREE.Group()
+  const GRID_R = 1.003
+  for (let lon = 0; lon < 360; lon += 30) {
+    const pts = []
+    for (let lat = -88; lat <= 88; lat += 4) pts.push(latLonToVec3(THREE, lat, lon, GRID_R))
+    grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gridMat))
+  }
+  for (let lat = -60; lat <= 60; lat += 30) {
+    const pts = []
+    for (let lon = 0; lon < 360; lon += 5) pts.push(latLonToVec3(THREE, lat, lon, GRID_R))
+    grid.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), gridMat))
+  }
+  grid.renderOrder = -0.5
+  globe.add(grid)
+
   /* ── Контур границы: тонкая линия поверх облака суши ──
      Радиус 1.006 — чуть выше суши (1) и ниже маркеров (1.012), чтобы не
      тонуть в точках земли, но и не спорить с городами. cullBackface() тут
@@ -559,6 +768,11 @@ async function start() {
     markerMat.color.set(themeColor('--globe-accent'))
     borderMat.color.set(themeColor('--globe-accent'))
     glowMat.uniforms.glowColor.value.set(themeColor('--globe-accent'))
+    atmoMat.color.set(themeColor('--globe-accent'))
+    haloMat.color.set(themeColor('--globe-accent'))
+    ambientMat.color.set(themeColor('--ink-faint'))
+    gridMat.color.set(themeColor('--ink-faint'))
+    ambientUniforms.uAccent.value.set(themeColor('--globe-accent'))
     schedule()
   }
   new MutationObserver(applyTheme).observe(document.documentElement, {
@@ -635,7 +849,19 @@ async function start() {
     globe.rotation.x = TILT_FROM + (TILT_TO - TILT_FROM) * turn
     globe.rotation.z = 0.14
 
-    pulseUniforms.uTime.value = ((now ?? performance.now()) - clockStart) / 1000
+    const t = ((now ?? performance.now()) - clockStart) / 1000
+    pulseUniforms.uTime.value = t
+    ambientUniforms.uTime.value = t
+    // Пыль крутится своим темпом (не SPIN_FROM/SPIN_TO) — фоновый дрейф,
+    // независимый от довортота шара к России, детерминирован по времени,
+    // а не по кадрам, иначе скорость плыла бы вместе с fps.
+    ambient.rotation.y = t * 0.025
+    ambient.rotation.x = t * 0.008
+    // Лёгкое «дыхание» ореола и внешней атмосферы поверх базовой
+    // непрозрачности — в противофазе, чтобы свет не пульсировал в такт, а
+    // мягко перетекал между кромкой и рассеянным пятном.
+    haloMat.opacity = 0.4 + 0.08 * Math.sin(t * 0.5)
+    atmoMat.opacity = 0.36 + 0.06 * Math.sin(t * 0.5 + Math.PI)
     // Плавный переход силы подсветки к цели (0 или 1, см. updateHoverPoint/
     // pointerleave выше) — рывком по pointerenter/leave пятно бы хлопало,
     // а не мягко проступало под курсором.

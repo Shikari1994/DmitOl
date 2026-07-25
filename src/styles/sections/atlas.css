@@ -74,7 +74,19 @@ html[data-scheme="light"] .atlas-night {
   background:
     radial-gradient(130% 95% at 50% 118%, #e0e0e0 0%, #ebebeb 34%, #f5f5f5 64%, #ffffff 100%);
 }
-.atlas-canvas { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; }
+/* Сам рендер WebGL (частицы пыли, сияние атмосферы) лежит НАД
+   .atlas-stage::after (z-index 2 против 1 у затухания) — градиент в
+   var(--surface) его не гасит, канвас просто рисует пиксели поверх, и
+   пыль/сияние оставались видны сплошняком до самого нижнего края
+   секции, а следующая секция начиналась жёсткой линией под ними
+   (жалоба пользователя 2026-07-25). Маска здесь — та же по высоте, что
+   и сам ::after ниже, гасит альфу канваса в том же месте: под ним
+   останется чистый градиент в --surface, без обрыва. */
+.atlas-canvas {
+  position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - min(18vh, 160px)), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - min(18vh, 160px)), transparent);
+}
 
 /* Светлая/тёмная схема шара больше не через CSS-фильтр: точки суши,
    маркеры городов и атмосфера красятся токенами темы (--ink-faint,
