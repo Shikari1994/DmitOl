@@ -1,6 +1,6 @@
 ---
 import { asset } from '../lib/asset.js'
-import { PRODUCTS, PARTS } from '../data/products.js'
+import { PRODUCTS } from '../data/products.js'
 
 /* 2026-07-21: секция «Продукция» переписана 1-в-1 по D:\Projects\Dmit
    (`id="production"`) — пользователь явно попросил буквальную копию
@@ -13,10 +13,16 @@ import { PRODUCTS, PARTS } from '../data/products.js'
    копии, см. index.css.
    2026-07-25: «Подробнее» больше не открывает шторку ТТХ поверх этой
    же страницы — ведёт на отдельную страницу товара src/pages/products/
-   [id].astro (там же теперь и данные PRODUCTS/PARTS, см. data/products.js;
-   раздел «Продукция» — только витрина, полное ТТХ+фото — на странице
-   товара). Шторка (specs-drawer) и её JS удалены целиком, не просто
-   отключены. */
+   [id].astro (там же теперь и данные, см. data/products.js; раздел
+   «Продукция» — только витрина, полное ТТХ+фото — на странице товара).
+   Шторка (specs-drawer) и её JS удалены целиком, не просто отключены.
+   «Запчасти» (07) больше не отдельный случай со ссылкой на внешний
+   магазин — обычный седьмой элемент PRODUCTS, рендерится тем же .map.
+   2026-07-25: номер «02 / 06» возвращён в кикер по просьбе пользователя
+   (та же нумерация, что уже держит SideNav для этого пункта потока) —
+   разметка та же .ey-no/.ey-den, но здесь, в отличие от Economics,
+   кикер и так сидел на общем классе .eyebrow (см. base.css), так что
+   отдельных точечных стилей не потребовалось. */
 const ACCORDION_IMAGES = PRODUCTS.reduce((acc, p) => {
   if (p.image) acc[p.id] = p.image
   return acc
@@ -48,7 +54,7 @@ const MEDIA_RIGHT = new Set()
   </div>
 
   <div class="prod-head">
-    <div class="eyebrow reveal prod-head-eyebrow">Аппаратные комплексы</div>
+    <div class="eyebrow reveal prod-head-eyebrow"><span class="ey-no">02<span class="ey-den"> / 06</span></span>Аппаратные комплексы</div>
     <div class="prod-head-row">
       <h2 class="h-title reveal prod-head-title">Продукция</h2>
       <div class="prod-head-lead">
@@ -91,20 +97,6 @@ const MEDIA_RIGHT = new Set()
           )}
         </div>
       ))}
-      <div class="rig-row">
-        <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <span class="rig-num mono" aria-hidden="true">{PARTS.n} /</span>
-        <span class="rig-head">
-          <span class="rig-title">{PARTS.title}</span>
-          <span class="rig-line mono">{PARTS.line}</span>
-        </span>
-        <span class="rig-text">{PARTS.text}</span>
-        <a class="rig-cube" href="https://oklimashov.fvds.ru/" target="_blank" rel="noopener noreferrer">
-          <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          <span class="rig-cube-label">{PARTS.cta} →</span>
-          <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">{PARTS.cta} →<span class="rig-cube-caret">_</span></span></span>
-        </a>
-      </div>
     </div>
   </div>
 </section>

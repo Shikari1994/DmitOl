@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import Nav from '../../components/Nav.astro'
 import Footer from '../../components/Footer.astro'
 import { asset } from '../../lib/asset.js'
-import { PRODUCTS, PARTS } from '../../data/products.js'
+import { PRODUCTS } from '../../data/products.js'
 
 export function getStaticPaths() {
   return PRODUCTS.map((p) => ({ params: { id: p.id }, props: { product: p } }))
@@ -28,7 +28,6 @@ const { product } = Astro.props
 
         <div class="product-layout">
           <div class="product-main">
-            <div class="eyebrow reveal">{product.specIndex}</div>
             <h1 class="h-title product-title reveal">{product.title}</h1>
             <p class="product-line mono reveal">{product.line}</p>
 
@@ -40,21 +39,19 @@ const { product } = Astro.props
 
             <p class="product-text reveal">{product.text}</p>
 
-            <h2 class="product-specs-title reveal">{product.specTitle}</h2>
-            <dl class="product-specs reveal">
-              {product.specs.map(([label, value]) => (
-                <div class="product-spec-row">
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <a class="btn btn-primary product-cta reveal" href={asset('/#contact')}>
-              <span class="btn-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              Запросить ТЭО системы
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
+            {product.specs.length > 0 && (
+              <>
+                <h2 class="product-specs-title reveal">{product.specTitle}</h2>
+                <dl class="product-specs reveal">
+                  {product.specs.map(([label, value]) => (
+                    <div class="product-spec-row">
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
           </div>
 
           <aside class="product-menu reveal" aria-label="Вся продукция">
@@ -72,17 +69,6 @@ const { product } = Astro.props
                   </a>
                 </li>
               ))}
-              <li>
-                <a
-                  class="product-menu-link product-menu-link--external"
-                  href="https://oklimashov.fvds.ru/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <span class="product-menu-num mono">{PARTS.n}</span>
-                  <span class="product-menu-label">{PARTS.title}</span>
-                </a>
-              </li>
             </ul>
           </aside>
         </div>

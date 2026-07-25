@@ -58,8 +58,6 @@
 .product-spec-row dt { color: var(--ink-faint); font-size: var(--fs-1); }
 .product-spec-row dd { color: var(--ink); font-size: var(--fs-1); font-weight: 500; text-align: right; }
 
-.product-cta { margin-top: clamp(32px, 4vw, 48px); }
-
 /* ── Переключатель линейки ──
    Плавающая панель-стекло (селектор добавлен в glass.css), sticky под
    шапкой — со страницы одного узла на другой переходишь одним кликом,
@@ -85,7 +83,6 @@
 .product-menu-num { font-size: var(--fs-0); color: var(--ink-faint); min-width: 1.6em; }
 .product-menu-link.is-active .product-menu-num { color: var(--brand); }
 .product-menu-label { font-size: var(--fs-1); font-weight: 600; letter-spacing: 0.01em; }
-.product-menu-link--external { margin-top: var(--s-2); border-top: 1px solid var(--line-soft); padding-top: 14px; }
 
 @media (max-width: 900px) {
   .product-layout { grid-template-columns: 1fr; }

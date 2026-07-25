@@ -226,6 +226,21 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
      плитки, а не окна — поэтому одна и та же формула остаётся верной
      по обе стороны любого брейкпоинта, без подбора отдельных чисел. */
   container-type: inline-size;
+  /* Единый источник правды для ширины колонки текста (.hero-tile-foot)
+     И маски картинки (.hero-tile-art) ниже — раньше это были два
+     независимых числа (max-width:60%/68% у foot, 12%/30% у маски),
+     из-за чего мобильный брейкпоинт мог раздвинуть текст, не тронув
+     маску, и картинка оказывалась видна там же, где ещё идёт текст.
+     Теперь маска считает свои стопы формулой от той же переменной —
+     разъехаться им больше нечем. */
+  --hero-tile-text-w: 60%;
+  /* Реальный отрисованный текст (короткий заголовок + 2-3 строки) почти
+     никогда не дотягивается до правого края зарезервированной колонки
+     (--hero-tile-text-w — расчёт на худший случай, длинный перенос) —
+     поэтому фейд картинки можно сдвинуть левее этой границы, не рискуя
+     реальным наложением, и брать от зрителя меньше «пустого» тёмного
+     поля между текстом и картинкой. */
+  --hero-tile-fade-shift: 16cqw;
   display: flex; flex-direction: column; justify-content: space-between;
   gap: 24px;
   padding: 32px;
@@ -302,7 +317,7 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
   .hero-tile-status.is-live { animation: none !important; }
 }
 
-.hero-tile-foot { position: relative; z-index: 2; max-width: 60%; }
+.hero-tile-foot { position: relative; z-index: 2; max-width: var(--hero-tile-text-w); }
 .hero-tile-title {
   display: block; font-family: var(--font-mono); letter-spacing: 0.08em;
   font-size: 24px; font-weight: 800; text-transform: uppercase; color: var(--hero-ink);
@@ -336,14 +351,27 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
    не менялся, поэтому сцена не двигалась, только резалась маской слева
    же. Решение — просто translateX вправо на .hero-tile-stage (см. ниже,
    только для этой плитки), картинку уносит за правый край плитки, там
-   её обрезает обычный overflow:hidden .hero-tile, а не своя маска. */
+   её обрезает обычный overflow:hidden .hero-tile, а не своя маска.
+
+   2026-07-25: старые стопы 12%/30% были подобраны на глаз под 60%-ную
+   колонку текста и не знали про мобильный --hero-tile-text-w:68%
+   (см. .hero-tile) — на узких экранах текст занимал долю шире, чем
+   маска считала непрозрачной, и картинка технически становилась видна
+   в той же зоне, где ещё мог идти текст. Стопы теперь считаются от
+   той же переменной: полностью прозрачно ДО правого края текстовой
+   колонки, дальше короткий фейд с запасом — картинке физически негде
+   проступить раньше конца текста, на любой ширине контейнера. */
 .hero-tile-art {
   position: absolute; z-index: 0; pointer-events: none;
   left: 0; right: 0; bottom: 0; top: 32%;
   display: flex; align-items: flex-end; justify-content: flex-end;
   padding: 0 8px 6px 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, transparent 12%, #000 30%);
-          mask-image: linear-gradient(90deg, transparent 0, transparent 12%, #000 30%);
+  -webkit-mask-image: linear-gradient(90deg,
+    transparent 0, transparent calc(var(--hero-tile-text-w) - var(--hero-tile-fade-shift)),
+    #000 calc(var(--hero-tile-text-w) + 24cqw - var(--hero-tile-fade-shift)));
+          mask-image: linear-gradient(90deg,
+    transparent 0, transparent calc(var(--hero-tile-text-w) - var(--hero-tile-fade-shift)),
+    #000 calc(var(--hero-tile-text-w) + 24cqw - var(--hero-tile-fade-shift)));
   opacity: 0;
   transition: opacity 0.45s ease;
 }
@@ -414,7 +442,7 @@ html[data-scheme="light"] .hero-tile-phone img {
 }
 
 @media (max-width: 700px) {
-  .hero-tile-foot { max-width: 68%; }
+  .hero-tile { --hero-tile-text-w: 68%; }
   .hero-tile-rig img { height: clamp(70px, 20cqw, 130px); }
 }
 

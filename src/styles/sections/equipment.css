@@ -389,6 +389,9 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
    а не диктует свою высоту строке. */
 .rig-media--generator img { height: var(--rig-media-h); filter: none; }
 .rig-media--pulsator img { height: var(--rig-media-h); filter: none; }
+/* 2026-07-25: «Запчасти» получили фото (parts.webp) тем же приёмом —
+   без явной высоты аккордеон растянулся бы на натуральный размер кадра. */
+.rig-media--parts img { height: var(--rig-media-h); }
 
 /* .rig-media--right сейчас не используется ни одной карточкой (01 и 02
    переведены на .rig-media--mwd/--decoder ниже, своя раскладка), оставлен
