@@ -33,9 +33,19 @@ const { product } = Astro.props
 
         <div class="product-layout">
           <div class="product-main">
-            {product.image && (
-              <div class="product-photo reveal">
-                <img src={asset(product.image)} alt={product.title} loading="eager" />
+            {(product.pageImage || product.image) && (
+              <div class={`product-photo reveal${product.pageImage ? ' is-crop' : ''}`}>
+                {product.pageImage ? (
+                  <img src={asset(product.pageImage)} alt={product.title} loading="eager" />
+                ) : (
+                  <>
+                    <img src={asset(product.image)} alt={product.title} loading="eager"
+                      class={product.imageLight ? 'theme-img theme-img--dark' : undefined} />
+                    {product.imageLight && (
+                      <img src={asset(product.imageLight)} alt={product.title} loading="eager" class="theme-img theme-img--light" />
+                    )}
+                  </>
+                )}
               </div>
             )}
 

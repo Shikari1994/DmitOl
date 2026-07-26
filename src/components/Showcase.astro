@@ -24,7 +24,7 @@ import { PRODUCTS } from '../data/products.js'
    кикер и так сидел на общем классе .eyebrow (см. base.css), так что
    отдельных точечных стилей не потребовалось. */
 const ACCORDION_IMAGES = PRODUCTS.reduce((acc, p) => {
-  if (p.image) acc[p.id] = p.image
+  if (p.image) acc[p.id] = p
   return acc
 }, {})
 
@@ -91,7 +91,11 @@ const MEDIA_RIGHT = new Set()
           {ACCORDION_IMAGES[p.id] && (
             <span class={`rig-media rig-media--accordion rig-media--${p.id}${MEDIA_RIGHT.has(p.id) ? ' rig-media--right' : ''}`} aria-hidden="true">
               <span class="rig-media-inner">
-                <img src={asset(ACCORDION_IMAGES[p.id])} alt="" loading="lazy" draggable="false" />
+                <img src={asset(ACCORDION_IMAGES[p.id].image)} alt="" loading="lazy" draggable="false"
+                  class={ACCORDION_IMAGES[p.id].imageLight ? 'theme-img theme-img--dark' : undefined} />
+                {ACCORDION_IMAGES[p.id].imageLight && (
+                  <img src={asset(ACCORDION_IMAGES[p.id].imageLight)} alt="" loading="lazy" draggable="false" class="theme-img theme-img--light" />
+                )}
               </span>
             </span>
           )}

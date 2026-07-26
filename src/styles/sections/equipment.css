@@ -168,6 +168,31 @@ html[data-scheme="light"] .prod-head-row { background-color: rgba(255, 255, 255,
      (пополам на каждую сторону), чтобы общий прирост высоты совпал. */
   --rig-media-h: clamp(36px, 3.6vw, 58px);
   --rig-media-add: calc(clamp(14px, 1.8vw, 20px) + var(--rig-media-h));
+  /* 2026-07-26: доп. воздух над кадром у 04/05/06/07 (резистивиметр/
+     генератор/пульсатор/запчасти) — раньше кадр центрировался в самом
+     --rig-media-h+паддинг окне и почти касался текста сверху. Не растим
+     это окно за счёт общей высоты строки — забираем ровно столько же у
+     нижнего padding строки на hover (см. правила ниже), высота плашки
+     не меняется, только воздух переезжает с низа на верх кадра. */
+  --rig-media-gap: clamp(10px, 1.4vw, 16px);
+  /* 2026-07-26: горизонтальное выравнивание кадров 04/06/07 по 05
+     (генератор — опорная, не трогаем её саму). Коэффициенты — реальные
+     соотношения сторон файлов (ширина/высота): gnom6-crop.webp 6920×1059,
+     pulser-rod.webp 3600×168, Res.webp 4650×140. Генератор стоит от left:0
+     на свою высоту ×1.7, поэтому его правый край (в системе координат
+     .rig-media-inner, которая одна и та же ширина у всех строк) равен
+     --rig-media-h × 1.7 × (6920/1059).
+     2026-07-27: при зуме ×1.45/×1.2 (тот же, что и при старом якоре
+     «правый край = середина плашки») кадры Res/pulser-rod (33:1/21:1)
+     физически шире, чем --rig-end (генератор их короче в разы) — левый
+     край img уходит далеко за 0. Промежуточный вариант — уменьшить зум
+     так, чтобы кадр помещался в --rig-end целиком без обрезки слева —
+     был отклонён по прямой просьбе (кадр становился заметно мельче).
+     Оставлено как есть: зум ×1.45/×1.2, левый край считается в минус и
+     обрезается через overflow:hidden об истинную (нулевую) границу
+     плашки, правый край всегда точно на --rig-end (см.
+     .rig-media--resistivimeter/--pulsator img ниже). */
+  --rig-end: calc(var(--rig-media-h) * 11.1086);
   display: grid;
   /* .rig-text (третья колонка) должна начинаться ровно на розовой
      .align-guide. Считаем в абсолютных единицах: min(100vw, var(--maxw))
@@ -424,61 +449,109 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   transform: translateX(0);
   opacity: 1;
 }
-/* 2026-07-25: 04/06 (резистивиметр/пульсатор) — правый край кадра всегда
-   должен упираться ровно в середину плашки, и при сужении экрана кадр
-   должен «уезжать» левее сам (больше скрываться), а не оставаться
-   привязанным к произвольной точке.
-   Первая попытка (translate на фиксированный %/px от левого края) была
-   ДВАЖДЫ сломана одним и тем же старым багом: базовый img-reset (base.css,
-   img{max-width:100%}) обрезает ширину картинки до ширины контейнера,
-   а высота остаётся фиксированной
-   — при контейнере УЖЕ собственной ширины кадра (а он теперь всего 50%
-   трека) пропорции разъезжались («лепёшка» у резистивиметра), а у
-   пульсатора translate на фиксированный px уводил уже сплющенную
-   (обрезанную по ширине) картинку целиком за левый край — отсюда
-   «пропала».
-   Рабочий приём — без единого магического числа: img { max-width: none }
-   отменяет тот самый глобальный сброс, возвращая картинке её реальную
-   (растянутую по высоте) ширину; правый край крепится к правому краю
-   контейнера (right: 0, а не left+translate) — контейнер и так кончается
-   ровно на середине плашки (см. margin-left/width ниже), значит и кадр
-   всегда кончается там же, ЛЮБАЯ его лишняя (левая) часть просто
-   обрезается overflow:hidden. При сужении экрана контейнер и высота кадра
-   (--rig-media-h) уменьшаются по-разному — картинка автоматически прячет
-   слева больше или меньше, без переиспользования каких-либо чисел. */
+/* 2026-07-27: три захода на этот блок подряд (right:0 в под-контейнере →
+   left, посчитанный от --rig-end → left, посчитанный от --rig-end с
+   другим зумом) не дали предсказуемого результата — слишком длинная
+   цепочка calc(var(--rig-end) − var(--rig-media-h) × N + var(--rp)) с
+   двумя сокращающимися большими числами, где ошибку трудно поймать
+   глазами и трудно проверить иначе, чем в браузере. Вернулись к
+   структуре из первого, заведомо рабочего варианта (right:0 внутри
+   контейнера с явной шириной, а не left с закрытым выражением) —
+   единственное отличие от него: ширина контейнера теперь не «половина
+   плашки» (по требованию 2026-07-26 — выравнивание 04/06/07 по правому
+   краю кадра генератора, см. --rig-end на .rig-row), а сама эта цель:
+   var(--rig-end) + var(--rp) (+rp — тот же перенос системы координат
+   margin-left:-rp ниже переносит на истинный, нулевой край плашки,
+   компенсация нужна, чтобы контейнер оканчивался там же, где кадр
+   генератора). Дальше просто: контейнер такой ширины, overflow:hidden
+   на НЁМ САМОМ (не только на .rig-media-inner), картинка внутри —
+   right:0 (не left), какой угодно ширины (зум регулируется только
+   height ниже) — она сама обрежется слева об границу контейнера. */
 .rig-media--resistivimeter,
-.rig-media--pulsator {
+.rig-media--pulsator,
+.rig-media--inclinometer {
   margin-left: calc(-1 * var(--rp));
-  width: calc(50% + var(--rp));
+  width: calc(var(--rig-end) + var(--rp));
   overflow: hidden;
 }
 .rig-media--resistivimeter .rig-media-inner,
-.rig-media--pulsator .rig-media-inner {
+.rig-media--pulsator .rig-media-inner,
+.rig-media--inclinometer .rig-media-inner {
   position: relative;
 }
 .rig-media--resistivimeter .rig-media-inner::before,
-.rig-media--pulsator .rig-media-inner::before {
+.rig-media--pulsator .rig-media-inner::before,
+.rig-media--inclinometer .rig-media-inner::before {
   content: '';
   display: block;
-  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px));
+  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px) + var(--rig-media-gap));
 }
 .rig-media--resistivimeter img,
-.rig-media--pulsator img {
+.rig-media--pulsator img,
+.rig-media--inclinometer img {
   position: absolute;
-  top: 50%; right: 0;
+  /* 2026-07-26: раньше картинка центрировалась (top:50%/translateY(-50%))
+     в самом окне спейсера и почти касалась текста сверху. Спейсер выше
+     теперь на var(--rig-media-gap) выше исходного — этот довесок сидит
+     чистым воздухом НАД старым окном, а якорь картинки перевешен на
+     bottom/translateY(50%), считая от НИЗА контейнера: `var(--rig-media-h)/2
+     + clamp(7px,0.9vw,10px)` — это ровно половина СТАРОГО окна (было
+     clamp(14,1.8vw,20), поделено на 2), т.е. картинка занимает тот же
+     старый нижний кусок контейнера и обрезается ТАК ЖЕ, как раньше —
+     новый воздух чистый, без дополнительной обрезки картинки снизу. */
+  bottom: calc(var(--rig-media-h) / 2 + clamp(7px, 0.9vw, 10px));
+  right: 0;
   max-width: none;
   width: auto;
   margin: 0;
-  transform: translateY(-50%);
+  transform: translateY(50%);
 }
-.rig-media--resistivimeter img { height: calc(var(--rig-media-h) * 1.2); }
-/* ×1.45, а не ×1.2 — кадр pulser-rod (21:1) менее вытянутый, чем Res.webp
-   (33:1); без увеличения в кадре оставалось слишком много скучного
-   гладкого прутка и мало самого узла (соединитель/механизм). Число не
-   привязано к ширине контейнера (в отличие от старого приёма) —
-   регулирует только КОМПОЗИЦИЮ (сколько именно узла видно), не сам факт
-   «доезжает до середины» — это теперь гарантирует right:0. */
-.rig-media--pulsator img { height: calc(var(--rig-media-h) * 1.45); }
+/* 2026-07-27: right:0 (не left) — картинка крепится к правому краю
+   контейнера, а он сам уже стоит ровно на --rig-end + var(--rp) (см.
+   ширину контейнера выше). Зум регулирует только height: чем шире
+   картинка выходит при заданной высоте (height × соотношение сторон
+   файла), тем больше её левой части срезается контейнером — то есть
+   именно то же самое поведение, что было и в left-варианте, но без
+   вычитания двух больших чисел на каждый кадр. */
+.rig-media--resistivimeter img {
+  height: calc(var(--rig-media-h) * 1.2);
+}
+/* Тот же контейнер, соотношение сторон pulser-rod.webp — 21.4286
+   (3600/168). ×1.45, а не ×1.2 — кадр менее вытянутый, чем Res.webp,
+   без увеличения в кадре оставалось слишком много скучного гладкого
+   прутка и мало самого узла (соединитель/механизм). */
+.rig-media--pulsator img {
+  height: calc(var(--rig-media-h) * 1.45);
+}
+/* 03 (инклинометр) — два кадра одного узла (DirectionalBlack.png для
+   тёмной схемы/по умолчанию, DirectionalWhite.png для светлой, см.
+   .theme-img ниже), оба обрезаны до одинакового содержимого (см. историю
+   обрезки в products.js) — 7171×196, соотношение сторон 36.5867. Кадр
+   даже более вытянутый, чем Res.webp (33.2:1), поэтому зум по той же
+   зависимости «менее вытянутый — зум выше» (33.2:1→×1.2, 21.4:1→×1.45)
+   экстраполируется НИЖЕ ×1.2 — взят тот же ×1.2, что и у резистивиметра
+   (аспекты близки, экстраполяция в пределах погрешности); крутить это
+   число, если в кадре останется слишком много гладкой штанги или обрежет
+   разъём справа. */
+.rig-media--inclinometer img {
+  height: calc(var(--rig-media-h) * 1.2);
+}
+/* Универсальное правило, не только для 03: любая пара тёмная/светлая
+   (сейчас 03 инклинометр и 04 резистивиметр, см. products.js) занимает
+   ровно одну и ту же (общую для всех img в .rig-media--*) позицию/
+   размер — переключение только видимостью, не отдельным layout, зум
+   каждой карточки (height у .rig-media--resistivimeter/--inclinometer
+   img) общий для обоих кадров пары, ширина у каждого своя (по
+   собственному aspect-ratio через width:auto). Специфичность через
+   родителя (.rig-media-inner ...), а не голый класс, иначе проигрывает
+   display:block у .rig-media--accordion img выше (0,1,1 против голого
+   класса 0,1,0). Дефолт — тёмная (html без data-scheme или
+   data-scheme="dark", см. Layout.astro), .theme-img--dark рендерится
+   только когда есть светлая пара (иначе смысла в классе нет, см.
+   Showcase.astro/[id].astro). */
+.rig-media-inner .theme-img--light { display: none; }
+html[data-scheme="light"] .rig-media-inner .theme-img--dark { display: none; }
+html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
 /* Без переутверждения общий hover-селектор .rig-row--accordion:hover
    .rig-media--accordion img (та же специфичность, но раньше по коду)
    сбросил бы transform в translateX(0) на наведении — картинка потеряла
@@ -486,8 +559,10 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
 .rig-row--accordion:hover .rig-media--resistivimeter img,
 .rig-row--accordion:focus-within .rig-media--resistivimeter img,
 .rig-row--accordion:hover .rig-media--pulsator img,
-.rig-row--accordion:focus-within .rig-media--pulsator img {
-  transform: translateY(-50%);
+.rig-row--accordion:focus-within .rig-media--pulsator img,
+.rig-row--accordion:hover .rig-media--inclinometer img,
+.rig-row--accordion:focus-within .rig-media--inclinometer img {
+  transform: translateY(50%);
 }
 /* generator/pulsator раньше были выше resistivimeter (90px/70px против
    46px) — карточка на hover раскрывалась на разную высоту у каждой из
@@ -499,19 +574,23 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
 .rig-media--generator .rig-media-inner::before {
   content: '';
   display: block;
-  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px));
+  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px) + var(--rig-media-gap));
 }
 .rig-media--generator img {
   position: absolute;
-  top: 50%; left: 0;
+  /* 2026-07-26: та же правка, что у resistivimeter/pulsator выше — якорь
+     от низа контейнера (bottom/translateY(50%)), а не от центра; воздух
+     var(--rig-media-gap) добавлен спейсером выше и весь достаётся зазору
+     сверху, без дополнительной обрезки картинки снизу. */
+  bottom: calc(var(--rig-media-h) / 2 + clamp(7px, 0.9vw, 10px)); left: 0;
   height: calc(var(--rig-media-h) * 1.7);
   margin: 0;
   filter: none;
-  transform: translateY(-50%) translateX(-32px);
+  transform: translateY(50%) translateX(-32px);
 }
 .rig-row--accordion:hover .rig-media--generator img,
 .rig-row--accordion:focus-within .rig-media--generator img {
-  transform: translateY(-50%) translateX(0);
+  transform: translateY(50%) translateX(0);
 }
 /* 2026-07-25: «Запчасти» (zip.png) — картинка крупнее контейнера, но
    высота раскрытия плашки должна совпадать с 04/05/06. Прямой height на
@@ -538,7 +617,7 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
 .rig-media--parts .rig-media-inner::before {
   content: '';
   display: block;
-  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px));
+  height: calc(var(--rig-media-h) + clamp(14px, 1.8vw, 20px) + var(--rig-media-gap));
 }
 .rig-media--parts img {
   /* zip.png (в отличие от уже кадрированных webp-исходников других узлов)
@@ -547,17 +626,71 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
      вместе с картинкой и физически отодвигает деталь от цифры «07» —
      поэтому left считаем не от 0, а с компенсирующим сдвигом, завязанным
      на ту же переменную --parts-h, что и height, чтобы паддинг обрезался
-     независимо от текущего множителя. */
-  --parts-h: calc(var(--rig-media-h) * 5);
+     независимо от текущего множителя.
+     2026-07-26: по прямой просьбе «Запчасти» — та же длина, что и у 05
+     (генератора), и то же начало (левый край = 0, как у генератора: они
+     «короткие», см. --rig-end) — конец при этом автоматически совпадает
+     с --rig-end, как и у остальных трёх. Первая попытка — подгонка под
+     ПОЛНУЮ длину пульсатора (--rig-end−--rig-start) — давала зум в разы
+     сильнее исходного: у zip.png другие пропорции (2048×798, почти
+     квадрат против «палки» 21:1 у пульсатора), в кадре оставалась видна
+     только последняя деталь, а не вся композиция — отменено по скрину.
+     Видимый контент (после белого поля) должен занять ровно --rig-end;
+     белое поле само съедает 0.13 высоты картинки, что в ширину даёт
+     0.13×2.5664 её высоты — поэтому делим целевую ширину не на полное
+     соотношение сторон (2.5664), а за вычетом этой доли (2.5664−0.13),
+     иначе видимый контент был бы уже, чем --rig-end. Зум пересчитан по
+     формуле (получился близким к прежнему ×5 — не случайно, «как у 5»
+     и есть довольно щадящий зум), соотношение сторон не искажается.
+     2026-07-26 №2: по факту конец всё равно недотягивал до общей линии —
+     у самого zip.png, похоже, есть небольшое пустое поле и справа (после
+     последней детали), не только слева, поэтому точный расчёт по чистому
+     краю файла давал видимый зазор. ×1.06 — небольшой запас поверх
+     точной формулы (изначально пробовали ×1.12 — оказалось многовато,
+     уменьшено по просьбе); начало (левый край) не сдвигается, т.к.
+     компенсация белого поля ниже пересчитывается от той же --parts-h. */
+  --parts-h: calc(var(--rig-end) / 2.4364 * 1.06);
   position: absolute;
-  top: 50%; left: calc(var(--parts-h) * -0.13);
+  /* якорь от низа контейнера — та же правка, что у resistivimeter/
+     pulsator/generator, воздух var(--rig-media-gap) сверху не трогает
+     старую обрезку картинки снизу. left = 0 (начало, как у генератора)
+     минус компенсация белого поля (0.13 × собственная высота). */
+  bottom: calc(var(--rig-media-h) / 2 + clamp(7px, 0.9vw, 10px)); left: calc(var(--parts-h) * -0.13);
   height: var(--parts-h);
   margin: 0;
-  transform: translateY(-50%) translateX(-32px);
+  transform: translateY(50%) translateX(-32px);
 }
 .rig-row--accordion:hover .rig-media--parts img,
 .rig-row--accordion:focus-within .rig-media--parts img {
-  transform: translateY(-50%) translateX(0);
+  transform: translateY(50%) translateX(0);
+}
+
+/* 2026-07-26: у 04/05/06/07 добавленный var(--rig-media-gap) в спейсере
+   выше сдвинул кадр вниз, но сам по себе увеличил бы высоту строки на
+   hover (растёт grid-трек .rig-media--accordion). Компенсируем ровно тем
+   же значением снизу — на hover нижний padding строки уменьшается на
+   var(--rig-media-gap), поэтому итоговая высота плашки не меняется,
+   просто воздух переезжает с низа (был запас) наверх кадра. */
+.rig-row--accordion:has(.rig-media--resistivimeter),
+.rig-row--accordion:has(.rig-media--pulsator),
+.rig-row--accordion:has(.rig-media--generator),
+.rig-row--accordion:has(.rig-media--parts),
+.rig-row--accordion:has(.rig-media--inclinometer) {
+  transition: border-color 0.3s var(--ease), background-color 0.3s var(--ease),
+              transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
+              padding-bottom 0.45s var(--ease);
+}
+.rig-row--accordion:has(.rig-media--resistivimeter):hover,
+.rig-row--accordion:has(.rig-media--resistivimeter):focus-within,
+.rig-row--accordion:has(.rig-media--pulsator):hover,
+.rig-row--accordion:has(.rig-media--pulsator):focus-within,
+.rig-row--accordion:has(.rig-media--generator):hover,
+.rig-row--accordion:has(.rig-media--generator):focus-within,
+.rig-row--accordion:has(.rig-media--parts):hover,
+.rig-row--accordion:has(.rig-media--parts):focus-within,
+.rig-row--accordion:has(.rig-media--inclinometer):hover,
+.rig-row--accordion:has(.rig-media--inclinometer):focus-within {
+  padding-bottom: calc(var(--rp) - var(--rig-media-gap));
 }
 
 /* .rig-media--right сейчас не используется ни одной карточкой (01 и 02
@@ -663,19 +796,22 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
    object-fit:cover заполняет этот прямоугольник — крышка кейса сверху и
    бока уходят под обрез, а панель с вентиляторами/экраном/портами видна
    крупно. object-position 75% по Y уводит обрез в крышку, оставляя
-   панель с логотипом GTN в кадре. На hover — лёгкий зум с 1.12 к 1,
-   вместо прежнего выезда сбоку. */
+   панель с логотипом GTN в кадре. На hover — лёгкий зум с 1.18 к 1.05,
+   вместо прежнего выезда сбоку. 2026-07-26: добавлен rotate(-2deg) —
+   на исходном кадре крышка кейса шла по диагонали, довернули влево,
+   чтобы её верхняя грань легла параллельно плашке карточки (перебирали
+   -4deg/-6deg/0deg по обратной связи, откатились на шаг назад к -2deg). */
 .rig-media--decoder img {
   width: 100%; height: 100%; max-width: none; margin: 0;
   object-fit: cover;
   object-position: 10% 75%;
-  transform: scale(1.12);
+  transform: rotate(-2deg) scale(1.18);
   opacity: 0;
   transition: transform 0.6s var(--ease) 0.03s, opacity 0.45s ease 0.03s;
 }
 .rig-row--accordion:hover .rig-media--decoder img,
 .rig-row--accordion:focus-within .rig-media--decoder img {
-  transform: scale(1);
+  transform: rotate(-2deg) scale(1.05);
   opacity: 1;
 }
 /* Плашка НАДЗЕМКА на hover чуть подрастает по высоте (симметрично сверху

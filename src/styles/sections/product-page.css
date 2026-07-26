@@ -37,13 +37,29 @@
 
 .product-main > :first-child { margin-top: 0; }
 
+/* Рамка всегда по ширине текстовой колонки — все блоки страницы
+   выровнены по одним вертикалям. Кропнутые кадры (pageImage, класс
+   is-crop) заполняют её по ширине целиком, остальные вписываются
+   по высоте и центрируются. */
 .product-photo {
   display: flex; justify-content: center; align-items: center;
-  max-height: min(48vh, 460px);
-  padding: clamp(20px, 2.4vw, 32px);
+  padding: 0 clamp(20px, 2.4vw, 32px);
   border: 1px solid var(--line); background: var(--panel);
 }
-.product-photo img { max-width: 100%; max-height: min(44vh, 420px); width: auto; object-fit: contain; }
+.product-photo img {
+  display: block;
+  max-width: 100%; max-height: min(48vh, 460px); width: auto;
+  object-fit: contain;
+}
+.product-photo.is-crop img { width: 100%; height: auto; max-height: none; }
+/* Пара кадров тёмная/светлая схема (пока только 03, инклинометр, см.
+   products.js/imageLight) — по умолчанию (без data-scheme или dark)
+   видна .theme-img--dark, светлая схема глушит её и показывает
+   .theme-img--light. #product зафиксирован на data-theme="black" ([id].
+   astro), это про ДРУГОЕ — про глобальный html[data-scheme]. */
+.product-photo .theme-img--light { display: none; }
+html[data-scheme="light"] .product-photo .theme-img--dark { display: none; }
+html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 
 .product-text {
   margin-top: clamp(24px, 3vw, 36px);
