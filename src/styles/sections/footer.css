@@ -81,13 +81,6 @@ footer { border-top: 1px solid var(--line); padding-top: 80px; }
   flex: 0 0 33.3333%;
   border-left: 0; padding-left: var(--s-5);
 }
-.footer-bar-link {
-  flex-direction: row; align-items: center; justify-content: space-between; gap: var(--s-2);
-  color: var(--text-faint); text-decoration: none; transition: color 0.2s;
-}
-.footer-bar-link:hover { color: var(--text); }
-.footer-bar-arrow { color: var(--text); }
-
 @media (max-width: 760px) {
   footer { padding-top: 56px; }
   .footer-bar { flex-direction: column; }

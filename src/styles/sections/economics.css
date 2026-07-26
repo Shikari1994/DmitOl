@@ -196,8 +196,11 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   .econ-head-lead { padding-left: clamp(24px, 3vw, 40px); margin-top: 16px; padding-top: 16px; }
   .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); flex-wrap: wrap; row-gap: 16px; }
   .econ-problem-copy { padding-right: 0; }
-  .econ-problem-icon { position: static; transform: none; order: 2; margin-left: auto; }
-  .econ-problem-icon svg { height: 72px; }
+  .econ-problem-icon { position: static; transform: none; order: 2; margin: 8px auto 0; }
+  /* десктопные точечные переопределения (higher specificity) не гейтятся этим брейкпоинтом — перебиваем явно */
+  .econ-problem-icon svg,
+  .econ-problem:nth-child(1) .econ-problem-icon svg { height: clamp(150px, 42vw, 210px); }
+  .econ-problem:nth-child(2) .econ-problem-icon { transform: none; }
   .econ-algos { border-left: none; }
 }
 
