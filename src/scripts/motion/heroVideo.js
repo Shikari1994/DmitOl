@@ -9,4 +9,26 @@
 import { reduce } from './env.js'
 
 const heroVideo = document.querySelector('[data-hero-video]')
-if (heroVideo && !reduce) heroVideo.play?.().catch(() => {})
+if (heroVideo && !reduce) {
+  heroVideo.play?.().catch(() => {})
+
+  /* ─── Пауза, когда первый экран ушёл ───
+     Ролик тяжёлый (hero_back.mp4), и без этого он декодировался ВСЮ
+     прокрутку страницы — одновременно с глобусом «О компании», фоном
+     продукции и роликом активной вкладки Drill Monitor. Четыре
+     параллельных видеопотока ради одного видимого и есть та самая
+     причина рывков на слабой графике.
+     Тот же приём уже носят ленивые ролики (см. lazyVideo.js), здесь он
+     не был применён только потому, что hero стартует сразу и лениво
+     грузиться ему незачем. Пока секция на экране, поведение прежнее:
+     видео играет с первого кадра и по кругу. */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) heroVideo.play?.().catch(() => {})
+        else heroVideo.pause?.()
+      },
+      { threshold: 0 },
+    ).observe(heroVideo)
+  }
+}

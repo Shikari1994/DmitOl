@@ -26,19 +26,60 @@ const menu = document.querySelector('.nav-mobile')
    несопоставимо дешевле перерисовки компонента, ради которой здесь
    раньше держался React. Слушатель пассивный — прокрутку не тормозит. */
 if (nav) {
-  /* Настоящая высота шапки → --nav-h (см. index.css): читаем её тут же,
+  /* Настоящая высота шапки → --nav-h (см. index.css): читаем её живьём,
      а не держим в CSS числом-догадкой на каждый брейкпоинт — на 1200px
-     раскладка меняется (часы+кнопка ↔ бургер), и высота вместе с ней. */
+     раскладка меняется (часы+кнопка ↔ бургер), и высота вместе с ней.
+
+     ПОЧЕМУ НЕ НА КАЖДЫЙ СКРОЛЛ (было именно так): пара «читаем
+     offsetHeight → пишем кастомное свойство в documentElement» — это
+     принудительный layout плюс инвалидация стилей ВСЕГО документа, а
+     --nav-h читают и section[id]{scroll-margin-top}, и .hero-intro
+     {padding}, и боковая панель. Скролл ведёт Lenis, событий приходит
+     по одному на кадр всю прокрутку страницы — то есть полный recalc
+     дерева 60–144 раза в секунду от начала до конца документа.
+     Замеры высоты нужны РЕДКО: при ресайзе и в те 0.4 секунды, пока
+     идёт transition паддинга шапки (см. .scrolled в nav.css). */
+  const root = document.documentElement
+  let navH = -1
   const setNavHeight = () => {
-    document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px')
+    const h = nav.offsetHeight
+    if (h === navH) return
+    navH = h
+    root.style.setProperty('--nav-h', h + 'px')
   }
-  const apply = () => {
-    nav.classList.toggle('scrolled', window.scrollY > 40)
+
+  /* Пока шапка сжимается/разжимается, высоту читаем каждый кадр: от
+     --nav-h зависит верхний отступ hero, и обнови мы свойство разом по
+     окончании перехода — контент первого экрана дёрнулся бы на всю
+     разницу паддингов вместо того, чтобы ехать вместе с шапкой.
+     Цикл живёт ровно длительность перехода (0.4s + запас) и гаснет:
+     собственного rAF на скролле у шапки больше нет. */
+  const TRACK_MS = 480
+  let trackUntil = 0
+  let trackRaf = 0
+  const track = () => {
     setNavHeight()
+    trackRaf = performance.now() < trackUntil ? requestAnimationFrame(track) : 0
+  }
+
+  /* На самом скролле — только чтение scrollY и сравнение с прошлым
+     состоянием. Ни layout, ни записи в стили: класс переключается лишь
+     в момент фактического перехода через порог, а не на каждом кадре
+     (toggle тем же значением всё равно инвалидировал бы стили шапки). */
+  let scrolled = window.scrollY > 40
+  nav.classList.toggle('scrolled', scrolled)
+  setNavHeight()
+
+  const apply = () => {
+    const on = window.scrollY > 40
+    if (on === scrolled) return
+    scrolled = on
+    nav.classList.toggle('scrolled', on)
+    trackUntil = performance.now() + TRACK_MS
+    if (!trackRaf) trackRaf = requestAnimationFrame(track)
   }
   window.addEventListener('scroll', apply, { passive: true })
   window.addEventListener('resize', setNavHeight)
-  apply()
 }
 
 /* ─── Мобильное меню ───
@@ -121,11 +162,15 @@ if (burger && menu) {
 {
   const clock = document.getElementById('nav-clock')
   if (clock) {
+    /* Форматтер строится ОДИН раз, а не на каждый тик: toLocaleTimeString
+       с теми же опциями — это ровно Intl.DateTimeFormat.format(), только
+       разбор локали и часового пояса в нём повторялся ежесекундно.
+       Строка на выходе та же до символа. */
+    const fmt = new Intl.DateTimeFormat('ru-RU', {
+      timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', second: '2-digit',
+    })
     const tick = () => {
-      const t = new Date().toLocaleTimeString('ru-RU', {
-        timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', second: '2-digit',
-      })
-      clock.textContent = 'МОСКВА · ' + t
+      clock.textContent = 'МОСКВА · ' + fmt.format(new Date())
     }
     tick()
     setInterval(tick, 1000)

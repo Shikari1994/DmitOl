@@ -373,7 +373,43 @@ function makeAtmosphereTexture(THREE) {
   return tex
 }
 
-const themeColor = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+/* Объект getComputedStyle живой — он отражает актуальные значения и после
+   смены html[data-scheme], поэтому держим один на весь модуль вместо
+   нового вызова на каждый из девяти цветов (сам вызов способен
+   форсировать пересчёт стиля). Значения на выходе те же. */
+let rootStyle = null
+const themeColor = (name) => {
+  if (!rootStyle) rootStyle = getComputedStyle(document.documentElement)
+  return rootStyle.getPropertyValue(name).trim()
+}
+
+/* ─── Полилинии одного материала — в ОДНУ геометрию ───
+   Сетка меридианов/параллелей (17 дуг) и контур границы (25 колец)
+   строились каждая своим THREE.Line/LineLoop, то есть 42 draw call'а
+   на каждом кадре непрерывного рендера. Здесь они склеиваются в один
+   LineSegments: при linewidth = 1 цепочка отрезков GL_LINES даёт
+   попиксельно тот же результат, что GL_LINE_STRIP, — рисуется ровно
+   та же ломаная теми же вершинами, меняется только число вызовов.
+   Патч cullBackface тоже работает без изменений: он смотрит на позицию
+   вершины (она у сегментов та же) и отбрасывает фрагмент во фрагментном
+   шейдере, а не на уровне примитива.
+   closed: true дописывает замыкающий сегмент — эквивалент LineLoop. */
+function mergeLines(THREE, rings) {
+  const pos = []
+  rings.forEach(({ points, closed }) => {
+    const n = points.length
+    if (n < 2) return
+    const segments = closed ? n : n - 1
+    for (let i = 0; i < segments; i++) {
+      const a = points[i]
+      const b = points[(i + 1) % n]
+      pos.push(a.x, a.y, a.z, b.x, b.y, b.z)
+    }
+  })
+  const geo = new THREE.BufferGeometry()
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3))
+  return geo
+}
 
 const progress = wrap ? makeProgress(wrap, stage) : () => 0
 const globeProgress = () => span(progress(), 0, GLOBE_END)
@@ -694,6 +730,8 @@ async function start() {
      контуром России. cullBackface() обязателен по той же причине, что и
      у border ниже: у THREE.Line нет собственного backface-culling,
      дальняя половина сетки иначе просвечивала бы сквозь ближнюю.
+     Дуги и кольца собраны в один LineSegments (см. mergeLines() выше) —
+     раньше это были 17 отдельных объектов, то есть 17 draw call'ов.
      renderOrder держим МЕНЬШЕ dotCloud (0): сетка рисуется раньше суши/
      городов/границы, поэтому в океане (где точек суши нет) она видна, а
      под континентами и маркерами — перекрыта ими, а не режет их поверх. */
@@ -705,18 +743,21 @@ async function start() {
     depthTest: false,
   })
   cullBackface(gridMat)
-  const grid = new THREE.Group()
   const GRID_R = 1.003
+  const gridRings = []
+  // меридианы — открытые дуги от полюса до полюса
   for (let lon = 0; lon < 360; lon += 30) {
-    const pts = []
-    for (let lat = -88; lat <= 88; lat += 4) pts.push(latLonToVec3(THREE, lat, lon, GRID_R))
-    grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gridMat))
+    const points = []
+    for (let lat = -88; lat <= 88; lat += 4) points.push(latLonToVec3(THREE, lat, lon, GRID_R))
+    gridRings.push({ points, closed: false })
   }
+  // параллели — замкнутые кольца на фиксированной широте
   for (let lat = -60; lat <= 60; lat += 30) {
-    const pts = []
-    for (let lon = 0; lon < 360; lon += 5) pts.push(latLonToVec3(THREE, lat, lon, GRID_R))
-    grid.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), gridMat))
+    const points = []
+    for (let lon = 0; lon < 360; lon += 5) points.push(latLonToVec3(THREE, lat, lon, GRID_R))
+    gridRings.push({ points, closed: true })
   }
+  const grid = new THREE.LineSegments(mergeLines(THREE, gridRings), gridMat)
   grid.renderOrder = -0.5
   globe.add(grid)
 
@@ -725,9 +766,10 @@ async function start() {
      тонуть в точках земли, но и не спорить с городами. cullBackface() тут
      так же обязателен, как и для точек: у THREE.Line нет собственного
      backface-culling, дальняя половина контура иначе просвечивала бы
-     сквозь ближнюю. Каждое кольцо BORDER_RINGS — отдельный LineLoop:
-     колец много (материк, острова, эксклавы), но общий объём точек
-     (см. BORDER_RINGS выше) для одного draw call на кольцо не критичен.
+     сквозь ближнюю. Все кольца BORDER_RINGS (материк, острова, эксклавы)
+     склеены в ОДИН LineSegments — см. mergeLines() выше: раньше на
+     каждое кольцо приходился свой draw call, и только контур границы
+     стоил 25 вызовов на кадре.
 
      depthTest выключен нарочно (жалоба 2026-07-24: «свечение под
      курсором перекрывает границу по цвету»). Точки суши — плоские
@@ -749,12 +791,16 @@ async function start() {
     depthTest: false,
   })
   cullBackface(borderMat)
-  const border = new THREE.Group()
-  BORDER_RINGS.forEach((ring) => {
-    const pts = ring.map(([lon, lat]) => latLonToVec3(THREE, lat, lon, 1.006))
-    const geo = new THREE.BufferGeometry().setFromPoints(pts)
-    border.add(new THREE.LineLoop(geo, borderMat))
-  })
+  const border = new THREE.LineSegments(
+    mergeLines(
+      THREE,
+      BORDER_RINGS.map((ring) => ({
+        points: ring.map(([lon, lat]) => latLonToVec3(THREE, lat, lon, 1.006)),
+        closed: true,
+      })),
+    ),
+    borderMat,
+  )
   border.renderOrder = 3
   globe.add(border)
 
