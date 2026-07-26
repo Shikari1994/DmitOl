@@ -100,7 +100,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 .econ-problem:first-child { border-top: 0; }
 .econ-problem:hover { background: var(--bg-raised); }
 .econ-problem-head {
-  padding: clamp(80px, 9.6vw, 142px) clamp(20px, 2.4vw, 32px) clamp(80px, 9.6vw, 142px) var(--gut);
+  padding: clamp(32px, 4vw, 56px) clamp(20px, 2.4vw, 32px) clamp(32px, 4vw, 56px) var(--gut);
   display: flex; flex-direction: column; justify-content: center; gap: 8px;
 }
 .econ-problem-kicker {
@@ -109,54 +109,13 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 }
 .econ-problem-head h3 { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
 .econ-problem-text {
-  position: relative;
   display: flex; align-items: center;
-  padding: clamp(80px, 9.6vw, 142px) var(--gut) clamp(80px, 9.6vw, 142px) clamp(28px, 3.2vw, 44px);
+  padding: clamp(32px, 4vw, 56px) var(--gut) clamp(32px, 4vw, 56px) clamp(28px, 3.2vw, 44px);
   border-left: 1px solid var(--line);
 }
-/* padding-right был отдельным числом (72–150px), не связанным с реальной
-   шириной иконки (270–418px высоты × ~0.82 её же viewBox, см. .econ-problem-icon
-   svg ниже) — при 800–1100px абзац доходил почти до самого центра круга,
-   слово оказывалось перекрыто линией контура (проверено скриншотами devtools
-   на 700/800/900/1000/1100/1280/1440). ch1 (nth-child(1)) — самый крупный
-   вариант (282–418px) и общий знаменатель резерва для всех трёх карточек:
-   резерв больше нужного для 02/03 — просто лишний воздух, не риск наложения. */
 .econ-problem-copy {
   font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 56ch;
-  padding-right: calc(0.82 * clamp(282px, 28vw, 418px) + 40px);
 }
-/* Иконка — инлайновый SVG (не <img>), каждый цвет узла заменён на
-   currentColor при чтении файла (см. loadMonoIcon в Economics.astro):
-   моно-силуэт наследует --ink секции и сам переключается чёрный/белый
-   со схемой. position: absolute — сознательно, а не участие в flex-
-   расчёте высоты ряда: любая высота, заданная иконке через flex/grid,
-   тянула за собой высоту (следовательно и рамку) всего ряда — что и
-   было жалобой пользователя. Абсолютное позиционирование выводит
-   иконку из потока целиком: высоту ряда держит только абзац, а SVG
-   можно увеличивать сколь угодно без изменения границ блока. */
-/* aspect-ratio на самом .econ-problem-icon (общий бокс под все три
-   файла, ради выравнивания левого края) убран 2026-07-25: связка
-   aspect-ratio + width:auto на absolute-блоке с одним заданным офсетом
-   (right, без left) в какой-то момент упирается в доступную ширину и
-   перестаёт расти по высоте вместе с ней — дальнейшие увеличения
-   height переставали визуально работать. Высота снова простым clamp'ом
-   прямо на <svg>, без искусственного общего бокса (проверенная схема
-   из более ранних правок этой секции). */
-.econ-problem-icon {
-  position: absolute; top: 50%; right: var(--gut);
-  transform: translateY(-50%);
-  color: var(--ink); opacity: 0.9; pointer-events: none;
-}
-.econ-problem-icon svg { display: block; width: auto; height: clamp(270px, 27vw, 400px); }
-/* circle1.svg (Проблема 01) визуально мельче двух других при той же
-   высоте бокса — у исходных файлов разное отношение «диаметр круга /
-   высота viewBox» (запас под подпись снизу у каждого свой), поэтому
-   одинаковый height даёт разный видимый размер самого круга. Точечная
-   поправка по первому ряду вместо пересчёта общей формулы. */
-.econ-problem:nth-child(1) .econ-problem-icon svg { height: clamp(282px, 28vw, 418px); }
-/* circle2.svg (Проблема 02) читается чуть левее первой и третьей —
-   точечный сдвиг вправо той же кистью, что и поправка размера выше. */
-.econ-problem:nth-child(2) .econ-problem-icon { transform: translate(10px, -50%); }
 
 .econ-synergy { display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr; }
 .econ-synergy-main {
@@ -194,13 +153,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 @media (max-width: 700px) {
   .econ-head, .econ-problem, .econ-synergy { grid-template-columns: 1fr; }
   .econ-head-lead { padding-left: clamp(24px, 3vw, 40px); margin-top: 16px; padding-top: 16px; }
-  .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); flex-wrap: wrap; row-gap: 16px; }
-  .econ-problem-copy { padding-right: 0; }
-  .econ-problem-icon { position: static; transform: none; order: 2; margin: 8px auto 0; }
-  /* десктопные точечные переопределения (higher specificity) не гейтятся этим брейкпоинтом — перебиваем явно */
-  .econ-problem-icon svg,
-  .econ-problem:nth-child(1) .econ-problem-icon svg { height: clamp(150px, 42vw, 210px); }
-  .econ-problem:nth-child(2) .econ-problem-icon { transform: none; }
+  .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); }
   .econ-algos { border-left: none; }
 }
 

@@ -18,42 +18,23 @@
    разметка и стили те же .ey-no/.ey-den, что у About/Software/Mobile/How
    (см. base.css), но подключены точечно в economics.css, а не через
    общий класс .eyebrow: тот принёс бы свои margin/color и разъехался бы
-   с уже увязанной геометрией .econ-kicker.
-
-   2026-07-25: иконки-«циферблаты» (public/circle1-3.svg) исходно
-   цветные (зелёный/красный/синий по узлу диаграммы) — секция здесь
-   монохромная, поэтому все rgb(...)-цвета из разметки заменяются на
-   currentColor прямо при чтении файла, а сама разметка инлайнится
-   (не <img>), чтобы currentColor подхватывал --ink секции и сам
-   переключался чёрный/белый вместе со светлой темой. */
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-
-const ICON_COLORS = [/rgb\(232,\s*64,\s*64\)/g, /rgb\(199,\s*45,\s*45\)/g, /rgb\(45,\s*199,\s*109\)/g, /rgb\(41,\s*171,\s*226\)/g]
-function loadMonoIcon(file) {
-  let svg = readFileSync(resolve('public', file), 'utf-8')
-  for (const re of ICON_COLORS) svg = svg.replace(re, 'currentColor')
-  return svg
-}
+   с уже увязанной геометрией .econ-kicker. */
 
 const PROBLEMS = [
   {
     kicker: 'Проблема 01 // фрагментация',
     title: 'Разрозненность систем',
     text: 'Когда инклинометрия, расчет прочности колонны и учет износа приборов ведутся в разных программах, общая картина теряется, увеличивая время принятия решений.',
-    icon: loadMonoIcon('circle1.svg'),
   },
   {
     kicker: 'Проблема 02 // ручной ввод',
     title: 'Учет наработки «на глаз»',
     text: 'Постоянный ручной перенос данных в журналы и Excel маскирует фактический износ внутренних узлов телесистем, приводя к внезапным отказам электроники и дорогостоящему НПВ.',
-    icon: loadMonoIcon('circle2.svg'),
   },
   {
     kicker: 'Проблема 03 // инфо-вакуум',
     title: 'Ошибки интерпретации',
     text: 'Геомагнитные помехи и механический прогиб бурильного инструмента искажают чистые сигналы датчиков, повышая риск ухода ствола из продуктивного пласта.',
-    icon: loadMonoIcon('circle3.svg'),
   },
 ]
 
@@ -105,7 +86,6 @@ const ALGORITHMS = [
         </div>
         <div class="econ-problem-text">
           <p class="econ-problem-copy">{p.text}</p>
-          <span class="econ-problem-icon" aria-hidden="true" set:html={p.icon} />
         </div>
       </div>
     ))}
