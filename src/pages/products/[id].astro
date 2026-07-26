@@ -41,6 +41,23 @@ const { product } = Astro.props
 
             <p class="product-text reveal">{product.text}</p>
 
+            {product.modules?.length > 0 && (
+              <>
+                <h2 class="product-specs-title reveal">{product.modulesTitle}</h2>
+                <ul class="product-modules reveal">
+                  {product.modules.map(([num, title, desc]) => (
+                    <li class="product-module">
+                      <span class="product-module-num mono">{num}</span>
+                      <div>
+                        <h3 class="product-module-title">{title}</h3>
+                        <p class="product-module-text">{desc}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
             {product.specs.length > 0 && (
               <>
                 <h2 class="product-specs-title reveal">{product.specTitle}</h2>

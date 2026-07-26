@@ -54,6 +54,28 @@
   margin-top: clamp(40px, 5vw, 64px);
   font-size: var(--fs-4); font-weight: 700; letter-spacing: -0.02em;
 }
+
+.product-modules {
+  margin-top: var(--s-3); list-style: none;
+  display: flex; flex-direction: column;
+}
+.product-module {
+  display: flex; gap: var(--s-3);
+  padding: clamp(16px, 2vw, 22px) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.product-module-num {
+  flex: none; padding-top: 0.15em;
+  font-size: var(--fs-1); color: var(--brand);
+}
+.product-module-title {
+  font-size: var(--fs-2); font-weight: 600; letter-spacing: -0.01em;
+}
+.product-module-text {
+  margin-top: 6px;
+  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim); max-width: 62ch;
+}
+
 .product-specs { margin-top: var(--s-3); border-top: 1px solid var(--line-soft); }
 .product-spec-row {
   display: flex; justify-content: space-between; gap: var(--s-3);

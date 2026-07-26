@@ -140,14 +140,22 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 .econ-algos-kicker { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
 .econ-algo-list { display: flex; flex-direction: column; }
 .econ-algo-row {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  /* Было flex-wrap: с удлинившимся sub-текстом .econ-algo-copy занимал
+     всю ширину строки, и тегу («Предотвращение обрывов КНБК» и т.п.)
+     не оставалось места — он переносился на отдельную строку и уезжал
+     влево. Grid с колонкой auto держит тег в правой колонке всегда,
+     independent от того, на сколько строк перенёсся текст слева. */
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 24px;
   padding: clamp(20px, 2.4vw, 28px) 0; border-top: 1px solid var(--line);
 }
 .econ-algo-row:first-child { border-top: 0; padding-top: 0; }
-.econ-algo-copy { display: flex; flex-direction: column; gap: 4px; }
+.econ-algo-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .econ-algo-title { font-family: var(--font-text); font-size: var(--fs-2); font-weight: 800; color: var(--ink); }
 .econ-algo-sub { font-size: var(--fs-1); letter-spacing: 0.02em; color: var(--ink-faint); font-weight: 500; }
-.econ-algo-tag { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.econ-algo-tag {
+  font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim);
+  white-space: nowrap; text-align: right;
+}
 .econ-algo-tag.is-accent { color: var(--brand); }
 
 @media (max-width: 700px) {
@@ -155,5 +163,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   .econ-head-lead { padding-left: clamp(24px, 3vw, 40px); margin-top: 16px; padding-top: 16px; }
   .econ-problem-text { border-left: none; border-top: 1px solid var(--line); padding-left: var(--gut); }
   .econ-algos { border-left: none; }
+  .econ-algo-row { grid-template-columns: 1fr; justify-items: start; gap: 6px; }
+  .econ-algo-tag { white-space: normal; text-align: left; }
 }
 
