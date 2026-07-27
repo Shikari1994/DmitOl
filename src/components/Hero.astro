@@ -122,12 +122,17 @@ import { asset } from '../lib/asset.js'
 
       {/* Плитка 2 · аппаратное производство. Снаряд — два стержневых
           модуля в одном кадре, та же логика выезда по наведению. Акцент
-          текста здесь sky-400, не logoBlue — так и у Dmit (.hero-tile--sky). */}
+          текста здесь sky-400, не logoBlue — так и у Dmit (.hero-tile--sky).
+          2026-07-27: кадр комплекта заменён на новый рендер — gtn-kit5.webp
+          (PNG 5760×3240 обрезан по альфа-каналу до 5066×3213 и сведён в те же
+          2560×1624, что у прежнего gtn-kit4.webp; соотношение 1.5767 против
+          1.5764 — посадка .hero-tile-rig img не менялась). На странице товара
+          01 по-прежнему gtn-kit4.webp, см. pageImage в data/products.js. */}
       <a class="hero-tile hero-tile--sky" href="#products">
         <span class="hero-tile-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         <div class="hero-tile-art hero-tile-art--rig" aria-hidden="true">
           <div class="hero-tile-rig">
-            <img src={asset('/gtn-kit4.webp')} alt="" loading="eager" draggable="false" />
+            <img src={asset('/gtn-kit5.webp')} alt="" loading="eager" draggable="false" />
           </div>
         </div>
         <div class="hero-tile-row">
