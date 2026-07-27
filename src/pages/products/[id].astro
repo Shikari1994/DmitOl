@@ -34,7 +34,7 @@ const { product } = Astro.props
         <div class="product-layout">
           <div class="product-main">
             {(product.pageImage || product.image) && (
-              <div class={`product-photo reveal${product.pageImage ? ' is-crop' : ''}`}>
+              <div class={`product-photo reveal${product.pageImage ? ' is-crop' : ''}${product.photoFull ? '' : ' is-compact'}`}>
                 {product.pageImage ? (
                   <img src={asset(product.pageImage)} alt={product.title} loading="eager" />
                 ) : (

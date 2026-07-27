@@ -8,6 +8,14 @@
    см. data/products.js. Глоссарий классов свой (product-*), не specs-*:
    старый рецепт шторки удалён вместе с файлом. */
 
+/* Общий `section { padding: var(--section-y) 0 }` (base.css) на узких
+   экранах даёт меньше отступа, чем реальная высота фиксированной шапки
+   (бургер 44px + паддинг 22px×2 = 88px против --section-y, у которого
+   нижняя граница clamp'а всего 80px) — «← Продукция» наполовину уезжала
+   под шапку. max() поднимает верхний паддинг до высоты шапки с запасом,
+   не трогая нижний и не задевая десктоп, где --section-y и так больше. */
+#product { padding-top: max(var(--section-y), calc(var(--nav-h) + var(--s-3))); }
+
 .product-back {
   display: inline-flex; align-items: center; gap: var(--s-1);
   font-size: var(--fs-1); font-weight: 600; letter-spacing: 0.02em;
@@ -59,6 +67,22 @@
    ошибка. Ширину самой рамки не трогаем — вертикали страницы общие. */
 .product-photo.is-crop { padding: 0; }
 .product-photo.is-crop img { width: 100%; height: auto; max-height: none; }
+
+/* Все узлы, кроме 01 и 02 (флаг photoFull в products.js), сняты
+   горизонтально: в полный рост такой кадр давал рамку ~580px и первый
+   экран уходил целиком под фото. Здесь рамка фиксированной высоты, а
+   кадр заполняет её целиком (cover) — пустых полей внутри рамки нет,
+   срезаются только края, которые у кроп-кадров и так уходят за границу.
+   Высота считается от ширины вьюпорта, чтобы пропорция рамки на узких
+   экранах не выродилась в полоску. */
+.product-photo.is-compact {
+  padding: 0;
+  height: clamp(250px, 32vw, 480px);
+}
+.product-photo.is-compact img {
+  width: 100%; height: 100%; max-height: none;
+  object-fit: cover;
+}
 /* Пара кадров тёмная/светлая схема (пока только 03, инклинометр, см.
    products.js/imageLight) — по умолчанию (без data-scheme или dark)
    видна .theme-img--dark, светлая схема глушит её и показывает

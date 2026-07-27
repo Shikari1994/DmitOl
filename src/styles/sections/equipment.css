@@ -268,8 +268,19 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
   font-variant-numeric: tabular-nums;
 }
 .rig-row:hover .rig-num, .rig-row:focus-within .rig-num { color: var(--brand); }
-.rig-head { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; }
+/* min-width: 0 — колонка заголовка имеет ЖЁСТКО вычисленную ширину (см.
+   grid-template-columns у .rig-row: она привязана к общей направляющей
+   W/3, её нельзя раздвинуть под контент). Без сброса auto-минимума
+   grid-item всё равно распирается длинным словом и вылезает поверх
+   соседней колонки текста. */
+.rig-head { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .rig-title { font-size: var(--fs-3); font-weight: 700; letter-spacing: -0.01em; color: var(--ink); transition: color 0.3s var(--ease); }
+/* 2026-07-27: страховка от переполнения колонки — одиночное длинное слово
+   («РЕЗИСТИВИМЕТР», «ИНКЛИНОМЕТР») переносится внутри своей ячейки, а не
+   ложится поверх описания справа. Срабатывает только если кегль ниже уже
+   не спас; overflow-wrap (не word-break) рвёт слово лишь при полном
+   отсутствии другой точки переноса. */
+.rig-title, .rig-line { overflow-wrap: anywhere; }
 .rig-row:hover .rig-title, .rig-row:focus-within .rig-title { color: var(--brand); }
 .rig-line { font-size: var(--fs-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
 /* min-height: 2 строки текста всегда зарезервированы, даже если описание
@@ -368,6 +379,19 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
 }
 @media (prefers-reduced-motion: reduce) {
   .rig-cube-caret { animation: none; }
+}
+
+/* 2026-07-27: тот же диагноз и то же лечение, что у .prod-head-title выше.
+   Колонка заголовка зажата в calc(W/3 − gut − rp − rn − 2·rg) — на 838px
+   это ~158px, а «РЕЗИСТИВИМЕТР» при var(--fs-3) (21.3px) занимает ~172px
+   и вылезал поверх колонки описания (баг-репорт со скриншотом 838px).
+   Раздвинуть колонку нельзя — она стоит на общей направляющей сайта,
+   поэтому уменьшается сам кегль, и только в колоночной раскладке
+   (ниже 821px строка схлопывается в одну широкую колонку, там полный
+   --fs-3 помещается всегда). Потолок var(--fs-3) достигается к ~1300px,
+   то есть на нормальном десктопе размер прежний. */
+@media (min-width: 821px) {
+  .rig-title { font-size: clamp(1rem, 0.45rem + 1.1vw, var(--fs-3)); }
 }
 
 @media (max-width: 820px) {
@@ -829,6 +853,48 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
 .rig-row--accordion:has(.rig-media--decoder):focus-within {
   padding-top: calc(var(--rp) + var(--rig-media-add) / 2);
   padding-bottom: calc(var(--rp) + var(--rig-media-add) / 2);
+}
+
+/* ── Описание 01/02 не доходит до кадра (2026-07-27) ──
+   Кадры этих двух карточек — абсолютный оверлей справа во всю высоту
+   плашки, и на средних ширинах он геометрически неизбежно заходил ПОД
+   .rig-text: текст стартует ровно на направляющей W/3, а держит он
+   max-width: 62ch — мера в ch не сжимается вместе с колонкой, поэтому
+   хвост описания ложился на светлые участки фото и не читался.
+   Отменённые попытки (все три по прямой просьбе): гашение кадра
+   mask-image слева — картинка выглядела забеленной; стеклянная
+   подкладка под текстом приёмом .sw-eco-tile-n — не понравилась
+   визуально; mix-blend-mode: difference — на кадре декодера слишком
+   много средне-серого, где у этого блендинга контраст падает до нуля.
+   Осталось единственное решение без компромиссов по картинке: убрать
+   само пересечение — ограничить текст так, чтобы строка кончалась до
+   левого края кадра. Текст становится уже (на 1–2 строки выше), кадр
+   не тронут вообще, никакого блендинга и подложек.
+
+   Формула повторяет ту же систему координат, что и grid-template-columns
+   у .rig-row: W = min(100vw, var(--maxw)) — фактическая ширина
+   .page-shell, плашка = W − 2·gut, текст стартует на W/3 − gut − rp от
+   её контент-бокса, кадр начинается за min(38%|32% плашки, 400|340px)
+   от правого края. Разность и есть доступная ширина, минус 16px зазора,
+   чтобы буквы не касались границы кадра.
+   max(...) снизу — предохранитель: если у будущей ширины кадра расчёт
+   уйдёт в слишком узкий колодец, текст остановится на 22ch и лучше
+   слегка заедет на кадр, чем превратится в столбик по слову в строке.
+   Ограничение снято выше 1250px: там 62ch и так не достают до кадра,
+   утверждённый десктопный вид остаётся ровно прежним. */
+@media (min-width: 821px) and (max-width: 1250px) {
+  .rig-row--accordion:has(.rig-media--decoder) .rig-text {
+    max-width: max(22ch, calc(
+      min(100vw, var(--maxw)) * 2 / 3 - var(--gut)
+      - min((min(100vw, var(--maxw)) - 2 * var(--gut)) * 0.38, 400px)
+      - 16px));
+  }
+  .rig-row--accordion:has(.rig-media--mwd) .rig-text {
+    max-width: max(22ch, calc(
+      min(100vw, var(--maxw)) * 2 / 3 - var(--gut)
+      - min((min(100vw, var(--maxw)) - 2 * var(--gut)) * 0.32, 340px)
+      - 16px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
