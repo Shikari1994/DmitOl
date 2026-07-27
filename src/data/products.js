@@ -65,7 +65,13 @@ export const PRODUCTS = [
     ],
     specTitle: 'Универсальный наземный комплекс',
     image: '/gtn-decoder.webp',
-    pageImage: '/gtn-decoder-nsbox.webp',
+    /* 2026-07-27: кадр страницы товара заменён на «GTN BOX faceboard» —
+       ракурс с лицевой панелью крупным планом (исходник 11520×4320 с
+       прозрачным фоном, обрезан до содержимого и ужат до 2400×975 тем же
+       playwright/canvas-сценарием, что и остальная серия; PNG лежит в
+       media-archive/sources-bw/). Кадр аккордеона на главной
+       (image: /gtn-decoder.webp) не менялся. */
+    pageImage: '/gtn-decoder-faceboard.webp',
     photoFull: true,
     highlightsTitle: 'Основные преимущества',
     highlights: [
