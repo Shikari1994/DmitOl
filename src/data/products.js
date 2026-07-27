@@ -54,10 +54,10 @@ export const PRODUCTS = [
        (html[data-scheme], НЕ то же самое, что фиксированный
        data-theme="black" у #products/product-page, см. equipment.css/
        product-page.css). image — дефолт/тёмная, imageLight — светлая. */
-    image: '/DirectionalBlack.png',
-    imageLight: '/DirectionalWhite.png',
+    image: '/DirectionalBlack.webp',
+    imageLight: '/DirectionalWhite.webp',
     /* Как у генератора (05) — на главной узкая приборная плашка
-       (DirectionalBlack/White, геометрия зашита в equipment.css),
+       (DirectionalBlack/White.webp, геометрия зашита в equipment.css),
        на отдельной странице товара — своё полноразмерное фото. */
     pageImage: '/directional4-crop.webp',
     specs: [
@@ -75,10 +75,11 @@ export const PRODUCTS = [
     /* Тёмная/светлая пара, как у 03 (инклинометр) — image/imageLight,
        переключение по html[data-scheme] уже общее для всех товаров (см.
        .theme-img в equipment.css/product-page.css), новых стилей не
-       нужно. BHresBlack.png обрезан до содержимого (7245×237, было
+       нужно. BHresBlack обрезан до содержимого (7245×237, было
        7680×4320 с большими прозрачными полями) тем же приёмом, что и
-       Directional*.png. */
-    image: '/BHresBlack.png',
+       Directional*; 2026-07-27 переведён из PNG в webp (2.5 МБ → 397 КБ),
+       разрешение не тронуто. */
+    image: '/BHresBlack.webp',
     imageLight: '/Res.webp',
     specs: [
       ['Рабочая температура', 'до +150°C (опция +175°C)'],
@@ -126,7 +127,7 @@ export const PRODUCTS = [
   {
     id: 'parts', n: '07', title: 'ЗАПЧАСТИ', line: 'Для телесистем любого типа',
     text: 'Сменные узлы, платы и расходные компоненты — совместимость с оборудованием большинства производителей телесистем.',
-    image: '/zip.png',
+    image: '/zip.webp',
     specs: [],
   },
 ]
