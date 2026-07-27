@@ -49,7 +49,11 @@ nav.nav.scrolled {
 nav.nav[data-theme] { color: var(--ink); }
 nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; padding-left: var(--gut); }
-.nav-logo img { height: 34px; width: auto; }
+.nav-logo-img { height: 34px; width: auto; }
+.nav-logo-img--dark { height: 23px; }
+.nav-logo-img--light { display: none; }
+html[data-scheme="light"] .nav-logo-img--dark { display: none; }
+html[data-scheme="light"] .nav-logo-img--light { display: block; }
 .nav-logo-text { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 /* 2026-07-25: было display:contents — каждый li становился отдельной
    ячейкой сетки шапки шириной в один rail-трек, а зазор между пунктами
