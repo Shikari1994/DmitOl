@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import Nav from '../../components/Nav.astro'
 import Footer from '../../components/Footer.astro'
+import BulletList from '../../components/BulletList.astro'
 import { asset } from '../../lib/asset.js'
 import { PRODUCTS } from '../../data/products.js'
 
@@ -34,7 +35,7 @@ const { product } = Astro.props
         <div class="product-layout">
           <div class="product-main">
             {(product.pageImage || product.image) && (
-              <div class={`product-photo reveal${product.pageImage ? ' is-crop' : ''}${product.photoFull ? '' : ' is-compact'}`}>
+              <div class={`product-photo reveal${product.pageImage && !product.photoFull ? ' is-crop' : ''}${product.photoFull ? '' : ' is-compact'}`}>
                 {product.pageImage ? (
                   <img src={asset(product.pageImage)} alt={product.title} loading="eager" />
                 ) : (
@@ -49,7 +50,16 @@ const { product } = Astro.props
               </div>
             )}
 
-            <p class="product-text reveal">{product.text}</p>
+            {(product.pageText ?? [product.text]).map((paragraph) => (
+              <p class="product-text reveal">{paragraph}</p>
+            ))}
+
+            {product.highlights?.length > 0 && (
+              <>
+                <h2 class="product-specs-title reveal">{product.highlightsTitle}</h2>
+                <div class="reveal"><BulletList items={product.highlights} /></div>
+              </>
+            )}
 
             {product.modules?.length > 0 && (
               <>
@@ -60,7 +70,11 @@ const { product } = Astro.props
                       <span class="product-module-num mono">{num}</span>
                       <div>
                         <h3 class="product-module-title">{title}</h3>
-                        <p class="product-module-text">{desc}</p>
+                        {Array.isArray(desc) ? (
+                          <BulletList items={desc} />
+                        ) : (
+                          <p class="product-module-text">{desc}</p>
+                        )}
                       </div>
                     </li>
                   ))}
@@ -73,6 +87,20 @@ const { product } = Astro.props
                 <h2 class="product-specs-title reveal">{product.specTitle}</h2>
                 <dl class="product-specs reveal">
                   {product.specs.map(([label, value]) => (
+                    <div class="product-spec-row">
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
+
+            {product.specs2?.length > 0 && (
+              <>
+                <h2 class="product-specs-title reveal">{product.specTitle2}</h2>
+                <dl class="product-specs reveal">
+                  {product.specs2.map(([label, value]) => (
                     <div class="product-spec-row">
                       <dt>{label}</dt>
                       <dd>{value}</dd>

@@ -264,12 +264,31 @@ html[data-scheme="light"] .sw-frame {
 }
 
 .sw-slide-shot {
-  position: relative; overflow: hidden; min-width: 0;
+  position: relative; min-width: 0;
   /* Та же граница колонок, что у .econ-head-lead/.econ-algos и
      .footer-cell-b — сплошная волосяная линия на стыке текста и кадра,
      вместо временной розовой .align-guide (см. комментарий выше). */
   border-left: 1px solid var(--line);
+  /* Высота рамки = высота более высокой колонки, а колонки расходятся по
+     высоте в противофазе: у кадра она считается из ширины (aspect-ratio
+     ниже) и с сужением окна падает, а текст в колонке шириной в треть на
+     той же ширине набирает строки и растёт. Сходятся они около 1650px —
+     на всём диапазоне ниже под кадром зияла пустота до нижней рамки, тем
+     большая, чем уже экран (на 1250px — под 300px).
+     Колонка тянется на всю высоту рамки и центрирует кадр в себе:
+     остаток делится поровну сверху и снизу и читается как поле кадра, а
+     не как обрыв видео над рамкой. Подложка — та же, что под прозрачными
+     полями самого ролика (см. .bento-shot), чтобы поля были продолжением
+     кадра, а не просветом рамки. */
+  align-self: stretch;
+  display: grid; align-content: center;
+  background: #05080f;
 }
+html[data-scheme="light"] .sw-slide-shot { background: var(--surface); }
+
+/* Сам кадр: своя пропорция, оверлеи (.bento-bar, .sw-expand) и клик по
+   краям кадра, а не по всей растянутой колонке. */
+.sw-slide-media { position: relative; overflow: hidden; min-width: 0; }
 
 /* Кадр держит СВОЮ пропорцию (задана на .bt-<key> ниже) и никогда не
    растягивается флексом — высота считается из width: 100% и
@@ -296,7 +315,13 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
 .bt-logging  .bento-shot { aspect-ratio: 2.071; }
 .bt-park     .bento-shot { aspect-ratio: 2.089; }
 
-/* верхний readout-бар — тонкий оверлей поверх скриншота */
+/* верхний readout-бар — шапка окна кадра.
+   Позиционируется от .sw-slide-shot (колонки), не от .sw-slide-media
+   (ролика): колонка тянется на всю высоту рамки, ролик в ней
+   центрирован, и бар обязан остаться у верхнего края окна, а не
+   съезжать вместе с кадром на середину. На широких экранах, где кадр
+   сам держит высоту колонки, это ровно прежнее поведение — бар лежит
+   поверх верхней кромки ролика. */
 /* Бар поверх скриншота. Стеклянный, а не градиентный: градиент вниз
    притемнял верх кадра и на светлых снимках всё равно не спасал подпись,
    а стекло размывает ровно то, что под ним, и подпись читается на любом
@@ -375,8 +400,8 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
    видно, ЧТО именно развернулось. Кнопка «назад» и клик по фону сжимают
    его обратно туда же. z-index 320 — заведомо выше остальных плавающих
    слоёв страницы (шапка 200-ых, оверлеи меню), запас на будущее. */
-.sw-slide-shot { cursor: pointer; }
-.sw-slide-shot:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sw-slide-media { cursor: pointer; }
+.sw-slide-media:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 .sw-expand {
   position: absolute; z-index: 4; right: 14px; bottom: 14px;
@@ -388,8 +413,8 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
   transition: opacity 0.2s, transform 0.2s;
 }
 .sw-expand svg { width: 15px; height: 15px; }
-.sw-slide-shot:hover .sw-expand,
-.sw-slide-shot:focus-visible .sw-expand { opacity: 1; transform: scale(1.08); }
+.sw-slide-media:hover .sw-expand,
+.sw-slide-media:focus-visible .sw-expand { opacity: 1; transform: scale(1.08); }
 
 .video-lightbox {
   position: fixed; inset: 0; z-index: 320;

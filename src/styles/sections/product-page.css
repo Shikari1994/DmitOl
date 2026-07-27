@@ -64,7 +64,11 @@
    Боковой padding превращал этот срез в непонятный отступ (в светлой
    схеме — ещё и в белую полоску вокруг чёрного кадра), поэтому здесь
    кадр во всю рамку: обрезка читается как смотровое окно, а не как
-   ошибка. Ширину самой рамки не трогаем — вертикали страницы общие. */
+   ошибка. Ширину самой рамки не трогаем — вертикали страницы общие.
+   2026-07-27: класс вешается только на pageImage БЕЗ photoFull (см.
+   [id].astro). У 01 (комплект, gtn-kit4.webp) pageImage — обычный кадр
+   целиком; во всю ширину колонки он дал бы рамку ~830px, поэтому он
+   остаётся вписанным по высоте общим правилом выше. */
 .product-photo.is-crop { padding: 0; }
 .product-photo.is-crop img { width: 100%; height: auto; max-height: none; }
 
@@ -78,10 +82,21 @@
 .product-photo.is-compact {
   padding: 0;
   height: clamp(250px, 32vw, 480px);
+  /* scale ниже выводит кадр за границы рамки — обрезаем по ней. */
+  overflow: hidden;
 }
+/* 2026-07-27: было object-fit: cover — на широком экране рамка (пропорция
+   ~2.8) заметно уже кадра (~1.75), и cover резал по трети высоты: приборы
+   упирались в края, кадр читался как «наехавший». Теперь contain вписывает
+   кадр целиком, а scale возвращает часть крупности — видно ~85% высоты
+   вместо ~63%. Пустого поля вокруг не появляется: у всех pageImage фон
+   прозрачный (alpha 0), сквозь него идёт та же --panel, что и в рамке,
+   поэтому в обеих схемах граница кадра не видна. Размеры самой рамки
+   не менялись — вертикали страницы прежние. */
 .product-photo.is-compact img {
   width: 100%; height: 100%; max-height: none;
-  object-fit: cover;
+  object-fit: contain;
+  scale: 1.15;
 }
 /* Пара кадров тёмная/светлая схема (пока только 03, инклинометр, см.
    products.js/imageLight) — по умолчанию (без data-scheme или dark)
@@ -122,6 +137,27 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
   margin-top: 6px;
   font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim); max-width: 62ch;
 }
+
+/* Буллеты 1 в 1 с источником (GT SMART DM .docx): ● верхний уровень,
+   ○ вложенный — см. BulletList.astro, data/products.js (highlights,
+   modules[].desc-как-массив). */
+.product-bullets {
+  margin-top: var(--s-3); list-style: none;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.product-bullets li {
+  position: relative; padding-left: 1.3em;
+  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim); max-width: 62ch;
+}
+.product-bullets li::before {
+  content: '●'; position: absolute; left: 0; top: 0.08em;
+  font-size: 0.5em; color: var(--brand);
+}
+.product-bullets .product-bullets {
+  margin-top: 8px; gap: 6px;
+}
+.product-bullets .product-bullets li::before { content: '○'; }
+.product-module-title + .product-bullets { margin-top: 6px; }
 
 .product-specs { margin-top: var(--s-3); border-top: 1px solid var(--line-soft); }
 .product-spec-row {

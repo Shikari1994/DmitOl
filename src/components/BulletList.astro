@@ -1,0 +1,20 @@
+---
+/* Список с опциональной вложенностью на один уровень (● / ○ в источнике —
+   see products.js, поля modules/highlights). items — массив строк или
+   пар [текст, подпункты[]]. Рекурсия — через Astro.self, а не отдельный
+   компонент на каждый уровень: во всех текущих данных вложенность не
+   глубже двух уровней, но само правило общее. */
+const { items } = Astro.props
+---
+
+<ul class="product-bullets">
+  {items.map((item) => {
+    const [text, sub] = Array.isArray(item) ? item : [item, null]
+    return (
+      <li>
+        <span>{text}</span>
+        {sub && <Astro.self items={sub} />}
+      </li>
+    )
+  })}
+</ul>

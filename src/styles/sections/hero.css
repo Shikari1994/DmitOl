@@ -429,6 +429,7 @@ html[data-scheme="light"] .hero-tile-phone img {
 }
 .hero-tile-rig img {
   display: block; height: clamp(220px, 19cqw, 300px); width: auto; max-width: none;
+  transform: scaleX(-1);
 }
 .hero-tile:hover .hero-tile-rig,
 .hero-tile:focus-visible .hero-tile-rig {
