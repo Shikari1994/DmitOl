@@ -12,8 +12,9 @@ import { asset } from '../lib/asset.js'
 
    Единственные два сознательных отличия от оригинала:
    1) сцены в плитках (ноутбук+телефон, снаряд из двух модулей) — этого
-      контента у Dmit нет вообще, добавлены по прямой просьбе и скрыты
-      в покое, выезжают только по hover/focus на карточку (чистый CSS);
+      контента у Dmit нет вообще, добавлены по прямой просьбе, видны
+      сразу в покое; по hover/focus на карточку телефон/снаряд слегка
+      довыезжают (чистый CSS, см. hero.css);
    2) ссылки — реальные якоря (#products/#software) вместо onclick
       scrollIntoView, функционально то же самое через Lenis (motion.js).
 
@@ -89,8 +90,9 @@ import { asset } from '../lib/asset.js'
 
     <div class="hero-teasers">
       {/* Плитка 1 · инженерный софт. Сцена «ноутбук + телефон» — добавка
-          сверх Dmit (там плитка пустая), скрыта в покое, выезжает по
-          наведению на карточку (см. .hero-tile-art в index.css). */}
+          сверх Dmit (там плитка пустая), видна сразу; по наведению на
+          карточку телефон слегка отъезжает влево (см. .hero-tile-art,
+          .hero-tile-phone-move в hero.css). */}
       <a class="hero-tile" href="#software">
         <span class="hero-tile-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         <div class="hero-tile-art" aria-hidden="true">

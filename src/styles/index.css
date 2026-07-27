@@ -17,7 +17,7 @@
 @import './tokens.css';        /* :root — токены дизайн-системы + стекло */
 @import './themes.css';        /* [data-theme] — темы секций */
 @import './scheme-light.css';  /* html[data-scheme="light"] — светлая схема */
-@import './base.css';          /* reset, типографика, контейнер, сетка, кнопки, marquee */
+@import './base.css';          /* reset, типографика, контейнер, сетка, кнопки */
 @import './glass.css';         /* рецепт стекла и фолбэки */
 
 /* ── Разделы страницы (порядок = сверху вниз по макету и по каскаду) ── */

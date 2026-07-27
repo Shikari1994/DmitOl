@@ -10,12 +10,6 @@ import Showcase from '../components/Showcase.astro'
 import How from '../components/How.astro'
 import Economics from '../components/Economics.astro'
 import Footer from '../components/Footer.astro'
-import Marquee from '../components/Marquee.astro'
-
-const CAPABILITIES = [
-  'MWD / LWD', 'Гамма-каротаж', 'Инклинометрия', 'Drill Monitor',
-  'Декодирование сигнала', 'Сервис 24/7', 'Реестр отечественного ПО',
-]
 ---
 
 <Layout>
@@ -32,7 +26,6 @@ const CAPABILITIES = [
     <Mobile />
     <Economics />
     <How />
-    <Marquee items={CAPABILITIES} theme="black" speed={45} />
   </main>
   <Footer />
 </Layout>

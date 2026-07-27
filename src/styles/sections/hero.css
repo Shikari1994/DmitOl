@@ -338,11 +338,11 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
 }
 
 /* ── Сцена в плитке DRILL MONITOR: ноутбук + телефон ──
-   У Dmit плитки в покое пустые — картинка не часть их языка. Здесь она
-   встроена, но подчинена этому покою: скрыта, пока курсор не на карточке,
-   и выезжает ТОЛЬКО на hover/focus, чистым CSS-переходом, без JS и без
-   разового жеста на загрузке. Зона сцены начинается НИЖЕ строки
-   лейбл/статус — там ей ничто не мешает читаться даже в открытом виде.
+   2026-07-27: сцена видна сразу в покое, телефон изначально в границах
+   ноутбука (.hero-tile-phone-move: translateX(32%)) — не тратим ширину
+   на пустую плитку до наведения. По hover/focus телефон слегка выходит
+   влево (translateX(4%)), ноутбук на месте. Зона сцены начинается НИЖЕ
+   строки лейбл/статус — там ей ничто не мешает читаться.
 
    2026-07-24: пятно за текстом (blur/ореол/панель) пробовалось трижды и
    откачено каждый раз — все три были заплаткой поверх настоящей причины,
@@ -372,12 +372,6 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
           mask-image: linear-gradient(90deg,
     transparent 0, transparent calc(var(--hero-tile-text-w) - var(--hero-tile-fade-shift)),
     #000 calc(var(--hero-tile-text-w) + 24cqw - var(--hero-tile-fade-shift)));
-  opacity: 0;
-  transition: opacity 0.45s ease;
-}
-.hero-tile:hover .hero-tile-art,
-.hero-tile:focus-visible .hero-tile-art {
-  opacity: 1;
 }
 /* Только сцена «ноутбук + телефон» (не .hero-tile--sky/rig) — простой
    сдвиг вправо, без обрезки и без уменьшения. */
@@ -387,8 +381,6 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
 .hero-tile-stage { position: relative; height: 100%; max-width: 100%; aspect-ratio: 1157 / 774; }
 .hero-tile-note {
   position: relative; z-index: 1; width: 100%; height: 100%;
-  transform: translateX(12%);
-  transition: transform 0.55s ease;
 }
 .hero-tile-note img, .hero-tile-phone img {
   display: block; width: 100%; height: 100%;
@@ -405,21 +397,20 @@ html[data-scheme="light"] .hero-tile-phone img {
 .hero-tile-phone { position: absolute; z-index: 2; left: -6%; bottom: -3%; height: 82%; }
 .hero-tile-phone-move {
   height: 100%; width: auto;
-  transform: translateX(70%);
+  transform: translateX(32%);
   transition: transform 0.55s ease 0.05s;
 }
 .hero-tile-phone img { height: 100%; width: auto; }
-.hero-tile:hover .hero-tile-note,
-.hero-tile:focus-visible .hero-tile-note,
 .hero-tile:hover .hero-tile-phone-move,
 .hero-tile:focus-visible .hero-tile-phone-move {
-  transform: translateX(0);
+  transform: translateX(4%);
 }
 
 /* ── Сцена в плитке GT-NAVIGATOR: кит-бокс на рельсе ──
-   Тот же покой-до-hover, что у сцены выше. Ширина изображения не
-   ограничена (width:auto), тайл обрезает его своим overflow:hidden,
-   наружная маска мягко проявляет левую кромку. */
+   Видна сразу в покое (8% смещение вправо), по hover/focus довыезжает
+   до 0. Ширина изображения не ограничена (width:auto), тайл обрезает
+   его своим overflow:hidden, наружная маска мягко проявляет левую
+   кромку. */
 .hero-tile-art--rig { align-items: flex-start; padding: 0; }
 .hero-tile-rig {
   transform: translateX(8%);

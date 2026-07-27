@@ -28,13 +28,17 @@ const ACCORDION_IMAGES = PRODUCTS.reduce((acc, p) => {
   return acc
 }, {})
 
-/* Ни 01 (mwd), ни 02 (decoder) — не в этом наборе: у обоих своя
-   раскладка (крупный абсолютный оверлей во всю высоту плашки, обрезан
-   по её рамкам, .rig-media--mwd / .rig-media--decoder в equipment.css),
-   а не общий .rig-media--right (тот теперь не используется ни одной
-   карточкой, оставлен на случай будущей accordion-картинки того же
-   старого типа — выезд узкой полосой под текстом). */
-const MEDIA_RIGHT = new Set()
+/* Два типа кадра в разделе (2026-07-27):
+   — OVERLAY (01 mwd, 02 decoder) — крупный абсолютный оверлей во всю
+     высоту плашки справа, обрезан по её рамкам (.rig-media--mwd /
+     .rig-media--decoder в equipment.css), своя раскладка у каждого;
+   — SHOT (03–07) — небольшой приборный кадр слева, который на hover
+     выезжает правым краем к центру плашки и подрастает. Все пятеро
+     живут по ОДНОМУ правилу .rig-media--shot / .rig-row--shot, разница
+     только в зуме конкретного файла (см. equipment.css). */
+const OVERLAY_MEDIA = new Set(['mwd', 'decoder'])
+const isOverlay = (id) => Boolean(ACCORDION_IMAGES[id]) && OVERLAY_MEDIA.has(id)
+const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
 ---
 
 <section id="products" data-theme="black">
@@ -72,10 +76,11 @@ const MEDIA_RIGHT = new Set()
       {/* Кликабельна только сама кнопка — карточка целиком лишь
           подсвечивается на hover/focus-within (см. .rig-row:hover
           в equipment.css), на страницу товара ведёт только клик по кубу.
-          У карточек с фото узла (ACCORDION_IMAGES) строка на hover
-          раздвигается вниз и там выезжает фото слева. */}
+          У карточек 03–07 небольшой кадр узла показан всегда, а на hover
+          он выезжает правым краем к центру плашки и подрастает
+          (.rig-media--shot). */}
       {PRODUCTS.map((p) => (
-        <div class={ACCORDION_IMAGES[p.id] ? 'rig-row rig-row--accordion' : 'rig-row'}>
+        <div class={`rig-row${ACCORDION_IMAGES[p.id] ? ' rig-row--accordion' : ''}${isShot(p.id) ? ' rig-row--shot' : ''}${isOverlay(p.id) ? ' rig-row--overlay' : ''}`}>
           <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
           <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
           <span class="rig-head">
@@ -89,7 +94,7 @@ const MEDIA_RIGHT = new Set()
             <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">Подробнее<span class="rig-cube-caret">_</span></span></span>
           </a>
           {ACCORDION_IMAGES[p.id] && (
-            <span class={`rig-media rig-media--accordion rig-media--${p.id}${MEDIA_RIGHT.has(p.id) ? ' rig-media--right' : ''}`} aria-hidden="true">
+            <span class={`rig-media rig-media--accordion rig-media--${p.id}${isShot(p.id) ? ' rig-media--shot' : ''}`} aria-hidden="true">
               <span class="rig-media-inner">
                 <img src={asset(ACCORDION_IMAGES[p.id].image)} alt="" loading="lazy" draggable="false"
                   class={ACCORDION_IMAGES[p.id].imageLight ? 'theme-img theme-img--dark' : undefined} />

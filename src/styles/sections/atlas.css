@@ -344,6 +344,19 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
 .ai-text {
   font-size: clamp(var(--fs-1), 0.44rem + 1vh, var(--fs-2));
   line-height: 1.45; color: var(--ink-dim);
+  /* Без этого некоторые пункты (02, 04) переносят последнюю строку
+     одним коротким словом-сиротой («траекторией», «уровня») — рядом с
+     полными строками текст читается рвано. text-wrap: pretty балансирует
+     перенос, не давая одиночному слову остаться в одиночестве. */
+  text-wrap: pretty;
+}
+.ai-bullets {
+  list-style: none; margin: 0.4em 0 0; padding: 0;
+  display: grid; gap: 0.25em;
+}
+.ai-bullets li { padding-left: 1.1em; position: relative; text-wrap: pretty; }
+.ai-bullets li::before {
+  content: '—'; position: absolute; left: 0; color: var(--brand);
 }
 
 /* ── Фолбэк: без WebGL, при reduced-motion или экономии трафика ──

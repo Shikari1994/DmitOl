@@ -41,7 +41,11 @@ const SERVICES = [
   'Проектирование профилей скважин, включая технический расчёт и работу с рисками пересечения',
   'Анализ процесса строительства наклонно-направленных и горизонтальных скважин в режиме реального времени с выявлением рисков и расхождений с проектной траекторией',
   'Удалённое сопровождение процесса строительства наклонно-направленных и горизонтальных скважин',
-  'Аренда скважинного оборудования',
+  ['Аренда скважинного оборудования разного уровня', [
+    'Комплекс с Резистивиметром',
+    'Телеметрическая система с гамма модулем',
+    'Прибор резистивиметрии',
+  ]],
   'Ремонт и техническое обслуживание скважинного оборудования',
 ]
 ---
@@ -107,12 +111,22 @@ const SERVICES = [
       <div class="atlas-deck">
         <span class="atlas-deck-kicker mono">Услуги</span>
         <ol class="atlas-list">
-          {SERVICES.map((s, i) => (
-            <li class="atlas-item" data-atlas-item={i}>
-              <span class="ai-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-              <span class="ai-text">{s}</span>
-            </li>
-          ))}
+          {SERVICES.map((s, i) => {
+            const [text, bullets] = Array.isArray(s) ? s : [s, null]
+            return (
+              <li class="atlas-item" data-atlas-item={i}>
+                <span class="ai-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="ai-text">
+                  {text}
+                  {bullets && (
+                    <ul class="ai-bullets">
+                      {bullets.map((b) => <li>{b}</li>)}
+                    </ul>
+                  )}
+                </span>
+              </li>
+            )
+          })}
         </ol>
       </div>
     </div>

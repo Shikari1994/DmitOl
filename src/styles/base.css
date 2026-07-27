@@ -140,30 +140,6 @@ section { padding: var(--section-y) 0; position: relative; }
    ровно под фиксированную шапку. */
 section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top)); }
 
-/* ─── MARQUEE · бегущая лента-«шов» между секциями ─── */
-.marquee {
-  display: flex; overflow: hidden; width: 100%;
-  padding: clamp(18px, 2.2vw, 30px) 0;
-  user-select: none;
-}
-.marquee-list {
-  display: flex; align-items: center; flex: 0 0 auto;
-  list-style: none; gap: 0; white-space: nowrap;
-  will-change: transform;
-}
-.marquee-list li {
-  display: inline-flex; align-items: center;
-  font-size: var(--fs-5);
-  font-weight: 600; letter-spacing: -0.02em;
-  text-transform: uppercase; color: var(--ink);
-}
-.marquee-sep { color: var(--ink-faint); margin: 0 clamp(20px, 3vw, 44px); font-weight: 400; }
-
-@media (prefers-reduced-motion: reduce) {
-  /* без анимации лента превращается в обычную строку — не обрезаем контент */
-  .marquee { overflow-x: auto; }
-}
-
 .eyebrow {
   display: inline-flex; align-items: center; gap: var(--s-2);
   font-size: var(--fs-0); letter-spacing: 0.26em; text-transform: uppercase;

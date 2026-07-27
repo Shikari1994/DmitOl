@@ -24,7 +24,6 @@ import './motion/scrollspy.js'
 import './motion/heroVideo.js'
 import './motion/mobileStage.js'
 import './motion/navTheme.js'
-import './motion/marquee.js'
 
 /* Разворот «Ключевые цифры» больше не отдельная сцена: он слился с
    глобусом в единую прибитую сцену «О компании». Её ведёт собственный
