@@ -98,6 +98,11 @@
   object-fit: contain;
   scale: 1.15;
 }
+/* 2026-07-27: у инклинометра (Directional BW2, шире прежнего кадра —
+   2.24 против ~1.75 у соседей) contain по умолчанию центрирует кадр,
+   оставляя заметный пустой промежуток справа до рамки. Сдвигаем видимую
+   часть кадра вправо, чтобы обрезанный край упирался в границу рамки. */
+.product-photo--inclinometer.is-compact img { object-position: 100% 50%; }
 /* Пара кадров тёмная/светлая схема (пока только 03, инклинометр, см.
    products.js/imageLight) — по умолчанию (без data-scheme или dark)
    видна .theme-img--dark, светлая схема глушит её и показывает
@@ -109,7 +114,7 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 
 .product-text {
   margin-top: clamp(24px, 3vw, 36px);
-  font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim); max-width: 62ch;
+  font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim);
 }
 
 .product-specs-title {
@@ -135,7 +140,7 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 }
 .product-module-text {
   margin-top: 6px;
-  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim); max-width: 62ch;
+  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim);
 }
 
 /* Буллеты 1 в 1 с источником (GT SMART DM .docx): ● верхний уровень,
@@ -147,7 +152,7 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 }
 .product-bullets li {
   position: relative; padding-left: 1.3em;
-  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim); max-width: 62ch;
+  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim);
 }
 .product-bullets li::before {
   content: '●'; position: absolute; left: 0; top: 0.08em;
@@ -158,6 +163,41 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 }
 .product-bullets .product-bullets li::before { content: '○'; }
 .product-module-title + .product-bullets { margin-top: 6px; }
+
+/* Многоколоночные таблицы (форм-факторы, метрология по частотам) —
+   заведены под резистивиметр (04): двухколоночный dl (.product-specs)
+   не вмещает диапазон + точность в отдельных колонках. Общий рендер
+   в [id].astro (product.tables), доступен любому узлу. */
+.product-table-wrap { margin-top: var(--s-3); overflow-x: auto; border: 1px solid var(--line-soft); }
+/* table-layout: fixed + одинаковые проценты колонок на ВСЕХ .product-table —
+   у всех трёх таблиц резистивиметра ровно 3 колонки (параметр + 2 значения),
+   и рамка одной ширины (.product-main), поэтому вертикальные линии совпадают
+   между таблицами при пролистывании страницы — «как в Word», а не гуляют
+   по ширине контента конкретной ячейки (по просьбе пользователя 2026-07-27). */
+.product-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--fs-1); }
+.product-table th:first-child, .product-table td:first-child { width: 34%; }
+.product-table th:nth-child(2), .product-table td:nth-child(2) { width: 33%; }
+.product-table th:nth-child(3), .product-table td:nth-child(3) { width: 33%; }
+.product-table th,
+.product-table td {
+  padding: 12px var(--s-2); text-align: left; vertical-align: top;
+  border-bottom: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft);
+  white-space: normal; overflow-wrap: break-word;
+}
+.product-table th:last-child,
+.product-table td:last-child { border-right: none; }
+.product-table tbody tr:last-child th,
+.product-table tbody tr:last-child td { border-bottom: none; }
+.product-table thead th {
+  color: var(--ink-faint); font-weight: 600; font-size: var(--fs-0);
+  letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.product-table tbody th {
+  color: var(--ink-dim); font-weight: 500;
+}
+.product-table tbody td { color: var(--ink); }
+.product-table tbody th[scope='row'] { min-width: 14em; }
 
 .product-specs { margin-top: var(--s-3); border-top: 1px solid var(--line-soft); }
 .product-spec-row {

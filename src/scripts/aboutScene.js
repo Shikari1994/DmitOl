@@ -4,7 +4,8 @@
    Одна сцена, всё движется одновременно по одному прогрессу прокрутки
    сквозь обёртку .atlas (0…1):
 
-     карточка   листает три факта, по трети прокрутки на факт;
+     услуги     плашки выезжают из-за правой кромки по одной, сверху
+                вниз, по ломтю прокрутки на плашку;
      ночь       0.12→0.85 — синяя заливка наливается прозрачностью слоя,
                 весь путь, а не в самом конце: глобус «окрашивает» сцену
                 по мере скролла, как в референсе;
@@ -18,10 +19,10 @@
    Хозяин фолбэка — этот модуль. Без WebGL, при reduced-motion или на
    экономном соединении прибивать сцену нечем: шар не рисуется. Тогда
    обёртка получает класс .is-static (CSS разворачивает её в обычный
-   поток — заголовок и три факта списком), а globeCanvas.js по этому
+   поток — заголовок и услуги списком), а globeCanvas.js по этому
    же классу не поднимает three.js вовсе.
    ───────────────────────────────────────────── */
-import { makeProgress, span, offsetFor, clamp01 } from './scrollProgress.js'
+import { makeProgress, span, smooth, clamp01 } from './scrollProgress.js'
 
 const wrap = document.querySelector('[data-atlas]')
 if (wrap) init(wrap)
@@ -30,11 +31,11 @@ function init(wrap) {
   const stage = wrap.querySelector('[data-atlas-stage]')
   const nightEl = wrap.querySelector('.atlas-night')
   const geoWords = [...wrap.querySelectorAll('[data-geo-word]')]
-  const cards = [...wrap.querySelectorAll('[data-atlas-card]')]
-  const countEl = wrap.querySelector('[data-atlas-count]')
-  const prevBtn = wrap.querySelector('[data-atlas-prev]')
-  const nextBtn = wrap.querySelector('[data-atlas-next]')
-  const n = cards.length
+  const deck = wrap.querySelector('.atlas-deck')
+  const items = [...wrap.querySelectorAll('[data-atlas-item]')]
+  const copyEl = wrap.querySelector('.atlas-copy')
+  const geoEl = wrap.querySelector('[data-atlas-geo]')
+  const n = items.length
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const conn = navigator.connection
@@ -51,20 +52,24 @@ function init(wrap) {
 
   /* Статичный режим. Класс ставится синхронно на загрузке модуля, до того
      как globeCanvas.js решит, поднимать ли three.js: тот сверяется именно
-     с этим классом. Карточки в потоке — все видимы. */
+     с этим классом. Пункты в потоке — все видимы (--r снимает CSS). */
   if (reduce || frugal || !hasWebGL()) {
     wrap.classList.add('is-static')
-    cards.forEach((c) => { c.classList.add('is-on'); c.removeAttribute('inert'); c.removeAttribute('aria-hidden') })
-    if (countEl) countEl.textContent = '01'
     return
   }
 
   /* ── Фазы, в долях общего прогресса ──
-     CARD_END делит прокрутку на n равных ломтей — по ломтю на факт, во всю
-     длину сцены (последний держится на финальной выдержке). Ночь наливается
-     почти весь путь. Порог перекраски заголовка — там, где синевы уже
-     достаточно, чтобы тёмный текст потерялся. */
-  const CARD_END = 0.92
+     LIST_IN…LIST_END — выезд плашек из-за правой кромки, по ломтю
+     прокрутки на плашку. Первая трогается там же, где шар выходит из-за
+     нижней кромки (RISE_END=0.3 от gp в globeCanvas.js, что в этих
+     координатах ≈0.29): колонка собирается вместе с ростом шара, а не
+     после него. Ночь наливается почти весь путь. Порог перекраски
+     заголовка — там, где синевы уже достаточно, чтобы тёмный текст
+     потерялся. */
+  const KICKER_IN = 0.02
+  const KICKER_ON = 0.1
+  const LIST_IN = 0.06
+  const LIST_END = 0.86
   const NIGHT_IN = 0.12
   /* Раньше 0.85: ночь догорала до полной темноты за 15% прогресса ДО
      конца .atlas, и весь этот хвост шёл без единого визуального
@@ -85,25 +90,43 @@ function init(wrap) {
 
   const progress = makeProgress(wrap, stage)
 
-  // индекс активного факта: [0..n-1], на финальной выдержке держим последний
-  const indexAt = (p) => Math.min(n - 1, Math.max(0, Math.floor((p / CARD_END) * n)))
+  /* Верх колонки услуг = верхняя кромка ПРОПИСНЫХ в «Реализуем проекты…».
+     Меряем живьём, а не считаем в CSS: над заголовком стоит строка рубрики,
+     её высота складывается из кегля, интерлиньяжа и метрик шрифта — любая
+     константа промахнулась бы на пиксели при смене шкалы или веб-шрифта.
+     .atlas-copy позиционирована, поэтому offsetTop заголовка отсчитывается
+     от неё, а её собственный — от .atlas-stage, общего предка с колонкой.
 
-  let curIdx = -1
-  let night = null   // состояние класса .is-night, чтобы не дёргать DOM зря
-
-  const setCard = (i) => {
-    if (i === curIdx) return
-    curIdx = i
-    cards.forEach((c, k) => {
-      const on = k === i
-      c.classList.toggle('is-on', on)
-      c.toggleAttribute('inert', !on)
-      c.setAttribute('aria-hidden', on ? 'false' : 'true')
-    })
-    if (countEl) countEl.textContent = String(i + 1).padStart(2, '0')
-    if (prevBtn) prevBtn.disabled = i === 0
-    if (nextBtn) nextBtn.disabled = i === n - 1
+     Одного offsetTop мало. Он даёт верх СТРОЧНОГО БОКСА, а у заголовка в
+     47 пунктов над буквами остаётся полоса выносного пространства в
+     полтора десятка пикселей — подпись «Услуги» кеглем в 12 пунктов, у
+     которой эта полоса почти нулевая, вставала заметно выше первой строки
+     (замечание пользователя со скриншотом). Поэтому обе строки приводим к
+     верху прописной: сколько её от верха бокса, считаем метриками самого
+     шрифта через canvas — по константам этого не сделать, у каждой
+     гарнитуры своя высота выносных. */
+  const capOffset = (el) => {
+    const cs = getComputedStyle(el)
+    const ctx = capOffset.ctx || (capOffset.ctx = document.createElement('canvas').getContext('2d'))
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
+    const m = ctx.measureText('Н')
+    const box = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent
+    if (!box || !m.actualBoundingBoxAscent) return 0   // метрик нет — выравниваем по боксу
+    const lh = cs.lineHeight === 'normal' ? box : parseFloat(cs.lineHeight)
+    // базовая линия внутри строки, минус подъём прописной над ней
+    return (lh - box) / 2 + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent
   }
+
+  const syncDeckTop = () => {
+    if (!copyEl || !geoEl || !deck) return
+    const kicker = deck.querySelector('.atlas-deck-kicker')
+    const shift = kicker ? capOffset(geoEl) - capOffset(kicker) : 0
+    stage.style.setProperty('--deck-top', `${copyEl.offsetTop + geoEl.offsetTop + shift}px`)
+  }
+  syncDeckTop()
+  document.fonts?.ready.then(syncDeckTop)
+
+  let night = null   // состояние класса .is-night, чтобы не дёргать DOM зря
 
   const draw = () => {
     const p = progress()
@@ -129,7 +152,25 @@ function init(wrap) {
       stage.classList.toggle('is-night', isNight)
     }
 
-    setCard(indexAt(p))
+    /* Услуги: у пункта i свой ломоть прокрутки [i/n … (i+1)/n], но
+       проявляется он не всю его длину — множитель 1.8 укладывает проявление
+       в первую половину ломтя, дальше пункт просто стоит. Иначе строка
+       «дотягивала» бы прозрачность до самого прихода следующей и весь
+       список читался бы полупрозрачным. Показанное не прячется обратно:
+       к финалу сцены перечень стоит целиком. */
+    // подпись колонки встаёт первой и без выезда — к ней приезжают плашки
+    if (deck) deck.style.setProperty('--in', span(p, KICKER_IN, KICKER_ON).toFixed(3))
+
+    /* Услуги: у плашки i свой ломоть прокрутки [i/n … (i+1)/n], но едет она
+       не всю его длину — множитель 1.8 укладывает выезд в первую половину
+       ломтя, дальше плашка просто стоит. Иначе колонка ехала бы вся разом,
+       без пауз между появлениями. smooth даёт торможение у цели: плашка
+       приезжает, а не втыкается в кромку на постоянной скорости.
+       Приехавшее не уходит: к финалу сцены колонка стоит целиком. */
+    const shown = span(p, LIST_IN, LIST_END) * n
+    items.forEach((el, i) => {
+      el.style.setProperty('--r', smooth(clamp01((shown - i) * 1.8)).toFixed(3))
+    })
   }
 
   /* Один rAF на кадр, взведённый скроллом и ресайзом. Скролл ведёт Lenis
@@ -142,7 +183,7 @@ function init(wrap) {
     raf = requestAnimationFrame(() => { raf = 0; draw() })
   }
 
-  window.addEventListener('resize', schedule)
+  window.addEventListener('resize', () => { syncDeckTop(); schedule() })
 
   /* Скролл слушаем только пока сцена на экране — обычная экономия на
      длинной странице: за её пределами прогресс всё равно упёрт в 0 или 1
@@ -159,20 +200,6 @@ function init(wrap) {
     { threshold: 0 },
   ).observe(wrap)
 
-  /* ── Стрелки листания ──
-     Кнопки не переключают факт сами: тогда на странице было бы два
-     источника правды о текущем факте, и следующий сдвиг скролла вернул
-     бы свой. Вместо этого они увозят страницу в середину нужного ломтя
-     той же прокрутки — факт меняет всё тот же прогресс. */
-  const goTo = (i) => {
-    const target = Math.min(n - 1, Math.max(0, i))
-    const p = (target + 0.5) / n * CARD_END
-    const top = offsetFor(wrap, stage, p)
-    window.scrollTo({ top, behavior: 'smooth' })
-  }
-  prevBtn?.addEventListener('click', () => goTo(curIdx - 1))
-  nextBtn?.addEventListener('click', () => goTo(curIdx + 1))
-
   draw()
-  window.addEventListener('load', schedule)
+  window.addEventListener('load', () => { syncDeckTop(); schedule() })
 }

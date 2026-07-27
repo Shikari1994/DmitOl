@@ -35,7 +35,7 @@ const { product } = Astro.props
         <div class="product-layout">
           <div class="product-main">
             {(product.pageImage || product.image) && (
-              <div class={`product-photo reveal${product.pageImage && !product.photoFull ? ' is-crop' : ''}${product.photoFull ? '' : ' is-compact'}`}>
+              <div class={`product-photo product-photo--${product.id} reveal${product.pageImage && !product.photoFull ? ' is-crop' : ''}${product.photoFull ? '' : ' is-compact'}`}>
                 {product.pageImage ? (
                   <img src={asset(product.pageImage)} alt={product.title} loading="eager" />
                 ) : (
@@ -81,6 +81,40 @@ const { product } = Astro.props
                 </ul>
               </>
             )}
+
+            {product.tables?.length > 0 && product.tables.map((table) => (
+              <div class="product-table-block reveal">
+                <h2 class="product-specs-title">{table.title}</h2>
+                <div class="product-table-wrap">
+                  <table class="product-table">
+                    <thead>
+                      <tr>
+                        {table.columns.map((col) => <th scope="col">{col}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {table.rows.map((row) => (
+                        <tr>
+                          {row.map((cell, i) => {
+                            const content = Array.isArray(cell)
+                              ? cell.map((line, li) => <>{li > 0 && <br />}{line}</>)
+                              : cell
+                            return i === 0 ? <th scope="row">{content}</th> : <td>{content}</td>
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+
+            {product.extraBlocks?.length > 0 && product.extraBlocks.map((block) => (
+              <>
+                <h2 class="product-specs-title reveal">{block.title}</h2>
+                <div class="reveal"><BulletList items={block.items} /></div>
+              </>
+            ))}
 
             {product.specs.length > 0 && (
               <>
