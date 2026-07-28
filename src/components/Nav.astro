@@ -1,5 +1,8 @@
 ---
+import { Image } from 'astro:assets'
 import { asset } from '../lib/asset.js'
+import logoWhite from '../assets/brand/logo-white.png'
+import logoColor from '../assets/brand/logo-color.webp'
 
 /* Пунктов пять — по числу занятых колонок сетки между направляющими
    --rail-1…--rail-6 (шестая пустая, .nav-tail закреплена явным
@@ -28,8 +31,11 @@ const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
 
 <nav class="nav">
   <a class="nav-logo" href={asset('/')}>
-    <img class="nav-logo-img nav-logo-img--dark" src={asset('/LOGO_NEW_COLOR whiteTN.png')} alt="ГЕОТЕХНАВИГАЦИЯ" />
-    <img class="nav-logo-img nav-logo-img--light" src={asset('/logo.webp')} alt="ГЕОТЕХНАВИГАЦИЯ" />
+    {/* В вёрстке лого 23px и 34px по высоте (nav.css), поэтому оба кадра
+        режутся до двойного ретина-запаса: исходный PNG белого лого весит
+        170 КБ при нужных здесь единицах КБ. */}
+    <Image class="nav-logo-img nav-logo-img--dark" src={logoWhite} height={68} format="webp" alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
+    <Image class="nav-logo-img nav-logo-img--light" src={logoColor} height={68} alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
     <span class="nav-logo-text">Геотехнавигация</span>
   </a>
   <ul class="nav-links">

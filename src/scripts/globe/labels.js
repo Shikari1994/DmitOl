@@ -1,0 +1,301 @@
+/* ─────────────────────────────────────────────
+   ГЛОБУС · подписи городов
+
+   На каждый город (globe/data.js) — короткая линия от его точки на шаре
+   и название на конце линии. Ничего сложнее: список городов для того и
+   оставлен коротким, чтобы каждому хватило своей выноски и не пришлось
+   сводить соседей в общий столбик.
+
+   Подписи — DOM, а не текст в канвасе: так они берут гарнитуру, кегль и
+   цвета темы из тех же токенов, что и остальной сайт, и остаются резкими
+   на любом devicePixelRatio. Линии — один <svg> в пиксельных координатах
+   сцены (viewBox равен её размеру), поэтому геометрия считается прямо в
+   тех числах, что дала проекция.
+
+   Слой aria-hidden: то же, что канвас шара. Заголовок сцены уже говорит
+   «Реализуем проекты по всей России», а список городов без карты под ним
+   для скринридера — просто перечисление без контекста.
+
+   ── Где подпись имеет право стоять ──
+   Кадр сцены занят не только шаром: слева заголовок, справа колонка
+   услуг, и обе лежат ВЫШЕ этого слоя по z-index. Поэтому раскладка не
+   «ставит подпись сбоку от точки», а перебирает варианты (сторона × длина
+   линии × смещение по вертикали) и берёт первый, который никуда не влез:
+   ни в эти колонки, ни в чужую подпись, ни в чужую точку, ни за кромку
+   кадра. Указания side/nudge из data.js — только начало перебора, а не
+   приговор: на узком экране колонки съезжают, и подпись обязана съехать
+   за ними. Если не влезла никуда — гаснет: пустое место честнее каши.
+
+   Выбранный вариант запоминается и на следующем кадре пробуется первым:
+   пока шар доворачивается, точки ползут, и без этого подпись дёргалась бы
+   между двумя одинаково годными местами.
+   ───────────────────────────────────────────── */
+import { CITIES } from './data.js'
+import { latLonToVec3 } from './geo.js'
+
+const SVG_NS = 'http://www.w3.org/2000/svg'
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
+const smoothstep = (a, b, v) => {
+  const t = clamp01((v - a) / (b - a))
+  return t * t * (3 - 2 * t)
+}
+
+/* Сдвиги подписи по вертикали при перекладке: сперва на своём месте (то
+   есть на nudge из data.js), потом всё дальше поочерёдно вверх и вниз.
+   Шаги в пикселях: строка одна, доли её высоты не хватило бы, чтобы
+   выбраться из-под соседа. */
+const DY_STEPS = [0, -26, 26, -52, 52, -84, 84, -120, 120]
+
+/* Длина линии — базовая и удлинённая. Второй вариант вытягивает выноску
+   дальше от шара, когда рядом занято: это дешевле по читаемости, чем
+   уехать вертикально на сотню пикселей от своей точки. */
+const LEAD_STEPS = [1, 1.65]
+
+// поля: от кромки кадра и запас вокруг чужих прямоугольников
+const EDGE = 12
+const CLEAR = 8
+
+// половина «пятна» точки города на экране: маркер рисуется мягким
+// спрайтом примерно этого радиуса, накрывать его подписью нельзя
+const DOT_R = 7
+
+const overlaps = (a, b) =>
+  a.x0 < b.x1 + CLEAR && a.x1 > b.x0 - CLEAR && a.y0 < b.y1 + CLEAR && a.y1 > b.y0 - CLEAR
+
+/* Радиус, на котором берётся точка для выноски: чуть выше маркеров
+   города (1.012 в globeCanvas.js), чтобы линия начиналась от их кромки,
+   а не из-под них. */
+const PIN_R = 1.02
+
+/**
+ * @param {object} THREE — грузится динамически, поэтому приходит параметром
+ * @param {HTMLElement} host — слой .atlas-pins поверх канваса
+ * @param {THREE.Camera} camera
+ * @param {THREE.Object3D} globe — группа, в чьих локальных координатах лежат города
+ * @param {HTMLElement[]} obstacles — блоки сцены, которые подписи обязаны обходить
+ */
+export function createCityLabels(THREE, { host, camera, globe, obstacles = [] }) {
+  const svg = document.createElementNS(SVG_NS, 'svg')
+  svg.setAttribute('class', 'atlas-pins-svg')
+  svg.setAttribute('preserveAspectRatio', 'none')
+  host.appendChild(svg)
+
+  const items = CITIES.map((city) => {
+    const path = document.createElementNS(SVG_NS, 'path')
+    path.setAttribute('class', 'atlas-pin-line')
+    svg.appendChild(path)
+
+    const el = document.createElement('div')
+    el.className = 'atlas-pin'
+    const name = document.createElement('span')
+    name.className = 'atlas-pin-name'
+    name.textContent = city.name
+    el.appendChild(name)
+    host.appendChild(el)
+
+    /* Перебор мест у города постоянный (сторона задана в data.js) —
+       собираем его здесь, один раз. В update() он крутится каждый кадр, и
+       пересобирать три десятка объектов по 60 раз в секунду на город
+       значило бы кормить сборщик мусора ради ровно тех же чисел. */
+    const tries = []
+    ;[city.side, -city.side].forEach((side) => {
+      DY_STEPS.forEach((dy) => LEAD_STEPS.forEach((mul) => tries.push({ side, dy, mul })))
+    })
+
+    return {
+      el,
+      name,
+      path,
+      tries,
+      nudge: city.nudge || 0,
+      // локальные координаты точки — считаются один раз
+      point: latLonToVec3(THREE, city.lat, city.lon, PIN_R),
+      width: 0,
+      last: null,     // выбранный на прошлом кадре вариант (см. шапку)
+      alpha: -1,      // последняя записанная прозрачность, чтобы не дёргать стиль зря
+      x: 0, y: 0, facing: 0,   // сюда проекция складывает экранное место точки
+    }
+  })
+
+  // ── замеры, зависящие от вьюпорта: обновляются на resize, не на кадре ──
+  let W = 0
+  let H = 0
+  let rowH = 20
+  let lead = 58
+  let tick = 9
+  let blocks = []   // заголовок сцены и колонка услуг в координатах слоя
+
+  function measure() {
+    const rect = host.getBoundingClientRect()
+    W = rect.width
+    H = rect.height
+    const cs = getComputedStyle(host)
+    const num = (prop, fallback) => {
+      const v = parseFloat(cs.getPropertyValue(prop))
+      return Number.isFinite(v) ? v : fallback
+    }
+    rowH = num('--pin-row', 20)
+    lead = num('--pin-lead', 58)
+    tick = num('--pin-tick', 9)
+    // ширину подписи меряем по факту: она зависит от гарнитуры и кегля
+    items.forEach((it) => { it.width = it.name.offsetWidth })
+    blocks = obstacles
+      .filter((el) => el && el.offsetParent !== null)
+      .map((el) => {
+        const r = el.getBoundingClientRect()
+        return { x0: r.left - rect.left, y0: r.top - rect.top, x1: r.right - rect.left, y1: r.bottom - rect.top }
+      })
+  }
+  // resize() ниже делает первый замер сам; веб-шрифт может доехать позже
+  // и сменить ширину подписей — тогда перебор мест начинается заново
+  document.fonts?.ready.then(() => resize())
+
+  // ── рабочие объекты проекции: заводятся один раз, а не на каждый кадр ──
+  const world = new THREE.Vector3()
+  const centre = new THREE.Vector3()
+  const toCam = new THREE.Vector3()
+  const normal = new THREE.Vector3()
+
+  /* Прямоугольники точек городов (чужая подпись не должна их накрывать) и
+     уже разложенных подписей. Оба массива переиспользуются между кадрами:
+     счётчик сбрасывается в ноль, объекты внутри переписываются на месте. */
+  const dotBoxes = []
+  const placed = []
+  const takeBox = (pool, used) => pool[used] || (pool[used] = { x0: 0, y0: 0, x1: 0, y1: 0, owner: -1 })
+  let dotCount = 0
+  let placedCount = 0
+
+  // один общий черновик места: кандидатов десятки на город, и каждому
+  // свой объект — это мусор на ровном месте
+  const draft = { railX: 0, cy: 0, x0: 0, y0: 0, x1: 0, y1: 0 }
+
+  function boxFor(item, side, leadMul, dy) {
+    // nudge задан в строках — переводим в пиксели с той же добавкой
+    // воздуха, что и в DY_STEPS, чтобы веер шёл ровным шагом
+    draft.railX = item.x + side * lead * leadMul
+    draft.cy = item.y + item.nudge * (rowH + 6) + dy
+    draft.x0 = side < 0 ? draft.railX - item.width : draft.railX
+    draft.x1 = draft.x0 + item.width
+    draft.y0 = draft.cy - rowH / 2
+    draft.y1 = draft.cy + rowH / 2
+    return draft
+  }
+
+  const fits = (box, index) => {
+    if (box.x0 < EDGE || box.x1 > W - EDGE || box.y0 < EDGE || box.y1 > H - EDGE) return false
+    for (const b of blocks) if (overlaps(box, b)) return false
+    for (let i = 0; i < dotCount; i++) {
+      if (dotBoxes[i].owner !== index && overlaps(box, dotBoxes[i])) return false
+    }
+    for (let i = 0; i < placedCount; i++) if (overlaps(box, placed[i])) return false
+    return true
+  }
+
+  /**
+   * @param {number} reveal — 0…1, проявление подписей по прокрутке
+   */
+  function update(reveal) {
+    if (reveal <= 0) {
+      if (host.style.visibility !== 'hidden') host.style.visibility = 'hidden'
+      return
+    }
+    if (host.style.visibility) host.style.visibility = ''
+
+    centre.setFromMatrixPosition(globe.matrixWorld)
+
+    // 1. Проекция: экранное место точки и её «лицевость»
+    dotCount = 0
+    items.forEach((item, index) => {
+      world.copy(item.point).applyMatrix4(globe.matrixWorld)
+      normal.subVectors(world, centre).normalize()
+      toCam.subVectors(camera.position, world).normalize()
+      item.facing = normal.dot(toCam)
+      world.project(camera)
+      item.x = (world.x * 0.5 + 0.5) * W
+      item.y = (0.5 - world.y * 0.5) * H
+      // точка занимает место: чужая подпись не должна её накрывать
+      if (item.facing > 0) {
+        const b = takeBox(dotBoxes, dotCount++)
+        b.x0 = item.x - DOT_R; b.y0 = item.y - DOT_R
+        b.x1 = item.x + DOT_R; b.y1 = item.y + DOT_R
+        b.owner = index
+      }
+    })
+
+    // 2. Раскладка: каждому городу — первое место, куда он влез
+    placedCount = 0
+    const last = items.length - 1
+    items.forEach((item, index) => {
+      /* Проявление: общий прогресс, лёгкая лесенка по списку и уход в
+         ноль, когда точка заходит за кромку шара. 0.10…0.34 — не «видно /
+         не видно», а плавная зона: без неё подпись мигала бы ровно на
+         силуэте, где facing дрожит около нуля. */
+      const stagger = last > 0 ? (index / last) * 0.45 : 0
+      const alpha = clamp01(reveal * 1.45 - stagger) * smoothstep(0.1, 0.34, item.facing)
+
+      let spot = null
+      if (alpha > 0) {
+        // прошлый выбор пробуем первым — иначе подпись дёргается между
+        // двумя одинаково годными местами, пока шар доворачивается
+        if (item.last && fits(boxFor(item, item.last.side, item.last.mul, item.last.dy), index)) {
+          spot = item.last
+        } else {
+          for (const t of item.tries) {
+            if (!fits(boxFor(item, t.side, t.mul, t.dy), index)) continue
+            spot = t
+            break
+          }
+        }
+      }
+
+      if (!spot) {
+        item.last = null
+        if (item.alpha !== 0) {
+          item.alpha = 0
+          item.el.style.opacity = '0'
+          item.path.style.opacity = '0'
+        }
+        return
+      }
+
+      /* draft здесь ещё хранит принятое место: boxFor() считал его
+         последним — и в ветке с прошлым выбором, и в переборе (цикл
+         обрывается на удачном кандидате). */
+      item.last = spot
+      const { railX, cy } = draft
+      const keep = takeBox(placed, placedCount++)
+      keep.x0 = draft.x0; keep.y0 = draft.y0; keep.x1 = draft.x1; keep.y1 = draft.y1
+
+      /* Линия и засечка — одной ломаной: наклонный отрезок от точки к
+         месту подписи и короткий горизонтальный хвост под ней. Хвост
+         нужен всегда: без него у подписи, вставшей вровень со своей
+         точкой, линия и так горизонтальна, а у смещённой название
+         висело бы на конце наклонной. */
+      const rail = railX.toFixed(1)
+      item.path.setAttribute(
+        'd',
+        `M${item.x.toFixed(1)} ${item.y.toFixed(1)}L${rail} ${cy.toFixed(1)}h${spot.side * tick}`,
+      )
+
+      item.el.dataset.side = spot.side < 0 ? 'left' : 'right'
+      item.el.style.transform = `translate(${rail}px, ${(cy - rowH / 2).toFixed(1)}px)`
+      if (item.alpha !== alpha) {
+        item.alpha = alpha
+        const v = alpha.toFixed(3)
+        item.el.style.opacity = v
+        item.path.style.opacity = v
+      }
+    })
+  }
+
+  function resize() {
+    measure()
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+    // прошлые места считались в старых размерах — начинаем перебор заново
+    items.forEach((it) => { it.last = null })
+  }
+  resize()
+
+  return { update, resize }
+}

@@ -1,5 +1,8 @@
 ---
-import { asset } from '../lib/asset.js'
+import { Image } from 'astro:assets'
+import appMobilePark from '../assets/ui/app-mobile-park.webp'
+import appMobileDrilling from '../assets/ui/app-mobile-drilling.webp'
+import appMobileBha from '../assets/ui/app-mobile-bha.webp'
 
 /* ── МОБИЛЬНЫЙ КЛИЕНТ ──────────────────────────────────────────────
    Три аппарата в ряд, средний выше боковых; на подходе к секции они
@@ -11,9 +14,9 @@ import { asset } from '../lib/asset.js'
    глубине), здесь только покой: он же вид без скрипта.
    ────────────────────────────────────────────────────────────────── */
 const PHONES = [
-  { src: '/mob1.webp', label: 'Парк оборудования и ресурс до ТО' },
-  { src: '/mob2.webp', label: 'Мониторинг бурения в реальном времени' },
-  { src: '/mob3.webp', label: 'Компоновка КНБК' },
+  { src: appMobilePark, label: 'Парк оборудования и ресурс до ТО' },
+  { src: appMobileDrilling, label: 'Мониторинг бурения в реальном времени' },
+  { src: appMobileBha, label: 'Компоновка КНБК' },
 ]
 
 const TAGS = ['Android', 'Live-данные']
@@ -46,7 +49,7 @@ const TAGS = ['Android', 'Live-данные']
         data-mob-phone
         data-depth={i === 1 ? 0 : 1}
       >
-        <img src={asset(p.src)} alt={p.label} loading="lazy" draggable="false" />
+        <Image src={p.src} alt={p.label} loading="lazy" draggable="false" />
       </figure>
     ))}
   </div>

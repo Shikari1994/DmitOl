@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets'
 import { asset } from '../lib/asset.js'
 import { PRODUCTS } from '../data/products.js'
 
@@ -33,7 +34,7 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
   <div class="prod-media" aria-hidden="true">
     <video
       class="prod-media-video"
-      data-lazy-video={asset('/back2.mp4')}
+      data-lazy-video={asset('/video/products-background.mp4')}
       muted
       loop
       playsinline
@@ -76,10 +77,10 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
           {ACCORDION_IMAGES[p.id] && (
             <span class={`rig-media rig-media--accordion rig-media--${p.id}${isShot(p.id) ? ' rig-media--shot' : ''}`} aria-hidden="true">
               <span class="rig-media-inner">
-                <img src={asset(ACCORDION_IMAGES[p.id].image)} alt="" loading="lazy" draggable="false"
+                <Image src={ACCORDION_IMAGES[p.id].image} alt="" loading="lazy" draggable="false"
                   class={ACCORDION_IMAGES[p.id].imageLight ? 'theme-img theme-img--dark' : undefined} />
                 {ACCORDION_IMAGES[p.id].imageLight && (
-                  <img src={asset(ACCORDION_IMAGES[p.id].imageLight)} alt="" loading="lazy" draggable="false" class="theme-img theme-img--light" />
+                  <Image src={ACCORDION_IMAGES[p.id].imageLight} alt="" loading="lazy" draggable="false" class="theme-img theme-img--light" />
                 )}
               </span>
             </span>

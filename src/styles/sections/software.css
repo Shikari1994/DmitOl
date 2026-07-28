@@ -50,7 +50,7 @@
 .sw-eco-video {
   width: 100%; height: 100%; object-fit: cover;
 }
-/* Два ролика на две схемы: тёмный ecosyst_vid.mp4 и светлый white.mp4,
+/* Два ролика на две схемы: ecosystem-dark.mp4 и ecosystem-light.mp4,
    каждый подмешивается в цвет реального фона секции своим ::before/
    ::after в var(--surface). Неактивный скрыт через display:none — и
    поэтому не грузится: ленивая загрузка идёт через IntersectionObserver,
@@ -138,7 +138,7 @@ html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); 
 .sw-stage { margin-top: clamp(28px, 3vw, 40px); }
 
 /* Вкладки вторят собственной верхней навигации Drill Monitor (видна в
-   самих роликах вкладок, public/video/1–5.mp4) — тот же приём
+   самих роликах вкладок, public/video/module-*.mp4) — тот же приём
    подчёркивания, что у scrollspy в шапке (.nav-links a.active), не
    новая форма. */
 .sw-tabs {

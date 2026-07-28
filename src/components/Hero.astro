@@ -1,5 +1,12 @@
 ---
+import { Image } from 'astro:assets'
 import { asset } from '../lib/asset.js'
+import heroPoster from '../assets/ui/hero-poster.webp'
+import markWhite from '../assets/brand/mark-white.png'
+import markBlack from '../assets/brand/mark-black.png'
+import appDesktop from '../assets/ui/app-desktop.webp'
+import appMobileDrilling from '../assets/ui/app-mobile-drilling.webp'
+import mwdKitHero from '../assets/products/mwd-kit-hero.webp'
 
 /* ── HERO · буквальный перенос из Dmit ──
    Не адаптация под токены сайта, а прямой перевод разметки и значений:
@@ -31,8 +38,8 @@ import { asset } from '../lib/asset.js'
     <video
       class="hero-media-video"
       data-hero-video
-      src={asset('/hero_back.mp4')}
-      poster={asset('/hero-poster.webp')}
+      src={asset('/video/hero-background.mp4')}
+      poster={heroPoster.src}
       preload="metadata"
       loop
       muted
@@ -53,8 +60,11 @@ import { asset } from '../lib/asset.js'
         <span class="hero-tag mono">Научно-производственный комплекс</span>
         <div class="hero-brand">
           <span class="hero-brand-mark">
-            <img class="hero-brand-mark-img hero-brand-mark-img--dark" src={asset('/LOGO_white.png')} alt="ГТН" loading="eager" draggable="false" />
-            <img class="hero-brand-mark-img hero-brand-mark-img--light" src={asset('/LOGO_black.png')} alt="ГТН" loading="eager" draggable="false" />
+            {/* height вдвое больше самой крупной вёрстки (108px на ≥1280px,
+                см. .hero-brand-mark в hero.css) — запас под ретину и не
+                больше: исходники PNG в разы крупнее, чем нужно на экране. */}
+            <Image class="hero-brand-mark-img hero-brand-mark-img--dark" src={markWhite} height={216} format="webp" alt="ГТН" loading="eager" draggable="false" />
+            <Image class="hero-brand-mark-img hero-brand-mark-img--light" src={markBlack} height={216} format="webp" alt="ГТН" loading="eager" draggable="false" />
           </span>
           <h1 class="hero-brand-title">ГЕОТЕХ<br />НАВИГАЦИЯ</h1>
         </div>
@@ -78,11 +88,11 @@ import { asset } from '../lib/asset.js'
         <div class="hero-tile-art" aria-hidden="true">
           <div class="hero-tile-stage">
             <div class="hero-tile-note">
-              <img src={asset('/note1.webp')} alt="" loading="eager" draggable="false" />
+              <Image src={appDesktop} alt="" loading="eager" draggable="false" />
             </div>
             <div class="hero-tile-phone">
               <div class="hero-tile-phone-move">
-                <img src={asset('/mob2.webp')} alt="" loading="eager" draggable="false" />
+                <Image src={appMobileDrilling} alt="" loading="eager" draggable="false" />
               </div>
             </div>
           </div>
@@ -108,7 +118,9 @@ import { asset } from '../lib/asset.js'
         <span class="hero-tile-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         <div class="hero-tile-art hero-tile-art--rig" aria-hidden="true">
           <div class="hero-tile-rig">
-            <img src={asset('/gtn-kit5.webp')} alt="" loading="eager" draggable="false" />
+            {/* Кадр рисуется высотой до 300px (.hero-tile-rig img), 600 —
+                тот же двойной запас под ретину. */}
+            <Image src={mwdKitHero} height={600} alt="" loading="eager" draggable="false" />
           </div>
         </div>
         <div class="hero-tile-row">

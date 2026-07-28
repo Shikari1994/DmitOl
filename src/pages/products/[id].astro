@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import Nav from '../../components/Nav.astro'
 import Footer from '../../components/Footer.astro'
 import BulletList from '../../components/BulletList.astro'
+import { Image } from 'astro:assets'
 import { asset } from '../../lib/asset.js'
 import { PRODUCTS } from '../../data/products.js'
 
@@ -36,14 +37,23 @@ const { product } = Astro.props
           <div class="product-main">
             {(product.pageImage || product.image) && (
               <div class={`product-photo product-photo--${product.id} reveal${product.pageImage && !product.photoFull ? ' is-crop' : ''}${product.photoFull ? '' : ' is-compact'}`}>
+                {/* Кадр здесь самый крупный на сайте: рамка тянется на всю
+                    ширину колонки, поэтому единственный вариант файла на все
+                    экраны означал бы десктопный вес на телефоне. widths/sizes
+                    отдают srcset — на раскладку они не влияют, её по-прежнему
+                    держит .product-photo в product-page.css. */}
                 {product.pageImage ? (
-                  <img src={asset(product.pageImage)} alt={product.title} loading="eager" />
+                  <Image src={product.pageImage} alt={product.title} loading="eager"
+                    widths={[640, 960, 1280]} sizes="(max-width: 1000px) 100vw, 900px" />
                 ) : (
                   <>
-                    <img src={asset(product.image)} alt={product.title} loading="eager"
+                    <Image src={product.image} alt={product.title} loading="eager"
+                      widths={[640, 960, 1280]} sizes="(max-width: 1000px) 100vw, 900px"
                       class={product.imageLight ? 'theme-img theme-img--dark' : undefined} />
                     {product.imageLight && (
-                      <img src={asset(product.imageLight)} alt={product.title} loading="eager" class="theme-img theme-img--light" />
+                      <Image src={product.imageLight} alt={product.title} loading="eager"
+                        widths={[640, 960, 1280]} sizes="(max-width: 1000px) 100vw, 900px"
+                        class="theme-img theme-img--light" />
                     )}
                   </>
                 )}

@@ -38,6 +38,7 @@ import { makeProgress, span, clamp01, smooth } from './scrollProgress.js'
    THREE им передаётся параметром, потому что грузится динамически. */
 import { CITIES, BORDER_RINGS } from './globe/data.js'
 import { latLonToVec3, loadMask, buildDotCloud, mergeLines } from './globe/geo.js'
+import { createCityLabels } from './globe/labels.js'
 import {
   themeColor,
   cullBackface,
@@ -80,6 +81,13 @@ const SPIN_FROM = -0.35
 const SPIN_TO = 2.79
 const TILT_FROM = 0.51
 const TILT_TO = 1.01
+
+/* Подписи городов (globe/labels.js) проявляются только на подходе к
+   финалу: раньше шар ещё разворачивается, точки едут через полкадра, и
+   выноски за ними мотало бы вместе с перекладкой. К LABELS_END разворот
+   уже кончился (0.9 акта), подписи стоят на устоявшихся местах. */
+const LABELS_IN = 0.62
+const LABELS_END = 0.9
 
 const progress = wrap ? makeProgress(wrap, stage) : () => 0
 const globeProgress = () => span(progress(), 0, GLOBE_END)
@@ -322,6 +330,28 @@ async function start() {
   markers.renderOrder = 2
   globe.add(markers)
 
+  /* ── Подписи городов ──
+     DOM-слой поверх канваса, не текст в сцене: см. шапку globe/labels.js.
+     На телефоне не поднимаем вовсе — кадр там делят заголовок сверху и
+     колонка услуг снизу, свободного поля под выноски не остаётся, а сам
+     шар вдвое мельче (fit в render()).
+
+     В препятствия отдаются блоки, которые реально закрашены, а не их
+     общая обёртка: у .atlas-copy бокс идёт до трети ширины кадра, но
+     подзаголовок в нём узкий (max-width 30ch), а кнопка и того короче —
+     справа от них остаётся широкая пустая полоса, и подписям Москвы с
+     Петербургом больше некуда встать. Строки .atlas-head поштучно эту
+     полосу освобождают. */
+  const pinHost = wrap.querySelector('[data-atlas-pins]')
+  const labels = !isMobile && pinHost
+    ? createCityLabels(THREE, {
+      host: pinHost,
+      camera,
+      globe,
+      obstacles: [...wrap.querySelectorAll('.atlas-head > *'), wrap.querySelector('.atlas-deck')],
+    })
+    : null
+
   /* ── Подсветка под курсором ──
      Луч пересекает не облако точек, а аналитическую сферу того же
      мирового радиуса: облако решётчатое (~29% сферы), и курсор
@@ -458,6 +488,7 @@ async function start() {
     renderer.setSize(w, h, false)
     camera.aspect = w / h
     camera.updateProjectionMatrix()
+    labels?.resize()
   }
   resize()
 
@@ -535,6 +566,11 @@ async function start() {
     // leave пятно хлопало бы, а не проступало под курсором.
     hoverUniforms.uHoverStrength.value += (hoverTarget - hoverUniforms.uHoverStrength.value) * 0.15
     renderer.render(scene, camera)
+
+    /* Строго ПОСЛЕ рендера: проекция городов читает globe.matrixWorld, а
+       его обновляет сам renderer.render(). До вызова матрица отстаёт на
+       кадр, и выноски тянулись бы за точками с задержкой. */
+    labels?.update(smooth(span(gp, LABELS_IN, LABELS_END)))
 
     if (visible && !document.hidden) raf = requestAnimationFrame(render)
   }

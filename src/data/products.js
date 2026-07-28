@@ -5,7 +5,26 @@
    страницы товара, photoFull — показывать его целиком, а не в рамке
    фиксированной высоты. Блоки текста (specs, modules, tables,
    extraBlocks) необязательны: пустой или отсутствующий страница просто
-   не рисует. */
+   не рисует.
+
+   Кадры импортируются, а не задаются строкой пути: так Astro (astro:assets)
+   знает их размеры на сборке, ставит хеш в имя файла и сам режет варианты
+   под srcset, а битый путь падает ошибкой сборки, а не молчаливым 404. */
+import mwdKitMono from '../assets/products/mwd-kit-mono.webp'
+import mwdKit from '../assets/products/mwd-kit.webp'
+import decoderMono from '../assets/products/decoder-mono.webp'
+import decoder from '../assets/products/decoder.webp'
+import directionalMono from '../assets/products/directional-mono.webp'
+import directional from '../assets/products/directional.webp'
+import bhresMono from '../assets/products/bhres-mono.webp'
+import bhres from '../assets/products/bhres.webp'
+import gnomMono from '../assets/products/gnom-mono.webp'
+import gnom from '../assets/products/gnom.webp'
+import pulserMono from '../assets/products/pulser-mono.webp'
+import pulser from '../assets/products/pulser.webp'
+import partsMono from '../assets/products/parts-mono.webp'
+import parts from '../assets/products/parts.webp'
+
 export const PRODUCTS = [
   {
     id: 'mwd', n: '01', title: 'GT-NAVIGATOR', line: 'Телесистема MWD / LWD (комплект)',
@@ -13,9 +32,9 @@ export const PRODUCTS = [
     specTitle: 'Телесистема MWD/LWD «GT-Navigator»',
     /* Чёрно-белый кадр комплекта, в одном ключе с серией *-bw.
        Исходники PNG — в media-archive/sources-bw/. */
-    image: '/gtn-kit-bw.webp',
+    image: mwdKitMono,
     /* На странице товара свой цветной кадр, более широкая композиция. */
-    pageImage: '/gtn-kit4.webp',
+    pageImage: mwdKit,
     /* photoFull стоит только у 01 и 02: это портретные кадры, где важен
        весь состав, и обрезать их нельзя. У остальных кадры вытянуты по
        горизонтали и в полный рост съедали бы пол-экрана — им рамка
@@ -51,10 +70,10 @@ export const PRODUCTS = [
       'Решение предназначено для сбора, обработки и визуализации данных телеметрии (MWD) и каротажа в процессе бурения (LWD) в реальном времени. Комплекс поставляется с предустановленной Windows 11 и полностью подготовлен к миграции на Linux (включая отечественные дистрибутивы), что гарантирует гибкость программного обеспечения, надежность и информационную безопасность.',
     ],
     specTitle: 'Универсальный наземный комплекс',
-    image: '/gtn-decoder.webp',
+    image: decoderMono,
     /* Ракурс с лицевой панелью крупным планом; исходник — в
        media-archive/sources-bw/. */
-    pageImage: '/gtn-decoder-faceboard.webp',
+    pageImage: decoder,
     photoFull: true,
     highlightsTitle: 'Основные преимущества',
     highlights: [
@@ -110,10 +129,10 @@ export const PRODUCTS = [
        одинаково читается в обеих схемах. Поддержка пары в разметке и в
        .theme-img осталась, ею просто никто не пользуется — вернуть можно
        полем imageLight. Снятые файлы в media-archive/. */
-    image: '/directional-bw.webp',
+    image: directionalMono,
     /* На главной узкая приборная плашка, геометрия которой зашита в
        equipment.css; на странице товара — своё полноразмерное фото. */
-    pageImage: '/directional-bw2.webp',
+    pageImage: directional,
     /* Буллеты дословно с источника (● / ○ там же). Формат см.
        BulletList.astro: строка — плоский пункт, [строка, под-пункты[]] —
        пункт с вложенным списком. */
@@ -189,10 +208,10 @@ export const PRODUCTS = [
       'Модуль полностью совместим с современной скважинной телеметрией и осуществляет передачу данных и управление по цифровым высокоскоростным протоколам CAN и Q-Bus.',
     ],
     /* Один универсальный ч/б кадр вместо пары, как у 03. */
-    image: '/bhres-bw.webp',
+    image: bhresMono,
     /* Полноразмерное фото для страницы товара, не завязано на
        геометрию узкой плашки с главной. */
-    pageImage: '/BHres4.webp',
+    pageImage: bhres,
     highlightsTitle: 'Основные преимущества',
     highlights: [
       'Эффективная геонавигация: Сочетание двух рабочих частот (2 МГц и 400 кГц) обеспечивает идеальный баланс между высокой вертикальной разрешающей способностью и глубоким исследованием пласта.',
@@ -284,12 +303,12 @@ export const PRODUCTS = [
     /* Генератор целиком, вместе с длинным гладким штоком: в плашке на
        главной шток уходит под обрез маски, видна правая часть с самим
        узлом. Исходник — в media-archive/sources-bw/. */
-    image: '/gnom-bw.webp',
-    /* На главной (Showcase) — узкая приборная плашка gnom-bw.webp,
+    image: gnomMono,
+    /* На главной (Showcase) — узкая приборная плашка gnom-mono.webp,
        геометрия которой захардкожена в equipment.css (см. --rig-media-h
        комментарий про 6920×1059). На отдельной странице товара —
        отдельное полноразмерное фото, не завязанное на эту геометрию. */
-    pageImage: '/gnom4-crop.webp',
+    pageImage: gnom,
     specs: [
       ['Рабочая температура', 'до +150°C (опция +175°C)'],
       ['Канал передачи данных', 'Автономное электропитание скважинных модулей'],
@@ -316,11 +335,11 @@ export const PRODUCTS = [
     ],
     /* Универсальный ч/б кадр, как у 03–05. Зум под его пропорции —
        .rig-media--pulsator в equipment.css. */
-    image: '/pulser-bw.webp',
+    image: pulserMono,
     /* Как у генератора (05) и инклинометра (03) — на главной узкая
-       приборная плашка (pulser-bw.webp, геометрия в equipment.css),
+       приборная плашка (pulser-mono.webp, геометрия в equipment.css),
        на отдельной странице товара — своё полноразмерное фото. */
-    pageImage: '/pulser4-crop.webp',
+    pageImage: pulser,
     highlightsTitle: 'Основные преимущества',
     highlights: [
       'Двойная универсальность: Совместимость с верхним и нижним извлекаемым клапаном снижает затраты на складские запасы, обучение персонала и техническое обслуживание.',
@@ -421,8 +440,8 @@ export const PRODUCTS = [
     /* Композиция здесь другая, чем у 03–06: длинный ряд деталей, а не
        крупный план одного узла. Поэтому кадр показывается ЦЕЛИКОМ —
        см. .rig-media--parts в equipment.css. */
-    image: '/parts-bw.webp',
-    pageImage: '/Parts4.webp',
+    image: partsMono,
+    pageImage: parts,
     highlightsTitle: 'Ключевые возможности',
     highlights: [
       'Мультибрендовая поддержка: Ремонт и поставка ЗИП как для отечественных, так и для зарубежных телесистем (Tensor, APS, Vertex, GE/Scientific Drilling и др.).',

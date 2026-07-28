@@ -1,8 +1,12 @@
 ---
 import '../styles/index.css'
-import { asset } from '../lib/asset.js'
+import logoColor from '../assets/brand/logo-color.webp'
 
-const logoHref = asset('/logo.webp')
+// Лого лежит в src/assets, а не в public: единственный файл на favicon,
+// og:image и шапку. Путь у него с хешем содержимого — меняется только
+// вместе с самим файлом, поэтому кеш браузера и превью в мессенджерах
+// обновляются ровно тогда, когда лого действительно заменили.
+const logoHref = logoColor.src
 
 const {
   title = 'ГЕОТЕХНАВИГАЦИЯ — Телеметрия и геонавигация бурения',

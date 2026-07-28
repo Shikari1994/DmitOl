@@ -66,6 +66,88 @@ html[data-scheme="light"] .atlas-night {
    атмосфера берут токены темы, MutationObserver ловит смену
    html[data-scheme]. */
 
+/* ── Подписи городов ──
+   Слой пустой в разметке: выноски собирает scripts/globe/labels.js, он
+   же каждый кадр считает их места по проекции точек. Здесь только вид.
+
+   Ровно над канвасом (тот же z-index 2, но позже в потоке) и ПОД обеими
+   колонками сцены (z-index 3) — подпись не имеет права закрыть заголовок
+   или услуги. Раскладка про это знает и обходит их боксы, но порядок
+   слоёв — последнее слово, если обойти не вышло.
+
+   Маска повторяет канвасную: подпись, заехавшая в нижнее затухание, гаснет
+   вместе с шаром, а не висит поверх стыка секций.
+
+   Величины ниже читает JS через getComputedStyle, поэтому они ПРОСТЫЕ px,
+   а не clamp(): у нерегистрированного кастом-свойства computed value —
+   исходный токен, и parseFloat('clamp(…)') дал бы NaN. Мельче — только
+   отдельными media-правилами внизу файла. */
+.atlas-pins {
+  --pin-row:  20px;   /* высота строки подписи — она же высота её бокса */
+  --pin-lead: 58px;   /* длина линии от точки города до подписи */
+  --pin-tick: 9px;    /* горизонтальный хвост линии под названием */
+  --pin-gap:  8px;    /* воздух между хвостом и первой буквой */
+  position: absolute; inset: 0; z-index: 2;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - min(18vh, 160px)), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - min(18vh, 160px)), transparent);
+}
+/* viewBox выставляет JS в пиксельный размер сцены — координаты выносок
+   считаются прямо в тех числах, что дала проекция, без пересчёта. */
+.atlas-pins-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  overflow: visible;
+}
+.atlas-pin-line {
+  fill: none;
+  stroke: var(--globe-accent);
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+  /* Страховка на случай, если viewBox разойдётся с пиксельным размером
+     (кадр между resize и первым update): толщина линии останется 1px. */
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+}
+
+/* Место (конец линии) ставит JS через transform — ОДНОЙ точкой на любую
+   сторону. Куда от неё ляжет само название, решает CSS: вправо — просто
+   отступом, влево — отражением на свою ширину. Иначе JS пришлось бы
+   считать ширину текста и вычитать её при каждой смене стороны. */
+.atlas-pin {
+  position: absolute; top: 0; left: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.atlas-pin-name {
+  display: block;
+  height: var(--pin-row); line-height: var(--pin-row);
+  font-family: var(--font-mono);
+  font-size: var(--fs-0);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-dim);
+  /* Под подписью — точечная фактура суши и сетка меридианов; без ореола
+     мелкие буквы на ней рассыпаются. */
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  padding-left: calc(var(--pin-tick) + var(--pin-gap));
+}
+.atlas-pin[data-side="left"] .atlas-pin-name {
+  transform: translateX(-100%);
+  padding-left: 0;
+  padding-right: calc(var(--pin-tick) + var(--pin-gap));
+}
+
+/* Ночь: подписи проявляются уже в ней (LABELS_IN в globeCanvas.js
+   позже, чем NIGHT_SWAP в aboutScene.js), поэтому именно эта пара цветов
+   и работает почти всё время. Базовые выше — на случай ранних кадров. */
+.atlas-stage.is-night .atlas-pin-name { color: rgba(238, 242, 247, 0.78); }
+html[data-scheme="light"] .atlas-pin-name,
+html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
+  color: rgba(20, 23, 28, 0.8);
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.75);
+}
+
 /* Ночь светлее всего у нижней кромки сцены, а следом сразу флэт
    var(--surface) секции #products — шов был виден жёсткой линией.
    Гасим последние пиксели обратно в --surface отдельным слоем.
@@ -307,6 +389,7 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
   padding: 0 var(--gut) var(--section-y);
 }
 .atlas.is-static .atlas-night,
+.atlas.is-static .atlas-pins,
 .atlas.is-static .atlas-canvas { display: none; }
 .atlas.is-static .atlas-copy {
   position: static; right: auto; top: auto;
@@ -330,8 +413,19 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
 }
 .atlas.is-static .atlas-item + .atlas-item { margin-top: clamp(10px, 1.6vh, 16px); }
 
+/* Ноутбук: свободного поля между заголовком и колонкой услуг заметно
+   меньше, а имена вроде «Санкт-Петербурга» короче не становятся —
+   ужимаем выноску, чтобы раскладке было куда её положить. */
+@media (max-width: 1280px) {
+  .atlas-pins { --pin-row: 18px; --pin-lead: 42px; --pin-tick: 8px; --pin-gap: 6px; }
+  .atlas-pin-name { letter-spacing: 0.04em; }
+}
+
 @media (max-width: 900px) {
   .atlas { height: 150svh; }
+  /* Подписи на телефоне не поднимаются вовсе (см. globeCanvas.js): кадр
+     делят заголовок сверху и колонка услуг снизу, свободного поля под
+     выноски не остаётся. Слой остаётся пустым — прятать нечего. */
   /* Заголовок во всю ширину, колонка услуг под ним до низа кадра. Место
      под пять плашек берётся из левой колонки: подзаголовок и кнопка
      «связаться» сняты — оба дублируются ниже по странице, а перечень

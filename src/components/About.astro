@@ -43,6 +43,12 @@ const SERVICES = [
       <div class="atlas-night" aria-hidden="true"></div>
       <canvas class="atlas-canvas" data-globe-canvas aria-hidden="true"></canvas>
 
+      {/* Подписи городов — пустой слой над канвасом, содержимое собирает
+          scripts/globe/labels.js по списку CITIES. Разметки здесь нет
+          намеренно: без three.js спроецировать города некуда, а список
+          имён без шара под ними ничего не значит. */}
+      <div class="atlas-pins" data-atlas-pins aria-hidden="true"></div>
+
       {/* Заголовок стоит на месте всю сцену и к финалу перекрашивается
           в светлый под ночью (.is-night).
 
