@@ -102,7 +102,10 @@ html[data-scheme="light"] .atlas-night {
   fill: none;
   stroke: var(--globe-accent);
   stroke-width: 1;
-  stroke-opacity: 0.5;
+  /* Линия тоже спорит с фоном — она идёт ровно по полю точек. Держим её
+     заметно ярче половины, но всё же тише самой подписи: ведёт название,
+     а не спорит с ним. */
+  stroke-opacity: 0.75;
   /* Страховка на случай, если viewBox разойдётся с пиксельным размером
      (кадр между resize и первым update): толщина линии останется 1px. */
   vector-effect: non-scaling-stroke;
@@ -123,13 +126,24 @@ html[data-scheme="light"] .atlas-night {
   height: var(--pin-row); line-height: var(--pin-row);
   font-family: var(--font-mono);
   font-size: var(--fs-0);
+  /* 500, а не 400: под подписью бежит поле точек суши того же кегля и
+     той же светлоты, и на 400 буквы читались как ещё одна россыпь. */
+  font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--ink-dim);
-  /* Под подписью — точечная фактура суши и сетка меридианов; без ореола
-     мелкие буквы на ней рассыпаются. */
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  /* В полную силу, не --ink-dim: приглушать текст можно над ровной
+     заливкой, а здесь фон сам пёстрый — подпись обязана быть светлее
+     всего, что под ней. */
+  color: var(--ink);
+  /* Ореол в три слоя, а не одна тень: ближний непрозрачный отбивает
+     букву от соседней точки, средний и дальний гасят фон вокруг слова
+     целиком. Без смещения по Y — это подложка, а не тень: тень на
+     мелком mono читалась бы замыленной второй строкой. */
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    0 0 5px rgba(0, 0, 0, 0.85),
+    0 0 14px rgba(0, 0, 0, 0.7);
   padding-left: calc(var(--pin-tick) + var(--pin-gap));
 }
 .atlas-pin[data-side="left"] .atlas-pin-name {
@@ -141,11 +155,16 @@ html[data-scheme="light"] .atlas-night {
 /* Ночь: подписи проявляются уже в ней (LABELS_IN в globeCanvas.js
    позже, чем NIGHT_SWAP в aboutScene.js), поэтому именно эта пара цветов
    и работает почти всё время. Базовые выше — на случай ранних кадров. */
-.atlas-stage.is-night .atlas-pin-name { color: rgba(238, 242, 247, 0.78); }
+.atlas-stage.is-night .atlas-pin-name { color: #eef2f7; }
+/* Светлая схема — тот же приём, зеркально: тёмная буква и БЕЛЫЙ ореол,
+   потому что фон под ней тоже светлеет вместе со схемой. */
 html[data-scheme="light"] .atlas-pin-name,
 html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
-  color: rgba(20, 23, 28, 0.8);
-  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.75);
+  color: #14171c;
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 5px rgba(255, 255, 255, 0.9),
+    0 0 14px rgba(255, 255, 255, 0.8);
 }
 
 /* Ночь светлее всего у нижней кромки сцены, а следом сразу флэт
