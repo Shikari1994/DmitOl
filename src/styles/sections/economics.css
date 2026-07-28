@@ -1,45 +1,32 @@
 /* ════════════════════════════════════════════════
    ЭКОНОМИКА БУРЕНИЯ · буквальный перенос D:\Projects\Dmit
    ────────────────────────────────────────────────
-   2026-07-21: реопен grid-border-эстетики для ещё одной секции (см.
-   память dmit-sibling-reference) — та же раскладка «шапка на волосяной
-   сетке + строки-таблица + итоговая панель 4/8», что уже стоит у
-   #products (.prod-head/.rig-row), с тем же приёмом колоночных долей
-   (minmax(240px,34%) 1fr ≈ Tailwind col-span-4/8 у Dmit). Красный —
-   единственный цвет, которого до этой секции на сайте не было: у Dmit
-   он держит все кикеры «Проблема NN» и левую кромку лида, здесь заведён
-   локальной переменной (буквальный logoRed Dmit), а не новым токеном
-   в :root — используется только внутри #economics. Синий акцент
-   переиспользует общий var(--brand) (тот же тон, что logoBlue Dmit). */
+   Та же раскладка, что у #products: шапка на волосяной сетке, строки-
+   таблица, итоговая панель 4/8 с долями minmax(240px,34%) 1fr.
+
+   Красный — единственный цвет вне палитры сайта, у Dmit он держит
+   кикеры «Проблема NN» и кромку лида. Заведён ЛОКАЛЬНОЙ переменной, а
+   не токеном в :root: живёт только внутри #economics. Синий акцент —
+   общий var(--brand). */
 #economics {
   --econ-red: #be2026; /* logoRed Dmit — кикеры «Проблема», кромка лида */
-  /* Секция сразу за #mobile — той же чёрной темы и без своего нижнего
-     отступа (сцена с телефонами обрезана кромкой). Общий `section`
-     навешивает сюда padding-top = --section-y, из-за чего между
-     обрезанным рядом аппаратов и шапкой «Экономики» читался лишний
-     воздух, а не встык двух сцен одного рассказа. */
+  /* Сверху вплотную к #mobile: ряд телефонов там обрезан кромкой, и
+     общий --section-y читался лишним воздухом, а не встыком двух сцен
+     одного рассказа. */
   padding-top: 0;
-  /* Снизу следом идёт #how той же чёрной темы: общий `section` навешивает
-     padding-bottom здесь и свой padding-top там, вместе оба --section-y
-     читались двойным зазором между «Промышленными алгоритмами» и
-     «Принципом работы». Держит отступ только следующая секция. */
+  /* Снизу — #how той же темы: два --section-y (свой и её) складывались
+     в двойной зазор. Отступ держит только следующая секция. */
   padding-bottom: 0;
 }
 
 .econ-head {
-  /* 2026-07-25: шапка снята с плоской grid-border-таблицы и переведена
-     в стеклянную карточку — тем же приёмом, что .prod-head-row у секции
-     «Продукция» (см. equipment.css): та же пропорция колонок 1/3 · 2/3,
-     тот же .glass-рецепт (см. glass.css), тот же inset var(--gut) по
-     бокам вместо border-bottom на всю секцию. Волосяная граница между
-     колонками (border-left) убрана вместе с ней — в .prod-head-row её
-     тоже нет, левый край лида держит только акцентная кромка абзаца. */
-  /* 2026-07-25: calc(100%/3) → calc((100% - var(--gut)) / 3) — та же
-     поправка, что у .prod-head-row (equipment.css): карточка инсечена
-     на var(--gut) от края секции, поэтому граница колонок (акцентная
-     кромка .econ-head-lead .lead) без вычитания gut ложилась на
-     W/3 + gut/3, правее общей направляющей сайта (.footer-cell-b,
-     .econ-synergy, .sw-slide-shot). */
+  /* Стеклянная карточка тем же приёмом, что .prod-head-row: пропорция
+     колонок 1/3 · 2/3, общий .glass-рецепт, inset var(--gut) по бокам
+     вместо border-bottom на всю секцию.
+
+     gut в делителе обязателен: карточка инсечена на var(--gut) от края,
+     и без вычитания граница колонок ложится на W/3 + gut/3 — правее
+     общей направляющей сайта (.footer-cell-b, .sw-slide-shot). */
   display: grid; grid-template-columns: minmax(240px, calc((100% - var(--gut)) / 3)) 1fr;
   align-items: center;
   margin: clamp(20px, 2.4vw, 32px) var(--gut) clamp(28px, 3.6vw, 48px);
@@ -51,12 +38,10 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   padding: 0 clamp(20px, 2.4vw, 32px) 0 clamp(24px, 3vw, 40px);
   display: flex; flex-direction: column; justify-content: center;
 }
-/* Тот же перерасчёт кегля и по той же причине, что у .prod-head-title
-   (equipment.css): --fs-8 рассчитан на полноширинный заголовок, а эта
-   колонка зажата в minmax(240px, (100%−gut)/3) — «ЭКОНОМИКА» на fs-8
-   вылезала поверх лида справа на 700–1250px (баг-репорт со скриншотом
-   761px). Формула идентична .prod-head-title — оба заголовка живут в
-   колонке той же ширины. */
+/* Свой кегль вместо --fs-8: тот рассчитан на полноширинный заголовок, а
+   колонка зажата в треть — «ЭКОНОМИКА» вылезала поверх лида справа на
+   700–1250px. Формула та же, что у .prod-head-title: колонки одной
+   ширины, держать в паре. */
 @media (min-width: 701px) {
   .econ-head-title .h-title { font-size: clamp(1.35rem, 0.7rem + 1.8vw, 3.4rem); }
 }
@@ -69,20 +54,18 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   color: var(--econ-red);
   display: flex; align-items: center; gap: var(--s-2);
 }
-/* Номер раздела — тот же приём, что у .eyebrow .ey-no в base.css
-   (see About/Software/Mobile/How), подключён отдельным правилом, а не
-   классом .eyebrow: тому нужен был бы свой margin-bottom и letter-spacing,
-   которые здесь уже держит .econ-kicker. */
+/* Номер раздела — тот же приём, что у .eyebrow .ey-no в base.css, но
+   отдельным правилом: класс .eyebrow принёс бы свои margin-bottom и
+   letter-spacing, которые здесь уже держит .econ-kicker. */
 .econ-kicker .ey-no {
   font-family: var(--font-mono); font-size: var(--fs-1);
   letter-spacing: 0.04em; font-weight: 500; color: var(--brand);
 }
 .econ-kicker .ey-no .ey-den { color: var(--ink-faint); }
-/* 2026-07-25: кромка border-left переставлена с вложенного .lead на
-   саму ячейку — на .lead она висела ПОСЛЕ padding-left ячейки (28–44px)
-   и ложилась заметно правее границы колонки, а не на неё. У строк
-   .econ-problem-text ниже кромка стоит ровно на границе ячейки, текст
-   отступает от неё уже своим padding-left — тот же приём здесь. */
+/* Акцентная кромка — на самой ЯЧЕЙКЕ, не на вложенном .lead: там она
+   висит после padding-left ячейки и уезжает правее границы колонки.
+   Текст отступает от кромки уже своим padding-left. Тот же приём у
+   .econ-problem-text ниже. */
 .econ-head-lead {
   padding: 0 clamp(24px, 3vw, 40px) 0 clamp(28px, 3.2vw, 44px);
   border-left: 2px solid var(--econ-red);
@@ -140,11 +123,9 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 .econ-algos-kicker { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
 .econ-algo-list { display: flex; flex-direction: column; }
 .econ-algo-row {
-  /* Было flex-wrap: с удлинившимся sub-текстом .econ-algo-copy занимал
-     всю ширину строки, и тегу («Предотвращение обрывов КНБК» и т.п.)
-     не оставалось места — он переносился на отдельную строку и уезжал
-     влево. Grid с колонкой auto держит тег в правой колонке всегда,
-     independent от того, на сколько строк перенёсся текст слева. */
+  /* Grid, а не flex-wrap: на flex длинный sub-текст занимал всю ширину
+     строки, и тег переносился под него, уезжая влево. Колонка auto
+     держит тег справа независимо от числа строк слева. */
   display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 24px;
   padding: clamp(20px, 2.4vw, 28px) 0; border-top: 1px solid var(--line);
 }

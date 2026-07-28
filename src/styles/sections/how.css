@@ -6,14 +6,12 @@
    Граница колонок совпадает с --rail-2, поэтому текст садится
    ровно на линию сетки. Центрированных «островков» посреди
    широкого экрана на странице больше нет нигде. */
-/* Ширина первой колонки подобрана так, чтобы .how-line (см. ниже,
-   left: 27px внутри .split-main) вставала ровно на временную розовую
-   направляющую .align-guide (calc(100%*4/12) от .page-shell — .split
-   идёт во всю его ширину, section/main боковых полей не добавляют).
-   Была --rail-2 (34%), линия оказывалась на 45–75px правее мерной;
-   вычитаем те же отступы (padding-left .split-main + 27px), которыми
-   реально смещена линия, и весь .split-main — точки, текст — сдвигается
-   вместе с ней, а не только сама линия. */
+/* Ширина первой колонки подобрана так, чтобы .how-line (left: 27px
+   внутри .split-main) встала ровно на общую направляющую W/3. Из неё
+   вычтены те же отступы, которыми линия реально смещена — padding-left
+   .split-main плюс её собственные 27px, — поэтому вместе с линией
+   сдвигается и весь .split-main: точки и текст. С голым --rail-2 (34%)
+   линия уходит на 45–75px правее направляющей. */
 .split { display: grid; grid-template-columns: calc(100%/3 - clamp(16px, 2vw, 36px) - 27px) 1fr; }
 .split-aside {
   padding-left: var(--gut); padding-right: clamp(16px, 2vw, 36px);
@@ -25,7 +23,6 @@
   margin-top: 18px;
 }
 .split-aside .lead { margin-top: var(--s-3); max-width: none; font-size: var(--fs-2); }
-.split-aside .pill { margin-top: clamp(20px, 2.4vw, 30px); }
 .split-main { padding-left: clamp(16px, 2vw, 36px); padding-right: var(--gut); min-width: 0; }
 .steps { position: relative; display: flex; flex-direction: column; gap: 2px; }
 .how-line { position: absolute; left: 27px; top: 18px; bottom: 18px; width: 1px; background: var(--line); }

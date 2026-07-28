@@ -11,6 +11,5 @@
   .how-line, .how-line-fill { left: 21px; }
   .how-done-label, .how-done-title, .how-done-meta { padding-left: 21px; }
   .how-done-rule { margin-left: 21px; }
-  footer .container { flex-direction: column; align-items: flex-start; }
 }
 

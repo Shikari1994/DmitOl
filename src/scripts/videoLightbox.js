@@ -1,10 +1,8 @@
 /* ── Развёрнутое видео вкладок (Software.astro) ──
-   Клик по кадру вкладки открывает тот же ролик (тот же src и
-   currentTime — не рестарт) почти во весь экран. Переход не кросс-фейд,
-   а FLIP: элемент буквально растёт из своего прямоугольника в кадре и
-   на закрытии сжимается туда же, откуда взялся — это и даёт эффект
-   «свернётся туда же», о котором просили, а не общий модальный попап.
-   Кнопка «назад» и клик по фону закрывают одинаково. */
+   Клик по кадру открывает тот же ролик — тот же src и currentTime, НЕ
+   рестарт — почти во весь экран. Переход не кросс-фейд, а FLIP: элемент
+   растёт из своего прямоугольника и на закрытии сжимается туда же,
+   откуда взялся. Кнопка «назад» и клик по фону закрывают одинаково. */
 const triggers = [...document.querySelectorAll('[data-video-lightbox-trigger]')]
 const overlay = document.querySelector('[data-video-lightbox]')
 const stage = overlay?.querySelector('[data-video-lightbox-stage]')
@@ -20,8 +18,8 @@ if (triggers.length && overlay && stage && lbVideo) {
   let lastFocus = null
 
   /* Дельта между прямоугольником-источником и уже посчитанным лейаутом
-     .video-lightbox-stage (тот всегда лежит по центру фикс-оверлея,
-     независимо от текущего transform — transform не влияет на поток). */
+     сцены: она всегда по центру фикс-оверлея, transform на поток не
+     влияет. */
   const flipDelta = (rect) => {
     const target = stage.getBoundingClientRect()
     const sx = rect.width / target.width

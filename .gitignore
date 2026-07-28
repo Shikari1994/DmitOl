@@ -20,9 +20,6 @@ whitefon.mp4
 # «на всякий случай», в репозиторий и в сборку не едут.
 media-archive/
 
-# внутренний документ-источник текста, не для сайта
-/public/GT SMART DM .docx
-
 # неиспользуемые PNG-исходники (в проде только .webp)
 /public/All.png
 /public/Kitbox2.png
