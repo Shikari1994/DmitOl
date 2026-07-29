@@ -47,13 +47,9 @@ const smoothstep = (a, b, v) => {
    выбраться из-под соседа. */
 // Подпись остаётся в локальной зоне города. Дальние ±84/±120 px превращали
 // карту в легенду и заставляли диагонали пересекать весь глобус.
-const DY_STEPS = [0, -24, 24, -48, 48]
-
-/* Длина линии — базовая и удлинённая. Второй вариант вытягивает выноску
-   дальше от шара, когда рядом занято: это дешевле по читаемости, чем
-   уехать вертикально на сотню пикселей от своей точки. */
-const LEAD_STEPS = [1, 1.35]
-
+// Последний шаг — запас для плотных групп вроде Поволжья в финальном ракурсе.
+// Он всё ещё оставляет подпись рядом с её точкой, но не заставляет скрывать
+// город, когда ближайшие пять позиций заняты соседними выносками.
 // поля: от кромки кадра и запас вокруг чужих прямоугольников
 const EDGE = 12
 const CLEAR = 8
@@ -120,21 +116,17 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
        собираем его здесь, один раз. В update() он крутится каждый кадр, и
        пересобирать три десятка объектов по 60 раз в секунду на город
        значило бы кормить сборщик мусора ради ровно тех же чисел. */
-    const tries = []
-    ;[city.side, -city.side].forEach((side) => {
-      DY_STEPS.forEach((dy) => LEAD_STEPS.forEach((mul) => tries.push({ side, dy, mul })))
-    })
-
     return {
       el,
       name,
       path,
-      tries,
+      // One placement per city: labels follow their points smoothly but never
+      // switch side or vertical slot while the globe is turning.
+      placement: { side: city.side, dy: 0, mul: 1 },
       nudge: city.nudge || 0,
       // локальные координаты точки — считаются один раз
       point: latLonToVec3(THREE, city.lat, city.lon, PIN_R),
       width: 0,
-      last: null,     // выбранный на прошлом кадре вариант (см. шапку)
       alpha: -1,      // последняя записанная прозрачность, чтобы не дёргать стиль зря
       x: 0, y: 0, facing: 0,   // сюда проекция складывает экранное место точки
     }
@@ -199,7 +191,7 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
 
   function boxFor(item, side, leadMul, dy) {
     // nudge задан в строках — переводим в пиксели с той же добавкой
-    // воздуха, что и в DY_STEPS, чтобы веер шёл ровным шагом
+    // воздуха, чтобы фиксированный веер шёл ровным шагом
     draft.railX = item.x + side * lead * leadMul
     draft.cy = item.y + item.nudge * (rowH + 6) + dy
     draft.x0 = side < 0 ? draft.railX - item.width : draft.railX
@@ -285,28 +277,7 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
       const stagger = last > 0 ? (index / last) * 0.45 : 0
       const alpha = clamp01(reveal * 1.45 - stagger) * smoothstep(0.1, 0.34, item.facing)
 
-      let spot = null
-      if (alpha > 0) {
-        // прошлый выбор пробуем первым — иначе подпись дёргается между
-        // двумя одинаково годными местами, пока шар доворачивается
-        if (item.last
-          && fits(
-            boxFor(item, item.last.side, item.last.mul, item.last.dy),
-            leaderFor(item, item.last.side),
-            index,
-          )) {
-          spot = item.last
-        } else {
-          for (const t of item.tries) {
-            if (!fits(boxFor(item, t.side, t.mul, t.dy), leaderFor(item, t.side), index)) continue
-            spot = t
-            break
-          }
-        }
-      }
-
-      if (!spot) {
-        item.last = null
+      if (alpha <= 0) {
         if (item.alpha !== 0) {
           item.alpha = 0
           item.el.style.opacity = '0'
@@ -315,10 +286,13 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
         return
       }
 
+      const spot = item.placement
+      boxFor(item, spot.side, spot.mul, spot.dy)
+      leaderFor(item, spot.side)
+
       /* draft здесь ещё хранит принятое место: boxFor() считал его
          последним — и в ветке с прошлым выбором, и в переборе (цикл
          обрывается на удачном кандидате). */
-      item.last = spot
       const { railX, cy } = draft
       const keep = takeBox(placed, placedCount++)
       keep.x0 = draft.x0; keep.y0 = draft.y0; keep.x1 = draft.x1; keep.y1 = draft.y1
@@ -355,8 +329,6 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
   function resize() {
     measure()
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
-    // прошлые места считались в старых размерах — начинаем перебор заново
-    items.forEach((it) => { it.last = null })
   }
   resize()
 
