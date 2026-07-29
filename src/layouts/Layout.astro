@@ -17,13 +17,6 @@ const canonical = Astro.site
   ? new URL(Astro.url.pathname, Astro.site).href
   : Astro.url.pathname
 
-// Один источник правды на оба тега ниже: <link> и его <noscript>-дубль
-// обязаны запрашивать ровно тот же URL, иначе без JS приедет другой
-// набор начертаний. Тяжёлые веса (800/900 у Inter, 700/800 у Mono)
-// нужны только hero — больше нигде на сайте их нет.
-const fontsHref =
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap'
-
 const ogImage = Astro.site ? new URL(logoHref, Astro.site).href : logoHref
 
 const orgSchema = {
@@ -79,26 +72,6 @@ const orgSchema = {
         } catch (e) {}
       })()
     </script>
-
-    <!-- Шрифты подключены НЕ блокирующе: media="print" снимает таблицу
-         с критического пути, onload возвращает её в дело. display=swap
-         в URL означает, что текст в любом случае сначала рисуется
-         запасной гарнитурой — приём лишь убирает ожидание ответа
-         стороннего домена до первой отрисовки, конечный вид тот же.
-
-         Preload картинки первому экрану не нужен: его LCP —
-         типографика, а не изображение. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href={fontsHref}
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all';this.onload=null"
-    />
-    <noscript>
-      <link href={fontsHref} rel="stylesheet" />
-    </noscript>
 
     <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
   </head>

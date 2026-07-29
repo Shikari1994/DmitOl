@@ -41,6 +41,7 @@ import { latLonToVec3, loadMask, buildDotCloud, mergeLines } from './globe/geo.j
 import { createCityLabels } from './globe/labels.js'
 import {
   themeColor,
+  themeColorWithAlpha,
   cullBackface,
   makeSurfaceMaterial,
   makeDotTexture,
@@ -133,11 +134,12 @@ async function start() {
      ничем не блокирует, и сквозь шар просвечивает узор с изнанки —
      этот случай закрывает патч шейдера в makeSurfaceMaterial(). */
   const dotGeo = buildDotCloud(THREE, mask, isMobile ? 9000 : 16000)
+  const inkFaint = themeColorWithAlpha('--ink-faint')
   const dotMat = makeSurfaceMaterial(THREE, {
     texture: dotTex,
-    color: new THREE.Color(themeColor('--ink-faint')),
+    color: new THREE.Color(inkFaint.color),
     size: isMobile ? 0.024 : 0.018,
-    opacity: 0.85,
+    opacity: 0.85 * inkFaint.alpha,
     hoverUniforms,
   })
   const dotCloud = new THREE.Points(dotGeo, dotMat)
@@ -274,9 +276,9 @@ async function start() {
   const ambientMat = new THREE.PointsMaterial({
     size: isMobile ? 0.024 : 0.019,
     map: dotTex,
-    color: new THREE.Color(themeColor('--ink-faint')),
+    color: new THREE.Color(inkFaint.color),
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.5 * inkFaint.alpha,
     depthWrite: false,
     sizeAttenuation: true,
     blending: THREE.AdditiveBlending,
@@ -403,9 +405,9 @@ async function start() {
      renderOrder МЕНЬШЕ dotCloud: сетка рисуется раньше суши, поэтому
      видна в океане и перекрыта континентами, а не режет их поверх. */
   const gridMat = new THREE.LineBasicMaterial({
-    color: new THREE.Color(themeColor('--ink-faint')),
+    color: new THREE.Color(inkFaint.color),
     transparent: true,
-    opacity: 0.16,
+    opacity: 0.16 * inkFaint.alpha,
     depthWrite: false,
     depthTest: false,
   })
@@ -466,14 +468,18 @@ async function start() {
      поэтому ловим атрибут MutationObserver'ом: иначе шар держал бы
      старую тему до первого движения колеса. */
   const applyTheme = () => {
-    dotMat.color.set(themeColor('--ink-faint'))
+    const nextInkFaint = themeColorWithAlpha('--ink-faint')
+    dotMat.color.set(nextInkFaint.color)
+    dotMat.opacity = 0.85 * nextInkFaint.alpha
     markerMat.color.set(themeColor('--globe-accent'))
     borderMat.color.set(themeColor('--globe-accent'))
     glowMat.uniforms.glowColor.value.set(themeColor('--globe-accent'))
     atmoMat.color.set(themeColor('--globe-accent'))
     haloMat.color.set(themeColor('--globe-accent'))
-    ambientMat.color.set(themeColor('--ink-faint'))
-    gridMat.color.set(themeColor('--ink-faint'))
+    ambientMat.color.set(nextInkFaint.color)
+    ambientMat.opacity = 0.5 * nextInkFaint.alpha
+    gridMat.color.set(nextInkFaint.color)
+    gridMat.opacity = 0.16 * nextInkFaint.alpha
     ambientUniforms.uAccent.value.set(themeColor('--globe-accent'))
     schedule()
   }

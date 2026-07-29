@@ -17,6 +17,22 @@ export const themeColor = (name) => {
   return rootStyle.getPropertyValue(name).trim()
 }
 
+/* THREE.Color хранит только RGB. CSS-токены могут содержать alpha в rgba(),
+   поэтому отделяем его до передачи цвета в материал и применяем через
+   material.opacity. Так alpha не теряется и Three.js не выводит warning. */
+export const themeColorWithAlpha = (name) => {
+  const value = themeColor(name)
+  const match = value.match(/^rgba\(\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\s*\)$/i)
+
+  if (!match) return { color: value, alpha: 1 }
+
+  const [, red, green, blue, alpha] = match
+  return {
+    color: `rgb(${red.trim()}, ${green.trim()}, ${blue.trim()})`,
+    alpha: Number.parseFloat(alpha),
+  }
+}
+
 /* Точки на дальней стороне сферы (нормаль смотрит от камеры) по
    умолчанию всё равно растеризуются — PointsMaterial не умеет
    backface-culling для спрайтов (это не полигоны, культить нечего на

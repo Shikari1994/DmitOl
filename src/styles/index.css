@@ -13,6 +13,7 @@
    ════════════════════════════════════════════════ */
 
 /* ── Фундамент ── */
+@import './fonts.css';         /* локальные Inter и JetBrains Mono */
 @import './tokens.css';        /* :root — токены дизайн-системы + стекло */
 @import './themes.css';        /* [data-theme] — темы секций */
 @import './scheme-light.css';  /* html[data-scheme="light"] — светлая схема */

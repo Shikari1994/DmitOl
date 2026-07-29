@@ -41,6 +41,10 @@ nav.nav[data-theme] .nav-burger span { background: var(--ink); }
 .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; padding-left: var(--gut); }
 .nav-logo-img { height: 34px; width: auto; }
 .nav-logo-img--dark { height: 23px; }
+/* У цветного WebP 5.5px прозрачного поля с каждой стороны при высоте 34px.
+   Компенсируем его в flex-раскладке, чтобы видимый знак и подпись имели
+   те же координаты и зазор, что у тёмного PNG. */
+.nav-logo-img--light { margin-inline: -5.5px; }
 .nav-logo-img--light { display: none; }
 html[data-scheme="light"] .nav-logo-img--dark { display: none; }
 html[data-scheme="light"] .nav-logo-img--light { display: block; }
@@ -162,4 +166,3 @@ html[data-scheme="light"] .theme-toggle-icon--moon { display: block; }
 .nav-mobile li { display: flex; }
 .nav-mobile a { color: var(--text); text-decoration: none; font-size: var(--fs-3); font-weight: 600; letter-spacing: 0.04em; opacity: 0.85; transition: opacity 0.2s; padding: var(--s-1) var(--s-3); }
 .nav-mobile a:hover { opacity: 1; }
-
