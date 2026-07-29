@@ -29,11 +29,13 @@ function init(wrap) {
   const stage = wrap.querySelector('[data-atlas-stage]')
   const nightEl = wrap.querySelector('.atlas-night')
   const geoWords = [...wrap.querySelectorAll('[data-geo-word]')]
+  const facts = [...wrap.querySelectorAll('[data-atlas-fact]')]
   const deck = wrap.querySelector('.atlas-deck')
   const items = [...wrap.querySelectorAll('[data-atlas-item]')]
   const copyEl = wrap.querySelector('.atlas-copy')
   const geoEl = wrap.querySelector('[data-atlas-geo]')
   const n = items.length
+  const factsN = facts.length
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const conn = navigator.connection
@@ -128,6 +130,19 @@ function init(wrap) {
     const wn = geoWords.length
     geoWords.forEach((w, i) => {
       w.style.setProperty('--w-fill', clamp01(fill * wn - i).toFixed(3))
+    })
+
+    /* Факты слева — не отдельный таймлайн: их смена идёт по тому же
+       прогрессу, что и выход правой колонки. Небольшое перекрытие делает
+       переход читабельным и при прокрутке в любую сторону. */
+    const FACTS_IN = 0.06
+    const factStep = (LIST_END - FACTS_IN) / factsN
+    facts.forEach((fact, i) => {
+      const inAt = FACTS_IN + i * factStep
+      const outAt = FACTS_IN + (i + 1) * factStep
+      const entering = i === 0 ? 1 : smooth(span(p, inAt, inAt + 0.08))
+      const leaving = i === factsN - 1 ? 1 : 1 - smooth(span(p, outAt - 0.08, outAt))
+      fact.style.setProperty('--fact', Math.min(entering, leaving).toFixed(3))
     })
 
     // заголовок перекрашивается в светлый, когда синевы стало достаточно

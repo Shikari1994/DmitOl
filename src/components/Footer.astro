@@ -1,55 +1,18 @@
 ---
-/* Структура и текст подвала Dmit (контакты → нижний бар), копия 1:1.
-   Жёсткая чертёжная рамка и corner-marks сознательно не перенесены —
-   только тонкие разделительные линии var(--line). Блок «Услуги» живёт
-   не здесь, а в перечне сцены «О компании» (About.astro). */
 ---
 
-<footer>
-  <div id="contact" class="footer-row">
-    <div class="footer-cell footer-cell-a">
-      <span class="footer-tag mono">связь</span>
-      <h2 class="footer-contact-title">Начать проект</h2>
-      {/* TODO: подключить реальную отправку формы */}
-      <form class="footer-form mono" onsubmit="event.preventDefault()">
-        <label>
-          <span>01 // Ваше имя</span>
-          <input type="text" placeholder="Иван Иванов" />
-        </label>
-        <label>
-          <span>02 // Контактный телефон</span>
-          <input type="tel" placeholder="+7 (999) 000-00-00" />
-        </label>
-        <label>
-          <span>03 // Суть задачи</span>
-          <input type="text" placeholder="Описание технической поддержки" />
-        </label>
-        <button type="submit" class="btn btn-ghost footer-form-submit">
-          <span class="btn-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          Отправить запрос
-        </button>
-      </form>
-    </div>
-    <div class="footer-cell footer-cell-b footer-coords">
-      <div class="footer-coord-row">
-        <span class="footer-tag mono">координаты</span>
-        <div class="footer-coord-main">
-          <a href="tel:+78000000000">+7 (800) 000-00-00</a>
-          <a href="mailto:info@telemetrylab.ru">info@telemetrylab.ru</a>
-        </div>
+<footer id="contact">
+  <div class="footer-row">
+    <section class="footer-cell footer-cell-contacts" aria-label="Телефон и почта">
+      <span class="footer-tag mono">наши_контакты</span>
+      <div class="footer-contact-list">
+      <a href="tel:+79031098895">+7 (903) 109-88-95</a>
+      <a href="mailto:info@geo-tn.com">info@geo-tn.com</a>
       </div>
-      <div class="footer-coord-row">
-        <span class="footer-tag mono">адрес_офиса</span>
-        <div class="footer-coord-main footer-coord-text">г. Москва, ул. Нефтяников, 1</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bar">
-    <div class="footer-bar-cell">
-      <span>© 2026 ООО «ГЕОТЕХНАВИГАЦИЯ». Все права защищены.</span>
-      <span class="footer-muted">ПО в реестре отечественного ПО Минпромторга РФ</span>
-    </div>
-    <div class="footer-bar-cell">Центральный офис // г. Москва, ул. Нефтяников, 1</div>
+    </section>
+    <address class="footer-cell footer-cell-address">
+      <span class="footer-tag mono">адрес_офиса</span>
+      <span>123007, г. Москва, 5-я Магистральная, д. 10а, офис 15</span>
+    </address>
   </div>
 </footer>

@@ -21,7 +21,7 @@
    GEO_END / NIGHT_FULL в JS: финал сцены должен приходиться на
    последние ~10% этой длины, иначе в конце останется мёртвый скролл
    без единого визуального изменения. */
-.atlas { position: relative; height: 190svh; }
+.atlas { position: relative; height: 210svh; }
 .atlas-stage {
   /* Верхняя кромка обеих колонок — одна на сцену: слева от неё начинается
      рубрика раздела, справа — стеклянная панель услуг (её точный верх
@@ -217,8 +217,28 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
   clip-path: inset(0 calc((1 - var(--w-fill, 0)) * 100%) 0 0);
 }
 .atlas-head .eyebrow,
-.atlas-head .lead { transition: color 0.5s var(--ease); }
-.atlas-head .lead { margin-top: clamp(14px, 1.6vw, 22px); max-width: 30ch; font-size: var(--fs-2); }
+.atlas-fact { transition: color 0.5s var(--ease); }
+.atlas-facts {
+  position: relative;
+  min-height: clamp(9.5rem, 15vh, 12.5rem);
+  margin-top: clamp(16px, 2vw, 26px);
+}
+.atlas-fact {
+  position: absolute; inset: 0 auto auto 0;
+  width: 100%; margin: 0;
+  max-width: 35ch;
+  font-size: var(--fs-2); line-height: 1.55;
+  color: var(--ink-dim); text-wrap: pretty;
+  opacity: var(--fact, 1);
+  transform: translateY(calc((1 - var(--fact, 1)) * 10px));
+  will-change: transform, opacity;
+}
+.atlas-fact strong {
+  display: block;
+  margin-bottom: 0.35em;
+  color: var(--ink);
+  font-weight: 600;
+}
 .atlas-head .pill {
   position: relative; display: inline-flex; margin-top: clamp(18px, 2.2vw, 28px);
   border-radius: 0;
@@ -242,7 +262,8 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
 .atlas-stage.is-night .atlas-head .eyebrow { color: rgba(238, 242, 247, 0.66); }
 .atlas-stage.is-night .atlas-head .ey-no { color: #4db4e8; }
 .atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(238, 242, 247, 0.46); }
-.atlas-stage.is-night .atlas-head .lead { color: rgba(238, 242, 247, 0.72); }
+.atlas-stage.is-night .atlas-fact { color: rgba(238, 242, 247, 0.76); }
+.atlas-stage.is-night .atlas-fact strong { color: #eef2f7; }
 .atlas-stage.is-night .atlas-head .pill { color: #eef2f7; border-color: rgba(238, 242, 247, 0.28); }
 .atlas-stage.is-night .atlas-deck-kicker { color: #eef2f7; }
 
@@ -254,7 +275,8 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-geo-fill { color: #14171c
 html[data-scheme="light"] .atlas-stage.is-night .atlas-head .eyebrow { color: rgba(20, 23, 28, 0.72); }
 html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no { color: #0369a1; }
 html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(20, 23, 28, 0.50); }
-html[data-scheme="light"] .atlas-stage.is-night .atlas-head .lead { color: rgba(20, 23, 28, 0.78); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-fact { color: rgba(20, 23, 28, 0.78); }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-fact strong { color: #14171c; }
 html[data-scheme="light"] .atlas-stage.is-night .atlas-head .pill { color: #14171c; border-color: rgba(20, 23, 28, 0.32); }
 html[data-scheme="light"] .atlas-stage.is-night .atlas-deck-kicker { color: #14171c; }
 
@@ -417,6 +439,17 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
    прочитанной. */
 .atlas.is-static .atlas-geo { color: var(--ink); }
 .atlas.is-static .atlas-geo-fill { display: none; }
+.atlas.is-static .atlas-facts {
+  min-height: 0;
+  display: grid;
+  gap: clamp(16px, 2.5vw, 24px);
+}
+.atlas.is-static .atlas-fact {
+  position: static;
+  max-width: 65ch;
+  opacity: 1;
+  transform: none;
+}
 /* Колонка в потоке: плашки идут стопкой с постоянной отбивкой и все
    показаны на месте — вести выезд скроллом в этом режиме нечем. */
 .atlas.is-static .atlas-deck {
@@ -451,8 +484,9 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
      услуг больше нигде не повторяется. --deck-top здесь не нужен:
      столбцы стоят друг под другом, а не рядом. */
   .atlas-copy { right: var(--gut); }
-  .atlas:not(.is-static) .atlas-head .lead,
   .atlas:not(.is-static) .atlas-head .pill { display: none; }
+  .atlas-facts { min-height: clamp(8rem, 16vh, 10rem); }
+  .atlas-fact { max-width: 52ch; font-size: var(--fs-1); line-height: 1.48; }
   .atlas-deck {
     top: auto; bottom: clamp(20px, 4vh, 44px);
     left: var(--gut); right: var(--gut); width: auto;
