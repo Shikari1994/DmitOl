@@ -84,7 +84,7 @@ html[data-scheme="light"] .atlas-night {
    отдельными media-правилами внизу файла. */
 .atlas-pins {
   --pin-row:  20px;   /* высота строки подписи — она же высота её бокса */
-  --pin-lead: 58px;   /* длина линии от точки города до подписи */
+  --pin-lead: 32px;   /* локальная выноска: подпись остаётся у своего города */
   --pin-tick: 9px;    /* горизонтальный хвост линии под названием */
   --pin-gap:  8px;    /* воздух между хвостом и первой буквой */
   position: absolute; inset: 0; z-index: 2;
@@ -105,7 +105,7 @@ html[data-scheme="light"] .atlas-night {
   /* Линия тоже спорит с фоном — она идёт ровно по полю точек. Держим её
      заметно ярче половины, но всё же тише самой подписи: ведёт название,
      а не спорит с ним. */
-  stroke-opacity: 0.75;
+  stroke-opacity: 0.55;
   /* Страховка на случай, если viewBox разойдётся с пиксельным размером
      (кадр между resize и первым update): толщина линии останется 1px. */
   vector-effect: non-scaling-stroke;
@@ -436,7 +436,7 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
    меньше, а имена вроде «Санкт-Петербурга» короче не становятся —
    ужимаем выноску, чтобы раскладке было куда её положить. */
 @media (max-width: 1280px) {
-  .atlas-pins { --pin-row: 18px; --pin-lead: 42px; --pin-tick: 8px; --pin-gap: 6px; }
+  .atlas-pins { --pin-row: 18px; --pin-lead: 28px; --pin-tick: 8px; --pin-gap: 6px; }
   .atlas-pin-name { letter-spacing: 0.04em; }
 }
 
@@ -478,4 +478,3 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
 @media (max-width: 900px) {
   #about { padding: clamp(72px, 9vw, 110px) 0 0; }
 }
-

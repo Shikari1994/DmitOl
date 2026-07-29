@@ -45,12 +45,14 @@ const smoothstep = (a, b, v) => {
    есть на nudge из data.js), потом всё дальше поочерёдно вверх и вниз.
    Шаги в пикселях: строка одна, доли её высоты не хватило бы, чтобы
    выбраться из-под соседа. */
-const DY_STEPS = [0, -26, 26, -52, 52, -84, 84, -120, 120]
+// Подпись остаётся в локальной зоне города. Дальние ±84/±120 px превращали
+// карту в легенду и заставляли диагонали пересекать весь глобус.
+const DY_STEPS = [0, -24, 24, -48, 48]
 
 /* Длина линии — базовая и удлинённая. Второй вариант вытягивает выноску
    дальше от шара, когда рядом занято: это дешевле по читаемости, чем
    уехать вертикально на сотню пикселей от своей точки. */
-const LEAD_STEPS = [1, 1.65]
+const LEAD_STEPS = [1, 1.35]
 
 // поля: от кромки кадра и запас вокруг чужих прямоугольников
 const EDGE = 12
@@ -62,6 +64,26 @@ const DOT_R = 7
 
 const overlaps = (a, b) =>
   a.x0 < b.x1 + CLEAR && a.x1 > b.x0 - CLEAR && a.y0 < b.y1 + CLEAR && a.y1 > b.y0 - CLEAR
+
+const pointInBox = (x, y, box) => x >= box.x0 - CLEAR && x <= box.x1 + CLEAR && y >= box.y0 - CLEAR && y <= box.y1 + CLEAR
+
+const orient = (ax, ay, bx, by, cx, cy) => (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+
+const segmentsIntersect = (ax, ay, bx, by, cx, cy, dx, dy) => {
+  const abC = orient(ax, ay, bx, by, cx, cy)
+  const abD = orient(ax, ay, bx, by, dx, dy)
+  const cdA = orient(cx, cy, dx, dy, ax, ay)
+  const cdB = orient(cx, cy, dx, dy, bx, by)
+  return abC * abD < 0 && cdA * cdB < 0
+}
+
+const segmentHitsBox = (ax, ay, bx, by, box) => {
+  if (pointInBox(ax, ay, box) || pointInBox(bx, by, box)) return true
+  return segmentsIntersect(ax, ay, bx, by, box.x0 - CLEAR, box.y0 - CLEAR, box.x1 + CLEAR, box.y0 - CLEAR)
+    || segmentsIntersect(ax, ay, bx, by, box.x1 + CLEAR, box.y0 - CLEAR, box.x1 + CLEAR, box.y1 + CLEAR)
+    || segmentsIntersect(ax, ay, bx, by, box.x1 + CLEAR, box.y1 + CLEAR, box.x0 - CLEAR, box.y1 + CLEAR)
+    || segmentsIntersect(ax, ay, bx, by, box.x0 - CLEAR, box.y1 + CLEAR, box.x0 - CLEAR, box.y0 - CLEAR)
+}
 
 /* Радиус, на котором берётся точка для выноски: чуть выше маркеров
    города (1.012 в globeCanvas.js), чтобы линия начиналась от их кромки,
@@ -163,12 +185,17 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
   const dotBoxes = []
   const placed = []
   const takeBox = (pool, used) => pool[used] || (pool[used] = { x0: 0, y0: 0, x1: 0, y1: 0, owner: -1 })
+  const leaders = []
+  const takeLeader = (used) => leaders[used] || (leaders[used] = {
+    ax: 0, ay: 0, bx: 0, by: 0, cx: 0, cy: 0, dx: 0, dy: 0, owner: -1,
+  })
   let dotCount = 0
   let placedCount = 0
 
   // один общий черновик места: кандидатов десятки на город, и каждому
   // свой объект — это мусор на ровном месте
   const draft = { railX: 0, cy: 0, x0: 0, y0: 0, x1: 0, y1: 0 }
+  const draftLeader = { ax: 0, ay: 0, bx: 0, by: 0, cx: 0, cy: 0, dx: 0, dy: 0 }
 
   function boxFor(item, side, leadMul, dy) {
     // nudge задан в строках — переводим в пиксели с той же добавкой
@@ -182,13 +209,37 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
     return draft
   }
 
-  const fits = (box, index) => {
+  function leaderFor(item, side) {
+    draftLeader.ax = item.x
+    draftLeader.ay = item.y
+    draftLeader.bx = draft.railX
+    draftLeader.by = draft.cy
+    draftLeader.cx = draft.railX
+    draftLeader.cy = draft.cy
+    draftLeader.dx = draft.railX + side * tick
+    draftLeader.dy = draft.cy
+    return draftLeader
+  }
+
+  const leaderHits = (leader, box) =>
+    segmentHitsBox(leader.ax, leader.ay, leader.bx, leader.by, box)
+    || segmentHitsBox(leader.cx, leader.cy, leader.dx, leader.dy, box)
+
+  const leadersCross = (a, b) =>
+    segmentsIntersect(a.ax, a.ay, a.bx, a.by, b.ax, b.ay, b.bx, b.by)
+    || segmentsIntersect(a.ax, a.ay, a.bx, a.by, b.cx, b.cy, b.dx, b.dy)
+    || segmentsIntersect(a.cx, a.cy, a.dx, a.dy, b.ax, b.ay, b.bx, b.by)
+    || segmentsIntersect(a.cx, a.cy, a.dx, a.dy, b.cx, b.cy, b.dx, b.dy)
+
+  const fits = (box, leader, index) => {
     if (box.x0 < EDGE || box.x1 > W - EDGE || box.y0 < EDGE || box.y1 > H - EDGE) return false
-    for (const b of blocks) if (overlaps(box, b)) return false
+    for (const b of blocks) if (overlaps(box, b) || leaderHits(leader, b)) return false
     for (let i = 0; i < dotCount; i++) {
       if (dotBoxes[i].owner !== index && overlaps(box, dotBoxes[i])) return false
     }
-    for (let i = 0; i < placedCount; i++) if (overlaps(box, placed[i])) return false
+    for (let i = 0; i < placedCount; i++) {
+      if (overlaps(box, placed[i]) || leaderHits(leaders[i], box) || leadersCross(leader, leaders[i])) return false
+    }
     return true
   }
 
@@ -238,11 +289,16 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
       if (alpha > 0) {
         // прошлый выбор пробуем первым — иначе подпись дёргается между
         // двумя одинаково годными местами, пока шар доворачивается
-        if (item.last && fits(boxFor(item, item.last.side, item.last.mul, item.last.dy), index)) {
+        if (item.last
+          && fits(
+            boxFor(item, item.last.side, item.last.mul, item.last.dy),
+            leaderFor(item, item.last.side),
+            index,
+          )) {
           spot = item.last
         } else {
           for (const t of item.tries) {
-            if (!fits(boxFor(item, t.side, t.mul, t.dy), index)) continue
+            if (!fits(boxFor(item, t.side, t.mul, t.dy), leaderFor(item, t.side), index)) continue
             spot = t
             break
           }
@@ -266,6 +322,13 @@ export function createCityLabels(THREE, { host, camera, globe, obstacles = [] })
       const { railX, cy } = draft
       const keep = takeBox(placed, placedCount++)
       keep.x0 = draft.x0; keep.y0 = draft.y0; keep.x1 = draft.x1; keep.y1 = draft.y1
+      keep.owner = index
+      const leader = takeLeader(placedCount - 1)
+      leader.ax = draftLeader.ax; leader.ay = draftLeader.ay
+      leader.bx = draftLeader.bx; leader.by = draftLeader.by
+      leader.cx = draftLeader.cx; leader.cy = draftLeader.cy
+      leader.dx = draftLeader.dx; leader.dy = draftLeader.dy
+      leader.owner = index
 
       /* Линия и засечка — одной ломаной: наклонный отрезок от точки к
          месту подписи и короткий горизонтальный хвост под ней. Хвост
