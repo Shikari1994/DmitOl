@@ -183,7 +183,7 @@ html[data-scheme="light"] .prod-head-row { background-color: rgba(255, 255, 255,
 html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14); }
 .rig-row:hover, .rig-row:focus-within {
   border-color: var(--brand);
-  background: var(--bg-raised);
+  background: var(--panel);
   transform: translateY(-4px);
   box-shadow: 0 0 25px rgba(0, 144, 223, 0.15);
 }
@@ -226,7 +226,7 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
 /* min-height резервирует 2 строки, даже если описание короче: без
    резерва короткий текст даёт колонку ниже, а с ней и всю плашку ниже
    соседних на несколько пикселей. */
-.rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; min-height: 3.2em; color: var(--text-dim); max-width: 62ch; }
+.rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; min-height: 3.2em; color: var(--ink-dim); max-width: 62ch; }
 
 /* Кнопка-«загрузка»: наведение заливает её слева направо рублеными
    шагами (steps(), не ease) — как прогресс-бар терминала, а не css-твин.
@@ -663,3 +663,12 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
   }
 }
 
+@media (max-width: 700px) {
+  .prod-head .h-title { font-size: clamp(1.55rem, 6.3vw, 2rem); }
+  .prod-head-row { grid-template-columns: 1fr; }
+  .prod-head-lead {
+    padding-left: clamp(24px, 3vw, 40px);
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}

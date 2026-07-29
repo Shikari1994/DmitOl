@@ -171,19 +171,5 @@
   --ease:     cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* ─── LEGACY-АЛИАСЫ ─── имена старых компонентов → новые токены.
-     Позволяют переключить палитру без правки каждого компонента;
-     по мере рефакторинга секций алиасы будут вытесняться (2026-07-28
-     так ушёл --bg-glass — на него не ссылалось ни одно правило). */
-  --bg-raised:     var(--panel);
-  --bg-raised-2:   var(--panel-2);
-  --text:          var(--ink);
-  --text-dim:      var(--ink-dim);
-  --text-faint:    var(--ink-faint);
-  --accent:        var(--brand);
-  --accent-strong: var(--brand-strong);
-  --accent-soft:   var(--brand-soft);
-  --accent-line:   var(--brand-line);
-  --ok:            var(--live);
+  
 }
-

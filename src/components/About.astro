@@ -97,7 +97,7 @@ const SERVICES = [
           {SERVICES.map((s, i) => {
             const [text, bullets] = Array.isArray(s) ? s : [s, null]
             return (
-              <li class="atlas-item" data-atlas-item={i}>
+              <li class="atlas-item glass" data-atlas-item={i}>
                 <span class="ai-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                 <span class="ai-text">
                   {text}

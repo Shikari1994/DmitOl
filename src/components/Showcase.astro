@@ -44,7 +44,7 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
 
   <div class="prod-head">
     <div class="eyebrow reveal prod-head-eyebrow"><span class="ey-no">02<span class="ey-den"> / 06</span></span>Аппаратные комплексы</div>
-    <div class="prod-head-row">
+    <div class="prod-head-row glass">
       <h2 class="h-title reveal prod-head-title">Продукция</h2>
       <div class="prod-head-lead">
         <p class="lead reveal">
@@ -61,7 +61,7 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
       {/* Кликабельна ТОЛЬКО кнопка: карточка целиком лишь подсвечивается
           на hover/focus-within, на страницу товара ведёт клик по кубу. */}
       {PRODUCTS.map((p) => (
-        <div class={`rig-row${ACCORDION_IMAGES[p.id] ? ' rig-row--accordion' : ''}${isShot(p.id) ? ' rig-row--shot' : ''}${isOverlay(p.id) ? ' rig-row--overlay' : ''}`}>
+        <div class={`rig-row glass${ACCORDION_IMAGES[p.id] ? ' rig-row--accordion' : ''}${isShot(p.id) ? ' rig-row--shot' : ''}${isOverlay(p.id) ? ' rig-row--overlay' : ''}`}>
           <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
           <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
           <span class="rig-head">

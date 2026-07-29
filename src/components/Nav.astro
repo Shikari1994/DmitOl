@@ -29,7 +29,7 @@ const LINKS = [
 const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
 ---
 
-<nav class="nav">
+<nav class="nav glass">
   <a class="nav-logo" href={asset('/')}>
     {/* В вёрстке лого 23px и 34px по высоте (nav.css), поэтому оба кадра
         режутся до двойного ретина-запаса: исходный PNG белого лого весит
@@ -75,7 +75,7 @@ const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
   </button>
 </nav>
 
-<div id="mobile-menu" class="nav-mobile" aria-hidden="true">
+<div id="mobile-menu" class="nav-mobile glass" aria-hidden="true">
   <ul>
     {MOBILE_LINKS.map(([href, label]) => (
       <li><a href={href}>{label}</a></li>

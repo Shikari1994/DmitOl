@@ -7,7 +7,7 @@ html.lenis, html.lenis body { height: auto; }
 
 body {
   font-family: var(--font-text);
-  color: var(--text);
+  color: var(--ink);
   font-size: var(--fs-body);
   /* clip, а не hidden: hidden делает body scroll-контейнером и ломает
      position:sticky у прибитого счётчика в «Фактах» */
@@ -118,7 +118,7 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top)); 
 }
 /* Мера абзаца в знаках, а не в пикселях: 54ch держится внутри
    канонических 45–75 знаков в строке на любом кегле. */
-.lead { font-size: var(--fs-3); color: var(--text-dim); line-height: 1.7; max-width: 54ch; }
+.lead { font-size: var(--fs-3); color: var(--ink-dim); line-height: 1.7; max-width: 54ch; }
 
 /* ─── КНОПКИ ─── */
 .btn {
@@ -135,15 +135,15 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top)); 
 }
 .btn:hover, .btn:focus-visible { box-shadow: inset 0 0 0 2px var(--brand); }
 .btn svg { width: 16px; height: 16px; transition: transform 0.25s var(--ease); }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-strong); }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-strong); }
 .btn-primary:hover svg { transform: translateX(3px); }
 /* press-feedback — единственная микро-реакция кнопки: тихое «вдавливание» */
 .btn-primary:active { transform: scale(0.97); }
-.btn-ghost { background: transparent; color: var(--text); border-color: var(--line); }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--line-strong); background: var(--brand-soft); }
 .btn-ghost:hover svg { transform: translateX(3px); }
-.btn-ghost:active { transform: scale(0.97); border-color: var(--line-strong); background: var(--accent-soft); }
+.btn-ghost:active { transform: scale(0.97); border-color: var(--line-strong); background: var(--brand-soft); }
 
 /* Уголки-прицелы: рамка на hover сопровождается прицелами по углам.
    Тот же паттерн повторён у .hero-tile-corners (hero.css) и
@@ -165,3 +165,9 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top)); 
   .btn, .btn-corners i { transition: none; }
 }
 
+@media (max-width: 700px) {
+  .h-title { font-size: clamp(1.75rem, 5.8vw, 2.35rem); }
+  .h-title br { display: none; }
+  .lead { font-size: var(--fs-2); line-height: 1.7; }
+  .eyebrow { margin-bottom: 22px; }
+}

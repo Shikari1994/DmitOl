@@ -473,4 +473,9 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-deck {
   .atlas-item { padding-block: 7px; }
 }
 
+#about { padding: 0; }
+
+@media (max-width: 900px) {
+  #about { padding: clamp(72px, 9vw, 110px) 0 0; }
+}
 

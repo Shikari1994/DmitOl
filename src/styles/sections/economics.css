@@ -81,7 +81,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   transition: background-color 0.3s var(--ease);
 }
 .econ-problem:first-child { border-top: 0; }
-.econ-problem:hover { background: var(--bg-raised); }
+.econ-problem:hover { background: var(--panel); }
 .econ-problem-head {
   padding: clamp(32px, 4vw, 56px) clamp(20px, 2.4vw, 32px) clamp(32px, 4vw, 56px) var(--gut);
   display: flex; flex-direction: column; justify-content: center; gap: 8px;
@@ -97,7 +97,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   border-left: 1px solid var(--line);
 }
 .econ-problem-copy {
-  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; max-width: 56ch;
+  font-size: var(--fs-2); color: var(--ink-dim); line-height: 1.7; max-width: 56ch;
 }
 
 .econ-synergy { display: grid; grid-template-columns: minmax(240px, calc(100%/3)) 1fr; }
@@ -108,7 +108,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 .econ-synergy-copy { display: flex; flex-direction: column; gap: 14px; }
 .econ-synergy-kicker { font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
 .econ-synergy-title { font-size: var(--fs-4); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--ink); }
-.econ-synergy-text { font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7; }
+.econ-synergy-text { font-size: var(--fs-2); color: var(--ink-dim); line-height: 1.7; }
 .econ-badge {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
   padding: clamp(12px, 1.6vw, 16px); border: 1px solid var(--brand-line); background: var(--brand-soft);
@@ -134,7 +134,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 .econ-algo-title { font-family: var(--font-text); font-size: var(--fs-2); font-weight: 800; color: var(--ink); }
 .econ-algo-sub { font-size: var(--fs-1); letter-spacing: 0.02em; color: var(--ink-faint); font-weight: 500; }
 .econ-algo-tag {
-  font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim);
+  font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim);
   white-space: nowrap; text-align: right;
 }
 .econ-algo-tag.is-accent { color: var(--brand); }

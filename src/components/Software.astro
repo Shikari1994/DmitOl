@@ -196,7 +196,7 @@ const LIFECYCLE = [
                 на МЕДИА: кликабелен сам ролик, а FLIP берёт прямоугольник
                 триггера — тот обязан совпадать с пропорцией видео. */}
             <div class="sw-slide-shot">
-              <div class="bento-bar">
+              <div class="bento-bar glass">
                 <span class="bento-kicker mono"><span class="bento-n">{m.n}</span> · {m.tab}</span>
                 {m.live && <span class="bento-live"><span class="bento-live-dot" />LIVE</span>}
               </div>
@@ -247,7 +247,7 @@ const LIFECYCLE = [
       </div>
       <div class="sw-life-grid">
         {LIFECYCLE.map((f) => (
-          <div class="sw-life-item reveal">
+          <div class="sw-life-item glass reveal">
             {/* Пятно света ведёт scrub по классу, см. motion/sheen.js. */}
             <span class="sw-life-sheen" aria-hidden="true"></span>
             <span class="sw-life-n mono">{f.n}</span>

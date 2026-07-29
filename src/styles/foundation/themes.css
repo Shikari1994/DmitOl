@@ -1,0 +1,18 @@
+/* Section themes are composition-owned. The user light/dark scheme is a
+   separate axis and is defined in scheme-light.css. */
+[data-theme] {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+[data-theme="black"] {
+  --surface: #141414;
+  --ink: #eef2f7;
+  --ink-dim: rgba(238,242,247,0.66);
+  --ink-faint: rgba(238,242,247,0.46);
+  --line: rgba(231,237,245,0.10);
+  --line-soft: rgba(231,237,245,0.05);
+  --line-strong: rgba(231,237,245,0.20);
+  --panel: #1c1c1c;
+  --panel-2: #242424;
+}

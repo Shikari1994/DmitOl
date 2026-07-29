@@ -99,7 +99,7 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 
 .product-text {
   margin-top: clamp(24px, 3vw, 36px);
-  font-size: var(--fs-2); line-height: 1.6; color: var(--text-dim);
+  font-size: var(--fs-2); line-height: 1.6; color: var(--ink-dim);
 }
 
 .product-specs-title {
@@ -125,7 +125,7 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 }
 .product-module-text {
   margin-top: 6px;
-  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim);
+  font-size: var(--fs-1); line-height: 1.55; color: var(--ink-dim);
 }
 
 /* Буллеты 1 в 1 с источником (GT SMART DM .docx): ● верхний уровень,
@@ -137,7 +137,7 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 }
 .product-bullets li {
   position: relative; padding-left: 1.3em;
-  font-size: var(--fs-1); line-height: 1.55; color: var(--text-dim);
+  font-size: var(--fs-1); line-height: 1.55; color: var(--ink-dim);
 }
 .product-bullets li::before {
   content: '●'; position: absolute; left: 0; top: 0.08em;
@@ -219,4 +219,8 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 @media (max-width: 900px) {
   .product-layout { grid-template-columns: 1fr; }
   .product-menu { position: static; }
+}
+
+@media (max-width: 700px) {
+  .product-title { font-size: clamp(1.75rem, 5.8vw, 2.35rem); }
 }

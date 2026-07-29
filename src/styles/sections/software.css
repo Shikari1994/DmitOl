@@ -75,7 +75,7 @@ html[data-scheme="light"] .sw-eco-video--light { display: block; }
 }
 .sw-eco-media::before {
   top: 0;
-  /* Именно var(--surface), не --bg-raised: последний — цвет приподнятой
+  /* Именно var(--surface), не --panel: последний — цвет приподнятой
      панели, а гасить надо в реальный фон секции. Разница в 1-2 шага
      серого, но на затухании к 0% видна швом. */
   background: linear-gradient(to bottom, var(--surface), transparent);
@@ -109,7 +109,7 @@ html[data-scheme="light"] .sw-eco-video--light { display: block; }
 }
 html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); }
 /* Заголовок лежит на видео сквозь почти прозрачное стекло, и синий
-   --accent на нём то тонул, то засвечивался в зависимости от кадра.
+   --brand на нём то тонул, то засвечивался в зависимости от кадра.
    Играть цветом текста бесполезно — вместо этого свой бейдж-чип с
    независимым тёмным фоном и blur: контраст стабилен, а карточка
    остаётся такой же прозрачной. */
@@ -123,7 +123,7 @@ html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); 
   font-size: var(--fs-0); letter-spacing: 0.14em; font-weight: 600;
   color: #fff;
 }
-.sw-eco-tile p { font-size: var(--fs-2); line-height: 1.55; color: var(--text-dim); }
+.sw-eco-tile p { font-size: var(--fs-2); line-height: 1.55; color: var(--ink-dim); }
 
 @media (max-width: 900px) {
   .sw-eco { height: auto; }
@@ -153,21 +153,21 @@ html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); 
   margin-right: clamp(8px, 1vw, 16px);
   background: none; border: 0; cursor: pointer;
   font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--text-dim);
+  text-transform: uppercase; color: var(--ink-dim);
   transition: color 0.25s;
 }
 .sw-tab:first-child { padding-left: 0; }
 .sw-tab::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
-  height: 2px; background: var(--accent);
+  height: 2px; background: var(--brand);
   transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease);
 }
-.sw-tab:hover { color: var(--text-dim); }
+.sw-tab:hover { color: var(--ink-dim); }
 .sw-tab.is-active { color: var(--ink); }
 .sw-tab.is-active::after { transform: scaleX(1); }
 .sw-tab-n { color: var(--live); }
 /* Мелкий mono с letter-spacing на светлом фоне читается бледнее, чем
-   --text-dim держит номинально — подписи вкладок нужны на пару шагов
+   --ink-dim держит номинально — подписи вкладок нужны на пару шагов
    темнее именно здесь. */
 html[data-scheme="light"] .sw-tab { color: rgba(20, 23, 28, 0.8); }
 .sw-tab-label { font-family: var(--font-text); letter-spacing: 0.01em; }
@@ -184,7 +184,7 @@ html[data-scheme="light"] .sw-tab { color: rgba(20, 23, 28, 0.8); }
 .sw-frame {
   position: relative; overflow: hidden;
   border: 1px solid var(--line); border-radius: 0;
-  background: var(--bg-raised);
+  background: var(--panel);
   box-shadow: 0 40px 80px -34px rgba(0,0,0,0.7);
 }
 /* Тень вокруг рамки на светлой схеме своя: чёрная 70% читалась бы там
@@ -282,9 +282,9 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
    оба подхода красили заодно вкладки и текст описания, которым
    полагается идти светлыми вместе с остальным #software. */
 .bento-bar {
-  --ink:         #eef2f7;  --text:       #eef2f7;
-  --ink-dim:     rgba(238,242,247,0.66);  --text-dim:   rgba(238,242,247,0.66);
-  --ink-faint:   rgba(238,242,247,0.46);  --text-faint: rgba(238,242,247,0.46);
+  --ink:         #eef2f7;
+  --ink-dim:     rgba(238,242,247,0.66);
+  --ink-faint:   rgba(238,242,247,0.46);
   --glass-bg:     rgba(20,20,20,0.38);
   --glass-solid:  #1e1e1e;
   --glass-line:   rgba(255,255,255,0.14);
@@ -302,15 +302,15 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
 }
 .bento-kicker {
   margin-left: 12px; font-size: var(--fs-0); letter-spacing: 0.16em;
-  color: var(--text-faint); text-transform: uppercase;
+  color: var(--ink-faint); text-transform: uppercase;
   text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
 .bento-live {
   margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
   font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.16em;
-  color: var(--ok); text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  color: var(--live); text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
-.bento-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.bento-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); }
 
 /* подпись — колонка рядом со снимком, не подвал под ним. Плоская,
    без собственного фона/рамки: обрамление уже даёт .sw-frame вокруг
@@ -331,7 +331,7 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
   font-size: var(--fs-3); margin-bottom: 0;
 }
 .bento-body p {
-  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.6;
+  font-size: var(--fs-2); color: var(--ink-dim); line-height: 1.6;
   max-width: 56ch; margin-top: var(--s-1);
 }
 .bento-body .tag-row { margin-top: 16px; }
@@ -343,7 +343,7 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
    почти во весь экран. Не кросс-фейдом: должно быть видно, ЧТО именно
    развернулось. z-index 320 — выше всех плавающих слоёв страницы. */
 .sw-slide-media { cursor: pointer; }
-.sw-slide-media:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sw-slide-media:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 
 .sw-expand {
   position: absolute; z-index: 4; right: 14px; bottom: 14px;
@@ -423,7 +423,7 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
 .sw-life-kicker {
   display: block; margin-bottom: 14px;
   font-size: var(--fs-0); letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--accent);
+  color: var(--brand);
 }
 .sw-life-title {
   font-size: clamp(1.35rem, 2.1vw, 1.9rem);
@@ -465,14 +465,14 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
 }
 .sw-life-n {
   display: block; margin-bottom: 16px;
-  font-size: var(--fs-0); letter-spacing: 0.16em; color: var(--text-faint);
+  font-size: var(--fs-0); letter-spacing: 0.16em; color: var(--ink-faint);
 }
 .sw-life-item h4 {
   font-size: var(--fs-2); font-weight: 600;
   letter-spacing: -0.01em; line-height: 1.3; margin-bottom: 12px;
 }
 .sw-life-item p {
-  font-size: var(--fs-2); color: var(--text-dim); line-height: 1.7;
+  font-size: var(--fs-2); color: var(--ink-dim); line-height: 1.7;
 }
 
 /* Три колонки текста по 40 слов на планшете дают полосу в 20 символов —
@@ -500,3 +500,35 @@ html[data-scheme="light"] .bento-shot { background: var(--surface); }
   .bento-body p { max-width: none; }
 }
 
+/* Drill Monitor signature shared by the desktop and mobile product sections. */
+#software .eyebrow .ey-no,
+#mobile .eyebrow .ey-no { color: var(--live); }
+#software .eyebrow::before,
+#mobile .eyebrow::before {
+  background: linear-gradient(90deg, rgba(70,201,138,0.34), transparent);
+}
+.bento-n,
+.sw-life-kicker,
+.sw-life-n { color: var(--live); }
+
+html[data-scheme="light"] #software .eyebrow .ey-no,
+html[data-scheme="light"] #mobile .eyebrow .ey-no,
+html[data-scheme="light"] .sw-life-kicker,
+html[data-scheme="light"] .sw-life-n,
+html[data-scheme="light"] .sw-tab-n { color: #166534; }
+html[data-scheme="light"] #software .eyebrow::before,
+html[data-scheme="light"] #mobile .eyebrow::before {
+  background: linear-gradient(90deg, rgba(21,128,61,0.18), transparent);
+}
+
+@media (max-width: 700px) {
+  .sw-actions .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+    padding: 15px 24px;
+  }
+}
+
+@media (max-width: 380px) {
+  .sw-actions .btn { padding: 14px 20px; }
+}

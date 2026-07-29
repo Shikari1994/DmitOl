@@ -56,9 +56,9 @@ html[data-scheme="light"] .nav-logo-img--light { display: block; }
    повторяет прежнюю границу авто-размещения. */
 .nav-links { grid-column: 2 / 7; display: flex; align-items: center; gap: clamp(20px, 2vw, 38px); list-style: none; }
 .nav-links li { min-width: 0; }
-.nav-links a { position: relative; color: var(--text-dim); text-decoration: none; font-size: var(--fs-1); letter-spacing: 0.04em; font-weight: 500; transition: color 0.25s; white-space: nowrap; }
-.nav-links a::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 100%; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease); }
-.nav-links a:hover { color: var(--text); }
+.nav-links a { position: relative; color: var(--ink-dim); text-decoration: none; font-size: var(--fs-1); letter-spacing: 0.04em; font-weight: 500; transition: color 0.25s; white-space: nowrap; }
+.nav-links a::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 100%; height: 1px; background: var(--brand); transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease); }
+.nav-links a:hover { color: var(--ink); }
 .nav-links a:hover::after { transform: scaleX(1); }
 /* grid-column закреплена явно: без номера авто-расстановка утащила бы
    хвост в первую свободную колонку вместо крайней правой. Span на две
@@ -133,7 +133,7 @@ html[data-scheme="light"] .theme-toggle-icon--moon { display: block; }
   align-items: center; justify-content: center;
   flex-direction: column; gap: 5px; z-index: 101;
 }
-.nav-burger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+.nav-burger span { display: block; width: 24px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
 .nav-burger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
 .nav-burger.open span:nth-child(2) { opacity: 0; }
 .nav-burger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
@@ -164,5 +164,30 @@ html[data-scheme="light"] .theme-toggle-icon--moon { display: block; }
 .nav-mobile ul { list-style: none; display: flex; flex-direction: column; align-items: center; gap: 26px; }
 /* область нажатия по всей ширине панели, а не по буквам */
 .nav-mobile li { display: flex; }
-.nav-mobile a { color: var(--text); text-decoration: none; font-size: var(--fs-3); font-weight: 600; letter-spacing: 0.04em; opacity: 0.85; transition: opacity 0.2s; padding: var(--s-1) var(--s-3); }
+.nav-mobile a { color: var(--ink); text-decoration: none; font-size: var(--fs-3); font-weight: 600; letter-spacing: 0.04em; opacity: 0.85; transition: opacity 0.2s; padding: var(--s-1) var(--s-3); }
 .nav-mobile a:hover { opacity: 1; }
+
+@media (max-width: 1200px) {
+  nav.nav,
+  nav.nav.scrolled {
+    display: flex;
+    justify-content: space-between;
+    padding-left: var(--gut);
+    padding-right: var(--gut);
+  }
+  .nav-logo { padding-left: 0; }
+  .nav-links, .nav-tail { display: none; }
+  .nav-burger { display: flex; }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav-mobile { background: var(--glass-solid); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .nav-mobile {
+    background: var(--glass-solid);
+    -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+  }
+}

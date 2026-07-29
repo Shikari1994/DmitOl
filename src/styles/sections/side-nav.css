@@ -61,9 +61,9 @@
   transform: scale(1.4);
 }
 .side-nav a.active .side-nav-tick {
-  background: var(--accent);
+  background: var(--brand);
   transform: scale(1.4);
-  box-shadow: 0 0 0 4px var(--accent-soft);
+  box-shadow: 0 0 0 4px var(--brand-soft);
 }
 
 /* подпись всплывает слева от метки — только по hover/фокусу */

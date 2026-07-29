@@ -1,41 +1,32 @@
-/* ════════════════════════════════════════════════
-   BARREL · сборка стилей GTN
-   ────────────────────────────────────────────────
-   Единственная точка входа CSS (импортирует Layout.astro).
+/* Single stylesheet entry point. Imports are grouped by ownership; responsive
+   rules live with their owning component or section. */
 
-   ПОРЯДОК @import МЕНЯТЬ НЕЛЬЗЯ: в CSS порядок объявления и есть
-   каскад, а партиалы независимы по смыслу, но не по приоритету.
-   Порядок повторяет прежний монолитный index.css один-в-один.
+/* Foundation */
+@import './foundation/fonts.css';
+@import './foundation/tokens.css';
+@import './foundation/themes.css';
+@import './foundation/scheme-light.css';
+@import './foundation/base.css';
 
-     tokens / themes / scheme-light / base / glass  — фундамент;
-     sections/*                                     — по разделу;
-     responsive / a11y / mobile-polish              — сквозные слои.
-   ════════════════════════════════════════════════ */
+/* Reusable components */
+@import './components/glass.css';
+@import './components/chips.css';
+@import './components/instrument.css';
 
-/* ── Фундамент ── */
-@import './fonts.css';         /* локальные Inter и JetBrains Mono */
-@import './tokens.css';        /* :root — токены дизайн-системы + стекло */
-@import './themes.css';        /* [data-theme] — темы секций */
-@import './scheme-light.css';  /* html[data-scheme="light"] — светлая схема */
-@import './base.css';          /* reset, типографика, контейнер, сетка, кнопки */
-@import './glass.css';         /* рецепт стекла и фолбэки */
-
-/* ── Разделы страницы (порядок = сверху вниз по макету и по каскаду) ── */
+/* Page sections, in document order */
 @import './sections/nav.css';
-@import './sections/atlas.css';        /* «О компании» · прибитая сцена глобуса */
 @import './sections/hero.css';
-@import './sections/about.css';
-@import './sections/chips.css';
-@import './sections/how.css';
-@import './sections/economics.css';
-@import './sections/footer.css';
+@import './sections/atlas.css';
 @import './sections/equipment.css';
-@import './sections/product-page.css'; /* /products/[id] · страница товара, вместо бывшей шторки ТТХ */
-@import './responsive.css';
 @import './sections/software.css';
-@import './sections/software-signature.css';
 @import './sections/mobile.css';
-@import './sections/instrument.css';   /* приборный слой: фрейм, LED, каротаж */
-@import './a11y.css';
-@import './mobile-polish.css';
+@import './sections/economics.css';
+@import './sections/how.css';
+@import './sections/footer.css';
+
+/* Secondary route */
+@import './sections/product-page.css';
+
+/* Intentional final overrides */
+@import './foundation/a11y.css';
 @import './sections/side-nav.css';
