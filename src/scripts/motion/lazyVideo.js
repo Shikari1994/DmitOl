@@ -4,7 +4,9 @@
 import { reduce } from './env.js'
 
 {
-  const vids = document.querySelectorAll('video[data-lazy-video]')
+  const desktop = window.matchMedia('(min-width: 701px)').matches
+  const vids = [...document.querySelectorAll('video[data-lazy-video]')]
+    .filter((video) => desktop || video.dataset.desktopOnly === undefined)
 
   /* Ролики весят около 9,5 МБ на двоих — заметная плата за подложку,
      которая и так идёт под полупрозрачной заливкой. На экономном

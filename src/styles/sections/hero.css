@@ -325,6 +325,7 @@ html[data-scheme="light"] .hero-brand-mark-img--light { display: block; }
 .hero-tile-note {
   position: relative; z-index: 1; width: 100%; height: 100%;
 }
+.hero-tile-note picture { display: block; width: 100%; height: 100%; }
 .hero-tile-note img, .hero-tile-phone img {
   display: block; width: 100%; height: 100%;
   object-fit: contain; object-position: bottom center;
@@ -337,6 +338,7 @@ html[data-scheme="light"] .hero-tile-phone img {
   filter: drop-shadow(0 12px 24px rgba(20, 23, 28, 0.22));
 }
 .hero-tile-phone { position: absolute; z-index: 2; left: -6%; bottom: -3%; height: 82%; }
+.hero-tile-phone picture { display: block; height: 100%; }
 .hero-tile-phone-move {
   height: 100%; width: auto;
   transform: translateX(32%);
@@ -360,6 +362,7 @@ html[data-scheme="light"] .hero-tile-phone img {
   margin-right: -12px;
   margin-bottom: 14px;
 }
+.hero-tile-rig picture { display: block; }
 .hero-tile-rig img {
   display: block; height: clamp(220px, 19cqw, 300px); width: auto; max-width: none;
   transform: scaleX(-1);
@@ -377,6 +380,5 @@ html[data-scheme="light"] .hero-tile-phone img {
 
 @media (max-width: 700px) {
   .hero-tile { --hero-tile-text-w: 68%; }
-  .hero-tile-rig img { height: clamp(70px, 20cqw, 130px); }
+  .hero-tile-art { display: none; }
 }
-

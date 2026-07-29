@@ -522,6 +522,11 @@ html[data-scheme="light"] #mobile .eyebrow::before {
 }
 
 @media (max-width: 700px) {
+  /* На телефоне вкладки остаются: они раскрывают инженерное описание.
+     Видео — десктопная деталь, поэтому удаляем его из композиции и не
+     загружаем (фильтр в motion/lazyVideo.js). */
+  .sw-slide.is-active { grid-template-columns: 1fr; }
+  .sw-slide-shot { display: none; }
   .sw-actions .btn {
     flex: 1 1 100%;
     justify-content: center;

@@ -8,6 +8,10 @@ import appDesktop from '../assets/ui/app-desktop.webp'
 import appMobileDrilling from '../assets/ui/app-mobile-drilling.webp'
 import mwdKitHero from '../assets/products/mwd-kit-hero.webp'
 
+// Декоративные сцены в двух плитках нужны только начиная с планшетной
+// раскладки. Пустой fallback не даёт браузеру скачать исходники на телефоне.
+const DESKTOP_MEDIA_FALLBACK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+
 /* ── HERO · буквальный перенос из Dmit ──
    Не адаптация под токены сайта, а прямой перевод разметки и значений:
    свои цвета, Inter black на заголовке, контурная кнопка с инверсией на
@@ -88,11 +92,17 @@ import mwdKitHero from '../assets/products/mwd-kit-hero.webp'
         <div class="hero-tile-art" aria-hidden="true">
           <div class="hero-tile-stage">
             <div class="hero-tile-note">
-              <Image src={appDesktop} alt="" loading="eager" draggable="false" />
+              <picture>
+                <source media="(min-width: 701px)" srcset={appDesktop.src} />
+                <img src={DESKTOP_MEDIA_FALLBACK} width={appDesktop.width} height={appDesktop.height} alt="" draggable="false" />
+              </picture>
             </div>
             <div class="hero-tile-phone">
               <div class="hero-tile-phone-move">
-                <Image src={appMobileDrilling} alt="" loading="eager" draggable="false" />
+                <picture>
+                  <source media="(min-width: 701px)" srcset={appMobileDrilling.src} />
+                  <img src={DESKTOP_MEDIA_FALLBACK} width={appMobileDrilling.width} height={appMobileDrilling.height} alt="" draggable="false" />
+                </picture>
               </div>
             </div>
           </div>
@@ -120,7 +130,10 @@ import mwdKitHero from '../assets/products/mwd-kit-hero.webp'
           <div class="hero-tile-rig">
             {/* Кадр рисуется высотой до 300px (.hero-tile-rig img), 600 —
                 тот же двойной запас под ретину. */}
-            <Image src={mwdKitHero} height={600} alt="" loading="eager" draggable="false" />
+            <picture>
+              <source media="(min-width: 701px)" srcset={mwdKitHero.src} />
+              <img src={DESKTOP_MEDIA_FALLBACK} width={mwdKitHero.width} height={mwdKitHero.height} alt="" draggable="false" />
+            </picture>
           </div>
         </div>
         <div class="hero-tile-row">

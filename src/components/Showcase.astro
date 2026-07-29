@@ -1,7 +1,10 @@
 ---
-import { Image } from 'astro:assets'
 import { asset } from '../lib/asset.js'
 import { PRODUCTS } from '../data/products.js'
+
+// На телефоне медиа в карточках не участвует в повествовании. Fallback —
+// прозрачный 1×1 px, поэтому оригинальные изображения не запрашиваются.
+const DESKTOP_MEDIA_FALLBACK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
 
 /* Секция «Продукция» — копия 1-в-1 с Dmit (`id="production"`), включая
    corner-marks; тексты карточек перенесены дословно, не парафразом.
@@ -77,10 +80,15 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
           {ACCORDION_IMAGES[p.id] && (
             <span class={`rig-media rig-media--accordion rig-media--${p.id}${isShot(p.id) ? ' rig-media--shot' : ''}`} aria-hidden="true">
               <span class="rig-media-inner">
-                <Image src={ACCORDION_IMAGES[p.id].image} alt="" loading="lazy" draggable="false"
-                  class={ACCORDION_IMAGES[p.id].imageLight ? 'theme-img theme-img--dark' : undefined} />
+                <picture class={ACCORDION_IMAGES[p.id].imageLight ? 'theme-img theme-img--dark' : undefined}>
+                  <source media="(min-width: 821px)" srcset={ACCORDION_IMAGES[p.id].image.src} />
+                  <img src={DESKTOP_MEDIA_FALLBACK} width={ACCORDION_IMAGES[p.id].image.width} height={ACCORDION_IMAGES[p.id].image.height} alt="" loading="lazy" draggable="false" />
+                </picture>
                 {ACCORDION_IMAGES[p.id].imageLight && (
-                  <Image src={ACCORDION_IMAGES[p.id].imageLight} alt="" loading="lazy" draggable="false" class="theme-img theme-img--light" />
+                  <picture class="theme-img theme-img--light">
+                    <source media="(min-width: 821px)" srcset={ACCORDION_IMAGES[p.id].imageLight.src} />
+                    <img src={DESKTOP_MEDIA_FALLBACK} width={ACCORDION_IMAGES[p.id].imageLight.width} height={ACCORDION_IMAGES[p.id].imageLight.height} alt="" loading="lazy" draggable="false" />
+                  </picture>
                 )}
               </span>
             </span>
