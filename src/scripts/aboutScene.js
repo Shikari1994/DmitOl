@@ -30,11 +30,9 @@ function init(wrap) {
   const nightEl = wrap.querySelector('.atlas-night')
   const geoWords = [...wrap.querySelectorAll('[data-geo-word]')]
   const services = wrap.querySelector('[data-atlas-services]')
-  const servicesKicker = wrap.querySelector('[data-atlas-services-kicker]')
+  const facts = wrap.querySelector('.atlas-details')
   const deck = wrap.querySelector('.atlas-deck')
   const items = [...wrap.querySelectorAll('[data-atlas-item]')]
-  const copyEl = wrap.querySelector('.atlas-copy')
-  const geoEl = wrap.querySelector('[data-atlas-geo]')
   const n = items.length
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -63,8 +61,6 @@ function init(wrap) {
      Первая трогается там же, где шар выходит из-за нижней кромки
      (RISE_END в globeCanvas.js — в этих координатах ≈0.29): колонка
      собирается вместе с ростом шара, а не после него. */
-  const KICKER_IN = 0.02
-  const KICKER_ON = 0.1
   const LIST_IN = 0.06
   const LIST_END = 0.86
   /* Услуги начинают въезжать только после того, как четвёртая плашка
@@ -84,36 +80,35 @@ function init(wrap) {
      добела ровно к нему, а не к концу выдержки. */
   const GEO_END = 0.882
 
-  const progress = makeProgress(wrap, stage)
-
-  /* Верх колонки фактов = верхняя кромка ПРОПИСНЫХ в заголовке слева.
-     Меряем живьём, а не константой в CSS: высота строки рубрики над ним
-     складывается из кегля, интерлиньяжа и метрик шрифта, и любое число
-     промахнётся при смене шкалы или веб-шрифта.
-
-     Одного offsetTop мало — он даёт верх СТРОЧНОГО БОКСА, а у крупного
-     заголовка над буквами остаётся полоса выносного пространства в
-     полтора десятка пикселей. У мелкой подписи она почти нулевая, и
-     подпись встаёт заметно выше первой строки заголовка. Поэтому обе
-     строки приводим к верху прописной, считая метрики шрифта через
-     canvas: у каждой гарнитуры своя высота выносных. */
-  const capOffset = (el) => {
-    const cs = getComputedStyle(el)
-    const ctx = capOffset.ctx || (capOffset.ctx = document.createElement('canvas').getContext('2d'))
-    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
-    const m = ctx.measureText('Н')
-    const box = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent
-    if (!box || !m.actualBoundingBoxAscent) return 0   // метрик нет — выравниваем по боксу
-    const lh = cs.lineHeight === 'normal' ? box : parseFloat(cs.lineHeight)
-    // базовая линия внутри строки, минус подъём прописной над ней
-    return (lh - box) / 2 + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent
+  /* ── Мобильная сцена: три акта подряд, а не два параллельно ──
+     В узкий кадр не помещается даже пара «заголовок + список»: на
+     телефоне шириной 320–375 четыре факта занимают экран целиком, и
+     прибитый сверху заголовок ложился прямо на них. Поэтому здесь по
+     кадру на акт — заголовок дочитывается и уходит, затем приходят
+     факты, затем услуги. Заливка строки сжата под первый акт (свой
+     GEO_END): дозаполниться добела она обязана до ухода, иначе приём
+     просто не будет виден. Соседние акты стыкуются с зазором, чтобы
+     уходящее и приходящее не пересекались в одном кадре. */
+  const M = {
+    geoEnd:     0.24,
+    headOut:   [0.26, 0.32],
+    listIn:     0.34,
+    listEnd:    0.60,
+    factsOut:  [0.64, 0.70],
+    servicesIn: 0.74,
+    servicesEnd: 0.92,
   }
 
+  const progress = makeProgress(wrap, stage)
+
+  // Правая колонка должна начинаться точно с первой левой плашки, а не с
+  // начала сцены. Считываем реальную геометрию: она учитывает переносы
+  // заголовка, загруженный шрифт и текущий масштаб браузера.
   const syncDeckTop = () => {
-    if (!copyEl || !geoEl || !deck) return
-    const kicker = deck.querySelector('.atlas-deck-kicker')
-    const shift = kicker ? capOffset(geoEl) - capOffset(kicker) : 0
-    stage.style.setProperty('--deck-top', `${copyEl.offsetTop + geoEl.offsetTop + shift}px`)
+    if (!facts || !deck) return
+    const stageTop = stage.getBoundingClientRect().top
+    const factsTop = facts.getBoundingClientRect().top
+    stage.style.setProperty('--deck-top', `${Math.round(factsTop - stageTop)}px`)
   }
   syncDeckTop()
   document.fonts?.ready.then(syncDeckTop)
@@ -134,11 +129,20 @@ function init(wrap) {
        внутри него слово идёт от 0 до 1 буква за буквой (clip-path, см.
        .atlas-geo-word). Строго по порядку — предыдущее уже добело,
        следующее ещё не начато. */
-    const fill = span(p, 0, GEO_END)
+    const fill = span(p, 0, isMobileScene ? M.geoEnd : GEO_END)
     const wn = geoWords.length
     geoWords.forEach((w, i) => {
       w.style.setProperty('--w-fill', clamp01(fill * wn - i).toFixed(3))
     })
+
+    /* Уход заголовка — только на мобильной сцене (на desktop он стоит всю
+       сцену, и переменная остаётся 1). Гасит его CSS: --mobile-head
+       наследуется вниз к рубрике и строке, но НЕ к плашкам фактов, хотя
+       те и лежат внутри той же .atlas-head (см. atlas.css). */
+    stage.style.setProperty(
+      '--mobile-head',
+      isMobileScene ? (1 - smooth(span(p, M.headOut[0], M.headOut[1]))).toFixed(3) : '1',
+    )
 
     // заголовок перекрашивается в светлый, когда синевы стало достаточно
     const isNight = p >= NIGHT_SWAP
@@ -146,9 +150,6 @@ function init(wrap) {
       night = isNight
       stage.classList.toggle('is-night', isNight)
     }
-
-    // Подпись фактов встаёт первой, вместе с первой карточкой.
-    if (deck) deck.style.setProperty('--in', span(p, KICKER_IN, KICKER_ON).toFixed(3))
 
     /* Факты о компании: у плашки i свой ломоть прокрутки [i/n … (i+1)/n], но едет
        она не всю его длину — множитель 1.8 укладывает выезд в первую
@@ -159,7 +160,7 @@ function init(wrap) {
     // раскрываем факты о компании, затем убираем их и только после паузы
     // выводим услуги. На desktop сохраняется параллельная сцена.
     const shown = isMobileScene
-      ? span(p, 0.06, 0.46) * n
+      ? span(p, M.listIn, M.listEnd) * n
       : span(p, LIST_IN, LIST_END) * n
     items.forEach((el, i) => {
       el.style.setProperty('--r', smooth(clamp01((shown - i) * 1.8)).toFixed(3))
@@ -168,14 +169,21 @@ function init(wrap) {
     // о компании. У них своя короткая фаза, но тот же scroll-driven easing.
     const servicesProgress = smooth(span(
       p,
-      isMobileScene ? 0.62 : SERVICES_IN,
-      isMobileScene ? 0.80 : SERVICES_END,
+      isMobileScene ? M.servicesIn : SERVICES_IN,
+      isMobileScene ? M.servicesEnd : SERVICES_END,
     )).toFixed(3)
     if (services) services.style.setProperty('--r', servicesProgress)
-    if (servicesKicker) servicesKicker.style.setProperty('--r', servicesProgress)
-    if (deck) {
-      const factsProgress = isMobileScene ? 1 - smooth(span(p, 0.50, 0.58)) : 1
-      deck.style.setProperty('--mobile-facts', factsProgress.toFixed(3))
+    if (facts) {
+      const factsProgress = isMobileScene ? 1 - smooth(span(p, M.factsOut[0], M.factsOut[1])) : 1
+      facts.style.setProperty('--mobile-facts', factsProgress.toFixed(3))
+      /* Общий прогресс всей колонки — для очень узкого телефона (<350px),
+         где плашки собраны в одну коробку и выезжают вместе: каскада по
+         плашкам там нет, вести его нечем. Ставим на обёртку, вниз к
+         списку оно наследуется; у самих плашек свой --r стоит инлайном и
+         это наследование перебивает. Множитель 1.6 укладывает выезд
+         коробки в начало фазы — по смыслу тот же приём, что и 1.8 у
+         отдельной плашки выше. */
+      facts.style.setProperty('--r', smooth(clamp01((shown / n) * 1.6)).toFixed(3))
     }
   }
 

@@ -372,6 +372,22 @@ html[data-scheme="light"] .hero-tile-phone img {
   transform: translateX(0);
 }
 
+/* ── Узкая плитка: 1024–1280px ──
+   С 1024px колонка уходит в 5/12, плитка сужается примерно вдвое, но
+   высота кит-бокса упирается в нижнюю границу clamp (220px) и дальше не
+   уменьшается — ширина при height:auto тянется влево и накрывала текст.
+   Запрос контейнерный, а не медийный: считать надо от ширины ПЛИТКИ (её
+   же меряют cqw внутри), иначе то же наложение вернётся на любой другой
+   раскладке, где плитка окажется узкой.
+
+   Заодно снимается сдвиг фейда: запас, на который он рассчитан, здесь
+   уже израсходован самой шириной колонки. */
+@container (max-width: 560px) {
+  .hero-tile--sky { --hero-tile-fade-shift: 0px; }
+  .hero-tile-rig img { height: clamp(150px, 34cqw, 220px); }
+  .hero-tile-rig { margin-bottom: 8px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-tile-art { transition: none; }
   .hero-tile-note, .hero-tile-phone-move, .hero-tile-rig { transition: none; transform: none; }

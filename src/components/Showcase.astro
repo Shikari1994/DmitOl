@@ -29,6 +29,26 @@ const ACCORDION_IMAGES = PRODUCTS.reduce((acc, p) => {
 const OVERLAY_MEDIA = new Set(['mwd', 'decoder'])
 const isOverlay = (id) => Boolean(ACCORDION_IMAGES[id]) && OVERLAY_MEDIA.has(id)
 const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
+
+/* Ширина, ниже которой кадр скрыт в equipment.css, — там же и порог
+   загрузки файла: <source> не совпадает, берётся прозрачный fallback,
+   оригинал не запрашивается. У 01/02 оверлей гаснет раньше остальных
+   (1240px против 821px), пороги должны совпадать с CSS. */
+const mediaFrom = (id) => (isOverlay(id) ? '(min-width: 1240px)' : '(min-width: 821px)')
+
+/* Подписи только для витрины на главной (2026-07-30, по просьбе).
+   У 03 здесь обобщённая рубрика и короткий тезис вместо имени ревизии
+   и полного описания: на странице товара src/pages/products/[id].astro
+   те же поля из products.js остаются как есть — их берут <title>,
+   meta description и .product-line. Поэтому подмена живёт здесь, а не
+   в данных. */
+const CARD_OVERRIDES = {
+  inclinometer: {
+    line: 'Высокоточные датчики',
+    text: 'Высокая виброустойчивость, энергоэффективность и мгновенная обработка данных в скважине.',
+  },
+}
+const CARDS = PRODUCTS.map((p) => ({ ...p, ...CARD_OVERRIDES[p.id] }))
 ---
 
 <section id="products" data-theme="black">
@@ -63,7 +83,7 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
     <div class="rig-list reveal">
       {/* Кликабельна ТОЛЬКО кнопка: карточка целиком лишь подсвечивается
           на hover/focus-within, на страницу товара ведёт клик по кубу. */}
-      {PRODUCTS.map((p) => (
+      {CARDS.map((p) => (
         <div class={`rig-row glass${ACCORDION_IMAGES[p.id] ? ' rig-row--accordion' : ''}${isShot(p.id) ? ' rig-row--shot' : ''}${isOverlay(p.id) ? ' rig-row--overlay' : ''}`}>
           <span class="rig-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
           <span class="rig-num mono" aria-hidden="true">{p.n} /</span>
@@ -81,12 +101,12 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
             <span class={`rig-media rig-media--accordion rig-media--${p.id}${isShot(p.id) ? ' rig-media--shot' : ''}`} aria-hidden="true">
               <span class="rig-media-inner">
                 <picture class={ACCORDION_IMAGES[p.id].imageLight ? 'theme-img theme-img--dark' : undefined}>
-                  <source media="(min-width: 821px)" srcset={ACCORDION_IMAGES[p.id].image.src} />
+                  <source media={mediaFrom(p.id)} srcset={ACCORDION_IMAGES[p.id].image.src} />
                   <img src={DESKTOP_MEDIA_FALLBACK} width={ACCORDION_IMAGES[p.id].image.width} height={ACCORDION_IMAGES[p.id].image.height} alt="" loading="lazy" draggable="false" />
                 </picture>
                 {ACCORDION_IMAGES[p.id].imageLight && (
                   <picture class="theme-img theme-img--light">
-                    <source media="(min-width: 821px)" srcset={ACCORDION_IMAGES[p.id].imageLight.src} />
+                    <source media={mediaFrom(p.id)} srcset={ACCORDION_IMAGES[p.id].imageLight.src} />
                     <img src={DESKTOP_MEDIA_FALLBACK} width={ACCORDION_IMAGES[p.id].imageLight.width} height={ACCORDION_IMAGES[p.id].imageLight.height} alt="" loading="lazy" draggable="false" />
                   </picture>
                 )}

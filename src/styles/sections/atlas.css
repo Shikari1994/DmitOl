@@ -27,6 +27,28 @@
      рубрика раздела, справа — стеклянная колонка фактов (её точный верх
      доводит до строки заголовка --deck-top, см. .atlas-deck). */
   --atlas-top: clamp(56px, 11vh, 130px);
+  /* ── Одна шкала плашки на обе колонки ──
+     Плашка факта и плашка услуги — один и тот же элемент сцены, поэтому
+     размер у них общий, а не по своему контенту в каждой колонке.
+     Ширину даёт --card-w — одна на обе колонки, чтобы они не разъезжались
+     при правке; высоту — этот ряд:
+     свободная вертикаль сцены, делённая на ПЯТЬ — число плашек в
+     самой длинной колонке (услуги). Слева плашек четыре, поэтому левая
+     колонка кончается выше — но плашки в обеих одного роста.
+     ДЕРЖАТЬ В ПАРЕ с длиной SERVICES в About.astro.
+     --deck-top ставит aboutScene.js (верх правой колонки = верх левой),
+     --card-bottom — запас до нижней кромки шара: ниже него плашка
+     висела бы на пустой заливке. */
+  /* Доля вьюпорта с потолком в px: на широком экране плашку держит потолок,
+     на среднем — доля. Меньше, чем полные 40vw колонки .atlas-copy: над
+     левой стоит заголовок сцены, и во всю долю она забирала у шара
+     слишком много поля. */
+  --card-w: min(560px, calc(36vw - var(--gut)));
+  --card-gap: clamp(6px, 0.85vh, 11px);
+  --card-bottom: clamp(36px, 12dvh, 150px);
+  --card-row: calc(
+    (100dvh - var(--deck-top, var(--atlas-top)) - var(--card-bottom) - 4 * var(--card-gap)) / 5
+  );
   position: sticky; top: 0; height: 100svh; overflow: hidden;
   background: var(--surface);
   /* Не дубль, а фолбэк: 100svh для браузеров без dvh. На мобильном
@@ -186,9 +208,9 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
 .atlas-copy {
   position: absolute; z-index: 3;
   left: var(--gut); top: var(--atlas-top); bottom: 0;
-  /* Левая текстовая колонка занимает треть кадра: заголовок не спорит с
-     глобусом в центре, а плашки фактов держат правую треть. */
-  right: calc(100% * 2 / 3);
+  /* Под строкой о географии теперь стоит сама фактура компании: колонке
+     нужно чуть больше воздуха, чем одному только заголовку. */
+  right: 60%;
 }
 
 /* Заголовок сцены — строка про Россию, ответ на «зачем тут глобус».
@@ -218,39 +240,38 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
 .atlas-item { transition: color 0.5s var(--ease); }
 .atlas-services {
   --r: 1;
+  position: relative;
   display: grid;
   gap: 0;
-  padding: clamp(16px, 1.8vw, 28px);
 }
 .atlas-details {
   --in: 0;
-  position: absolute;
-  left: 0; bottom: clamp(32px, 5vh, 72px);
-  width: min(58vw, 980px);
+  /* Общая ширина плашки на обе колонки (--card-w на .atlas-stage) — плашки
+     фактов и услуг обязаны совпадать по размеру, а не только по высоте
+     ряда. Править ширину только там, в одном месте. */
+  width: var(--card-w);
+  margin-top: clamp(22px, 3vh, 36px);
 }
-/* Нижняя панель услуг зеркалит первую плашку справа: приходит из левой
-   кромки и не пересекает сцену. Без JS --r остаётся равным 1, поэтому
-   контент доступен и без анимации. */
-.atlas:not(.is-static) .atlas-services {
-  opacity: var(--r);
-  transform: translateX(calc((var(--r) - 1) * (100% + var(--gut))));
-  will-change: transform, opacity;
-}
-.atlas-services-kicker {
-  --r: 1;
-  display: block;
-  margin-bottom: clamp(12px, 1.5vh, 18px);
-  font-size: var(--fs-0); letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--ink);
-  opacity: var(--r);
-  transform: translateX(calc((var(--r) - 1) * (100% + var(--gut))));
-  will-change: transform, opacity;
-}
-.atlas:not(.is-static) .atlas-services-kicker { --r: 0; }
+/* Услуги возвращаются в правую колонку. Без JS --r остаётся равным 1,
+   поэтому весь перечень доступен и без анимации.
+
+   Сам выезд живёт на плашках (.atlas-service ниже), а не здесь: opacity,
+   transform и will-change на обёртке делают её backdrop root, и стекло
+   плашек внутри фильтрует уже её содержимое, а не ночь с шаром под ней —
+   от рецепта оставалась плоская заливка с рамкой. --r наследуется вниз
+   как обычное кастом-свойство, поэтому JS по-прежнему ставит его сюда. */
+/* Шаг, поля и кегль здесь общие с колонкой фактов (.atlas-list,
+   .atlas-item, .ai-text): две колонки стоят на одной горизонтали и
+   читаются как одна пара, поэтому своей мельче шкалы у услуг нет. */
 .atlas-services-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0;
+  /* Ряд жёсткий, а не minmax(...,auto): auto разрешал длинным пунктам
+     перерасти общий ряд, и плашки в кадре шли разного роста — колонка
+     при этом заезжала в запас под шаром. Умещает текст шкала на
+     desktop-блоке ниже (кегль и поля считаются от --card-row). */
+  grid-auto-rows: var(--card-row);
+  gap: var(--card-gap);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -259,35 +280,55 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: clamp(12px, 1.3vw, 18px);
-  align-items: baseline;
+  /* baseline равняет номер с первой строкой текста, align-content центрует
+     блок в плашке: высота ряда общая для всех, а текста в пунктах разное
+     количество (ср. .atlas-item). */
+  align-items: baseline; align-content: center;
   min-width: 0;
-  padding: clamp(8px, 1vh, 12px) 0;
+  padding: clamp(11px, 1.4vh, 18px) clamp(16px, 1.7vw, 24px);
 }
-.atlas-service:first-child { padding-top: 0; }
-.atlas-service:last-child { padding-bottom: 0; }
-.atlas-service + .atlas-service { border-top: 1px solid var(--glass-line); }
+/* Выезд — теми же величинами, что и слева (.atlas-item): прогресс общий
+   на всю колонку (--r наследуется от .atlas-services), поэтому плашки
+   идут одним движением, но каждая своим слоем — так стекло каждой
+   остаётся над сценой и берёт в бэкдроп ночь с шаром.
+   will-change здесь намеренно нет: он бы вернул ту же изоляцию бэкдропа,
+   ради снятия которой движение и переехало с обёртки.
+   Transition — только на смену рецепта под .is-night, выезд ведёт
+   скролл покадрово (ср. .atlas-item). */
+.atlas:not(.is-static) .atlas-service {
+  opacity: var(--r, 0);
+  transform: translateX(calc((1 - var(--r, 0)) * (100% + var(--gut))));
+  transition: background 0.6s var(--ease), box-shadow 0.6s var(--ease), border-color 0.6s var(--ease);
+}
 .as-no,
 .ai-no {
   font-size: var(--fs-0); letter-spacing: 0.04em;
   color: var(--brand);
 }
 .as-text {
-  font-size: clamp(0.72rem, 0.56rem + 0.55vh, 0.88rem);
+  font-size: clamp(var(--fs-0), 0.42rem + 0.85vh, var(--fs-1));
   line-height: 1.38;
   color: var(--ink-dim); text-wrap: pretty;
 }
-.atlas-head .pill {
-  position: relative; display: inline-flex; margin-top: clamp(18px, 2.2vw, 28px);
-  border-radius: 0;
-  box-shadow: inset 0 0 0 0 transparent;
-  transition: color 0.5s var(--ease), border-color 0.5s var(--ease), box-shadow 0.25s var(--ease);
+/* Перечисление внутри пункта услуг: не второй уровень нумерации, а
+   раскрытие одной строки — поэтому маркер тире, а не цифра, и цвет
+   тона плашки наследуется от .as-text (в том числе под ночью). */
+.as-bullets {
+  display: grid;
+  gap: 2px;
+  margin: clamp(5px, 0.7vh, 8px) 0 0;
+  padding: 0;
+  list-style: none;
 }
-.atlas-head .pill:hover, .atlas-head .pill:focus-visible {
-  background: transparent; color: var(--ink); border-color: transparent;
-  box-shadow: inset 0 0 0 2px var(--brand);
+.as-bullets li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.45em;
 }
-.atlas-head .pill:hover .btn-corners i, .atlas-head .pill:focus-visible .btn-corners i { opacity: 1; transform: translate(0, 0); }
-
+.as-bullets li::before {
+  content: '—';
+  color: var(--brand);
+}
 /* ── Донастройка заголовка под синюю ночь ──
    Текст светлый уже на чёрном старте (--ink чёрной темы), поэтому
    здесь не смена тона, а его усиление под сгущающуюся синеву: чуть
@@ -301,8 +342,6 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-pin-name {
 .atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(238, 242, 247, 0.46); }
 .atlas-stage.is-night :is(.as-text, .ai-text) { color: rgba(238, 242, 247, 0.76); }
 .atlas-stage.is-night .ai-text strong { color: #eef2f7; }
-.atlas-stage.is-night .atlas-head .pill { color: #eef2f7; border-color: rgba(238, 242, 247, 0.28); }
-.atlas-stage.is-night :is(.atlas-deck-kicker, .atlas-services-kicker) { color: #eef2f7; }
 
 /* Светлая схема — тот же приём усиления, но от тёмного текста.
    Дублируем явно, а не через var(--ink): правила выше жёстко прибиты
@@ -314,8 +353,6 @@ html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no { color: #036
 html[data-scheme="light"] .atlas-stage.is-night .atlas-head .ey-no .ey-den { color: rgba(20, 23, 28, 0.50); }
 html[data-scheme="light"] .atlas-stage.is-night :is(.as-text, .ai-text) { color: rgba(20, 23, 28, 0.78); }
 html[data-scheme="light"] .atlas-stage.is-night .ai-text strong { color: #14171c; }
-html[data-scheme="light"] .atlas-stage.is-night .atlas-head .pill { color: #14171c; border-color: rgba(20, 23, 28, 0.32); }
-html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-deck-kicker, .atlas-services-kicker) { color: #14171c; }
 
 /* ── Колонка фактов о компании ──
    Вертикальный ряд отдельных стеклянных плашек, по плашке на факт,
@@ -323,10 +360,9 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-deck-kicker, .atlas-s
    такой высоте оставалась недозаполненной — короткие пункты давали
    внутри неё пустые полосы.
 
-   Верх задаёт --deck-top, который меряет aboutScene.js по фактическому
-   положению заголовка. calc() — фолбэк на первый кадр и на случай, если
-   скрипт не поднялся. Ради того же расчёта рубрика ниже переведена в
-   блочный flex с числовым интерлиньяжем.
+   Верх задаёт --deck-top: aboutScene.js меряет фактическую верхнюю
+   кромку первой левой плашки. Поэтому обе колонки остаются на одной
+   горизонтали при изменении шрифта, масштаба или высоты экрана.
 
    Выезд плашек ведёт --r от aboutScene.js — тем же прогрессом, что
    поднимает шар, а не своей анимацией по классу: иначе движения
@@ -335,34 +371,42 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-deck-kicker, .atlas-s
    Тональность стекла плашки наследуют отсюда, задавать её на каждой
    незачем. */
 .atlas-deck {
-  --in: 0;
   position: absolute; z-index: 3;
   right: var(--gut);
-  top: var(--deck-top, calc(var(--atlas-top) + var(--fs-1) * 1.2 + var(--s-4)));
+  top: var(--deck-top, var(--atlas-top));
   /* Низ колонки — не низ кадра, а нижняя кромка шара: список прибит к
      низу (space-between ниже), и это значение решает, где он кончится.
      Шар в устоявшемся положении не доходит до низа кадра примерно на
      десятую часть (globeCanvas.js: holder.position.y и fit) — иначе
      последняя плашка висит ниже него, на пустой заливке. */
-  bottom: clamp(44px, 9.5vh, 108px);
-  width: min(40vw, 460px);
-  display: flex; flex-direction: column;
+  bottom: auto;
+  /* Та же --card-w, что и у колонки фактов (.atlas-details): плашки услуг
+     ровно того же размера, что плашки фактов, на любой ширине экрана. */
+  width: var(--card-w);
 }
-/* Блочный flex и числовой интерлиньяж — ради фолбэка --deck-top выше:
-   так высота строки рубрики равна ровно кеглю номера на 1.2. Вид не
-   меняется, фона и рамки у рубрики нет. */
+/* Числовой интерлиньяж рубрики удерживает её в общем вертикальном ритме
+   сцены; координату правой колонки отдельно синхронизирует JS выше. */
 .atlas-head .eyebrow { display: flex; line-height: 1.2; }
 
 /* Подписывает саму колонку, а не сцену. Проявляется раньше плашек и без
-   выезда: к приходу первой из них подпись обязана уже стоять на месте. */
-.atlas-deck-kicker {
-  display: block; margin-bottom: clamp(12px, 1.5vh, 18px);
+   выезда: к приходу первой из них подпись обязана уже стоять на месте.
+   Отсюда и множитель у --r — тот же прогресс колонки, но израсходованный
+   вдвое быстрее, и только на прозрачность.
+
+   Стоит НАД колонкой вне потока: верх правой колонки равен верху первой
+   левой плашки (--deck-top), и подпись в потоке увела бы плашки вниз с
+   этой горизонтали. Кегль и трекинг — как у рубрики слева: это парная ей
+   подпись, а не заголовок своего уровня. */
+.atlas-services-kicker {
+  position: absolute; left: 0; bottom: 100%;
+  margin-bottom: clamp(10px, 1.3vh, 16px);
   font-size: var(--fs-0); letter-spacing: 0.18em; text-transform: uppercase;
-  /* Вровень с левой кромкой плашек, а не с текстом внутри них: подпись
-     держит край колонки. */
   color: var(--ink);
-  opacity: var(--in);
+  opacity: clamp(0, calc(var(--r, 0) * 2), 1);
+  transition: color 0.5s var(--ease);
 }
+.atlas-stage.is-night .atlas-services-kicker { color: #eef2f7; }
+html[data-scheme="light"] .atlas-stage.is-night .atlas-services-kicker { color: #14171c; }
 
 /* Ночная тональность стекла — свой рецепт поверх общего.
    Общий тёмный рецепт (38% почти-чёрного) в акте I в самый раз: под
@@ -371,7 +415,7 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-deck-kicker, .atlas-s
    читается тёмным провалом, а не средой. Значения ниже нейтральные,
    никакого цветного (синего) тона в них нет: это единственное место на
    сайте, где стекло уходит от общей чёрной заливки. */
-.atlas-stage.is-night :is(.atlas-services, .atlas-deck) {
+.atlas-stage.is-night :is(.atlas-details, .atlas-deck) {
   --glass-bg:    rgba(30, 37, 47, 0.38);
   --glass-blur:  20px;
   --glass-sat:   180%;
@@ -385,7 +429,7 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-deck-kicker, .atlas-s
 /* Светлая схема: тот же общий светлый рецепт, что и на остальном сайте,
    а не тёмный ледяной. Повтор явный — чтобы .is-night не откатывал
    стекло обратно на дефолт :root. */
-html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck) {
+html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-details, .atlas-deck) {
   --glass-bg:    rgba(255, 255, 255, 0.48);
   --glass-blur:  20px;
   --glass-sat:   180%;
@@ -399,16 +443,13 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
 
 /* Левая колонка использует ту же высотную шкалу, что и плашки фактов:
    на низком desktop-экране уменьшаются кегль и воздух, на высоком —
-   возвращаются к обычным значениям. Так весь текст и кнопка остаются
-   внутри сцены, не меняя ни глобус, ни правую колонку. */
+   возвращаются к обычным значениям. Так весь текст остаётся внутри
+   сцены, не меняя ни глобус, ни правую колонку. */
 @media (min-width: 1101px) {
   /* Нижняя панель остаётся низкой строкой из пяти услуг и не закрывает
      центральную часть глобуса с подписями городов. */
   .atlas-geo {
     font-size: clamp(2rem, 4.2svh, var(--fs-7));
-  }
-  .atlas-head .pill {
-    margin-top: clamp(12px, 1.4svh, 20px);
   }
 }
 
@@ -421,10 +462,30 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
 
    ol, а не ul: порядок фактов задан по существу. Видимые номера при этом
    декоративны и от скринридера скрыты. */
+/* Класс .glass на обоих <ol> в разметке нужен только очень узкому
+   телефону (блок <350px в конце файла): там колонка становится одной
+   стеклянной коробкой. Во всех остальных раскладках стеклянные — сами
+   плашки, а список лишь сетка, поэтому рецепт здесь гасится целиком.
+   Гасить проще, чем воспроизводить: у .glass свои фолбэки на отсутствие
+   backdrop-filter и на prefers-reduced-transparency, и там, где коробка
+   включена, они обязаны работать сами. */
+@media (min-width: 350px) {
+  :is(.atlas-list, .atlas-services-list) {
+    background: none;
+    -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+    border: 0;
+    box-shadow: none;
+  }
+}
 .atlas-list {
   flex: 1 1 0; min-height: 0;
-  display: grid; grid-auto-rows: 1fr;
-  gap: clamp(6px, 0.85vh, 11px);
+  display: grid;
+  /* Ряд общий с колонкой услуг (--card-row на .atlas-stage), а не 1fr по
+     своему контенту: иначе плашки двух колонок совпадали бы только
+     случайно. И жёсткий, а не minmax(...,auto): см. .atlas-services-list. */
+  grid-auto-rows: var(--card-row);
+  gap: var(--card-gap);
   list-style: none;
 }
 /* Выезд ведёт скролл: --r (0…1) ставит aboutScene.js покадрово. Не
@@ -463,6 +524,26 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
      словом-сиротой, и рядом с полными строками текст читается рвано. */
   text-wrap: pretty;
 }
+/* ── Desktop: плашка обязана уместиться в общий ряд ──
+   Ряд здесь жёсткий (grid-auto-rows выше): две колонки читаются как одна
+   пара, и плашка, переросшая ряд, ломала бы горизонталь. Уместить в него
+   текст можно только шкалой — поэтому кегль считается ОТ ВЫСОТЫ РЯДА, а
+   не от вьюпорта: доля 0.12 подобрана по самой длинной плашке (04 в
+   услугах — строка и три подпункта, и 01/04 в фактах — подзаголовок и
+   четыре строки). Потолок --fs-1 прежний, пол --fs-0 держит читаемость
+   на низком окне. Мобильной сцены (<=1100px) это не касается: там ряд
+   идёт по контенту, и своя шкала уже есть. */
+@media (min-width: 1101px) {
+  .atlas:not(.is-static) :is(.atlas-item, .atlas-service) {
+    padding-block: clamp(7px, 0.85vh, 13px);
+  }
+  .atlas:not(.is-static) :is(.ai-text, .as-text) {
+    font-size: clamp(var(--fs-0), calc(var(--card-row) * 0.12), var(--fs-1));
+    line-height: 1.3;
+  }
+  .atlas:not(.is-static) .ai-text strong { margin-bottom: 0.38em; }
+}
+
 .ai-text strong {
   display: block;
   margin-bottom: 0.48em;
@@ -499,10 +580,12 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
    прочитанной. */
 .atlas.is-static .atlas-geo { color: var(--ink); }
 .atlas.is-static .atlas-geo-fill { display: none; }
-.atlas.is-static .atlas-services-list { grid-template-columns: 1fr; }
+/* В потоке высота сцены не задана, и общий ряд считать не от чего:
+   плашки идут по своему контенту. */
+.atlas.is-static .atlas-services-list { grid-template-columns: 1fr; grid-auto-rows: auto; }
 .atlas.is-static .atlas-service + .atlas-service {
-  margin-top: clamp(10px, 1.6vh, 16px);
-  padding-top: clamp(10px, 1.6vh, 16px);
+  margin-top: 0;
+  padding-top: clamp(11px, 1.3vh, 17px);
 }
 /* Колонка в потоке: плашки идут стопкой с постоянной отбивкой и все
    показаны на месте — вести выезд скроллом в этом режиме нечем. */
@@ -533,10 +616,10 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
      делят заголовок сверху и колонка фактов снизу, свободного поля под
      выноски не остаётся. Слой остаётся пустым — прятать нечего. */
   /* Заголовок во всю ширину, колонка фактов под ним до низа кадра. Место
-     под пять плашек берётся из левой колонки: подзаголовок и кнопка
-     «связаться» сняты — оба дублируются ниже по странице, а перечень
-     фактов больше нигде не повторяется. --deck-top здесь не нужен:
-     столбцы стоят друг под другом, а не рядом. */
+     под пять плашек берётся из левой колонки: подзаголовок снят — он
+     дублируется ниже по странице, а перечень фактов больше нигде не
+     повторяется. --deck-top здесь не нужен: столбцы стоят друг под
+     другом, а не рядом. */
   .atlas-copy { right: var(--gut); }
   .atlas-details {
     --in: 1;
@@ -547,25 +630,127 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
   /* В сжатой композиции нижняя панель остаётся в текучем потоке: каждая
      услуга занимает отдельную горизонтальную строку. */
   .atlas-services { width: min(100%, 42rem); }
-  .atlas:not(.is-static) .atlas-head .pill { display: none; }
+  /* Здесь колонка прибита к НИЗУ кадра и растёт вверх по своему контенту:
+     держать подпись вне потока не за что — над ней просто нет
+     зарезервированного места, и она ушла бы под верхнюю кромку сцены
+     (overflow: hidden). Возвращаем первой строкой самой колонки. */
+  .atlas-services-kicker {
+    position: static;
+    margin: 0 0 clamp(8px, 1.2vh, 12px);
+  }
+  /* Кадр один на заголовок и на список, и узкое место здесь всегда
+     вертикальное — поэтому и верхняя кромка, и кегль заголовка считаются
+     от ВЫСОТЫ окна, а не от ширины. На рослом телефоне величины те же,
+     что были; на низком (SE, ландшафт) заголовок ужимается ровно
+     настолько, чтобы список уместился под ним целиком. */
+  .atlas-stage {
+    --atlas-top: clamp(40px, 7svh, 130px);
+    /* ── Своя шкала плашки для сжатой сцены ──
+       Колонки здесь не стоят рядом, а сменяют друг друга в одной нижней
+       зоне кадра, поэтому общий ряд на обе (--card-row выше) не значит
+       ничего: равнять факты по услугам не с чем — в кадре они не
+       встречаются. Зато внутри каждой колонки плашки обязаны быть
+       одного роста, как и на десктопе.
+
+       --card-zone — свободная высота под колонку: кадр минус верхняя
+       кромка сцены (заголовок к приходу списков уже ушёл, см.
+       --mobile-head) минус нижний отступ самой колонки. Взят по большему
+       из двух bottom (.atlas-details / .atlas-deck) — вычесть лишнее
+       безопасно, ряд от этого только компактнее. */
+    --card-gap: clamp(5px, 0.7vh, 8px);
+    --card-bottom-m: clamp(20px, 4svh, 44px);
+    --card-zone: calc(100dvh - var(--atlas-top) - var(--card-bottom-m));
+    /* Потолок ряда: без него на планшете в портрете зона делится на
+       четыре по 300px, и плашка в три строки текста разъезжается пустым
+       полем. Здесь плашка перестаёт расти и колонка просто не добирает
+       кадр до верха — она прибита к низу, места ей хватает. */
+    --card-row-max: 132px;
+    /* Подпись «Услуги» в этой раскладке стоит в потоке колонки: её строка
+       с отбивкой — часть зоны, и услугам достаётся зона за её вычетом.
+       Держать в паре с .atlas-services-kicker ниже. */
+    --kicker-h: clamp(26px, 3.2svh, 34px);
+  }
+  .atlas-geo { font-size: clamp(1.45rem, 4.4svh, var(--fs-7)); }
+  .atlas-head .eyebrow { margin-bottom: clamp(10px, 1.8svh, 22px); }
+
+  /* ── Заголовок уходит, освобождая кадр спискам ──
+     Отступ сверху переезжает с колонки на саму заголовочную пару: колонка
+     начинается от верхней кромки сцены, и списку внутри неё достаётся
+     весь кадр, а не остаток под заголовком. На узком телефоне четыре
+     факта занимают экран целиком — этого остатка им не хватало.
+
+     Гаснут ровно рубрика и строка, а не вся .atlas-head: плашки фактов
+     лежат внутри неё же и обязаны остаться. Ведёт --mobile-head от
+     aboutScene.js — тем же приёмом, что уводит факты перед услугами. */
+  .atlas:not(.is-static) .atlas-copy { top: 0; }
+  .atlas:not(.is-static) .atlas-head { padding-top: var(--atlas-top); }
+  .atlas:not(.is-static) .atlas-head > :is(.eyebrow, .atlas-geo) {
+    opacity: var(--mobile-head, 1);
+    transform: translateY(calc((1 - var(--mobile-head, 1)) * -24px));
+  }
   .atlas-deck {
     top: auto; bottom: clamp(20px, 4vh, 44px);
     left: var(--gut); right: var(--gut); width: auto;
   }
   /* Равенство высот и здесь по самой длинной плашке (grid выше), но поля
      и шаг ужимаются: колонка делит экран с заголовком. */
-  .atlas-item { padding: clamp(8px, 1.1vh, 13px) clamp(14px, 4vw, 20px); }
+  :is(.atlas-item, .atlas-service) { padding: clamp(8px, 1.1vh, 13px) clamp(14px, 4vw, 20px); }
   /* Колонка здесь стоит на bottom без top — её высота идёт от контента, а
      не задана кадром. Растяжка списка (flex-basis: 0) в этом случае
      схлопнула бы его: возвращаем размер по контенту. */
-  .atlas-list { gap: clamp(5px, 0.7vh, 8px); flex: 0 0 auto; }
+  .atlas-list { flex: 0 0 auto; }
+  /* Ряд у каждой колонки свой, но внутри колонки один на все плашки:
+     делим свободную зону на число плашек в ЭТОЙ колонке — четыре у
+     фактов, пять у услуг. Отсюда и жёсткая величина вместо 1fr: 1fr в
+     колонке с высотой по контенту равняет ряды по самому длинному
+     пункту, и пять таких рядов давали колонку выше кадра — верхние
+     услуги срезала кромка сцены (overflow: hidden). Ряд, посчитанный от
+     кадра, вырасти за него не может по определению.
+
+     У услуг из зоны вычитается ещё и подпись «Услуги»: в этой раскладке
+     она стоит в потоке первой строкой колонки (см. .atlas-services-kicker
+     выше), а не вне его, как на десктопе. */
+  :is(.atlas-list, .atlas-services-list) { gap: var(--card-gap); }
+  .atlas-list {
+    grid-auto-rows: min(
+      var(--card-row-max),
+      calc((var(--card-zone) - 3 * var(--card-gap)) / 4)
+    );
+  }
+  .atlas-services-list {
+    grid-auto-rows: min(
+      var(--card-row-max),
+      calc((var(--card-zone) - var(--kicker-h, 34px) - 4 * var(--card-gap)) / 5)
+    );
+  }
 }
 
 /* Узкий телефон: пять пунктов и заголовок делят один экран, и текст
    пункта — единственное, что здесь можно ужать без потери смысла. */
 @media (max-width: 480px) {
-  .ai-text { font-size: var(--fs-0); line-height: 1.3; }
-  .atlas-item { padding-block: 7px; }
+  :is(.ai-text, .as-text) { font-size: var(--fs-0); line-height: 1.28; }
+  :is(.atlas-item, .atlas-service) { padding-block: 6px; }
+  /* Подзаголовок плашки — единственная строка в ней, которую можно
+     поджать, не трогая сам текст факта. */
+  .ai-text strong { margin-bottom: 0.32em; }
+}
+
+/* Низкий кадр (SE в портрете, любой телефон в ландшафте): четыре факта и
+   пять услуг делят с заголовком одну высоту, и запас здесь исчерпан.
+   Ужимаем последнее, что можно, — воздух внутри плашек и между ними. */
+@media (max-width: 1100px) and (max-height: 700px) {
+  /* Единственная раскладка, где ровные плашки не проходят по месту: в
+     ландшафте строка широкая, и услуга 04 (строка плюс три подпункта)
+     вдвое выше соседних — пять таких рядов не помещаются в зону ни при
+     каком ужатии, а ужимать здесь уже нечего. Возвращаем ряд по
+     содержимому: место в низком кадре дороже ровной сетки. */
+  :is(.atlas-list, .atlas-services-list) { grid-auto-rows: auto; }
+  :is(.atlas-item, .atlas-service) { padding-block: 5px; }
+  :is(.ai-text, .as-text) { font-size: var(--fs-0); line-height: 1.22; }
+  .ai-text strong { margin-bottom: 0.26em; }
+  .atlas:not(.is-static) .atlas-details { bottom: clamp(12px, 2.4svh, 24px); }
+  .atlas-deck { bottom: clamp(12px, 2.4svh, 24px); }
+  .atlas-services-kicker { margin-bottom: clamp(5px, 0.9svh, 9px); }
 }
 
 /* На планшете и телефоне два списка занимают одну и ту же нижнюю зону сцены, но не
@@ -593,16 +778,22 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
     width: auto; margin: 0;
   }
   .atlas:not(.is-static) .atlas-services { width: 100%; }
-  /* На телефоне каждый факт — самостоятельное матовое стекло. Базовый
-     нейтральный рецепт поверх WebGL выглядел как одна лишь рамка. В мобильном
-     Chromium backdrop-filter не всегда берёт изображение canvas в бэкдроп
-     анимируемого слоя, поэтому оптику не оставляем на усмотрение композитора:
-     блик и глубина рисуются в самой плашке. Структуру списка не меняем. */
-  .atlas:not(.is-static) .atlas-deck {
-    opacity: var(--mobile-facts, 1);
-    transform: translateY(calc((1 - var(--mobile-facts, 1)) * -28px));
-    pointer-events: none;
-    will-change: transform, opacity;
+  /* Уход колонки фактов (её место занимают услуги) живёт на самих плашках,
+     а не на обёртке — по той же причине, что и выезд услуг (.atlas-service):
+     opacity, transform и will-change на .atlas-details делают её backdrop
+     root, и стекло плашек внутри фильтрует уже её содержимое, а не ночь с
+     шаром под ней — от рецепта остаётся плоская заливка с рамкой.
+     --mobile-facts JS по-прежнему ставит на обёртку, вниз оно наследуется
+     как обычное кастом-свойство.
+     will-change здесь намеренно нет: он вернул бы ту же изоляцию бэкдропа. */
+  .atlas:not(.is-static) .atlas-details { pointer-events: none; }
+  /* Оба движения на одной плашке: выезд справа ведёт свой --r (ставится
+     покадрово на каждую), уход вверх — общий --mobile-facts. */
+  .atlas:not(.is-static) .atlas-item {
+    opacity: calc(var(--r, 0) * var(--mobile-facts, 1));
+    transform:
+      translateX(calc((1 - var(--r, 0)) * (100% + var(--gut))))
+      translateY(calc((1 - var(--mobile-facts, 1)) * -28px));
   }
 }
 
@@ -610,4 +801,65 @@ html[data-scheme="light"] .atlas-stage.is-night :is(.atlas-services, .atlas-deck
 
 @media (max-width: 1100px) {
   #about { padding: clamp(72px, 9vw, 110px) 0 0; }
+}
+
+/* ══ Очень узкий телефон (<350px): колонка — одна плашка ══
+   На 320-340 отдельная плашка под каждый пункт съедает кадр дважды:
+   рамка с полями повторяется четыре (а в услугах пять) раз, и на сам
+   текст остаётся полоска. Здесь колонка собирается в ОДНУ стеклянную
+   коробку, а пункты внутри разделяет линия: рамка одна на список, поля
+   считаются один раз, текст получает всю оставшуюся ширину. Нумерация,
+   подзаголовки и подпункты при этом на месте — меняется оправа, а не
+   содержание.
+
+   Стекло переезжает с пунктов на список: класс .glass в разметке висит
+   на обоих <ol> и гасится выше 350px (см. начало файла), а здесь
+   работает как есть — вместе со своими фолбэками.
+
+   Ряд снова по содержимому: равнять пункты внутри одной коробки не с
+   чем — они больше не плашки, и общая высота у соседних строк текста
+   ничего не значит. */
+@media (max-width: 349.98px) {
+  :is(.atlas-list, .atlas-services-list) {
+    grid-auto-rows: auto;
+    gap: 0;
+    padding: clamp(9px, 1.4vh, 13px) clamp(12px, 3.6vw, 16px);
+  }
+  /* Пункт внутри коробки: своё стекло снято, поля только вертикальные —
+     горизонтальные теперь у коробки. Соседей делит та же линия, что
+     рисует кромку стекла: отдельная её толщина здесь была бы вторым
+     контуром внутри первого. */
+  :is(.atlas-item, .atlas-service) {
+    background: none;
+    -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+    border: 0;
+    box-shadow: none;
+    padding: clamp(7px, 1vh, 10px) 0;
+  }
+  :is(.atlas-item + .atlas-item, .atlas-service + .atlas-service) {
+    border-top: 1px solid var(--glass-line);
+  }
+  /* В статичном фолбэке пункты стоят в потоке своими отбивками — внутри
+     коробки они дали бы разрывы поперёк стекла. */
+  .atlas.is-static .atlas-item + .atlas-item { margin-top: 0; }
+  .atlas.is-static .atlas-service + .atlas-service { padding-top: clamp(7px, 1vh, 10px); }
+  /* Выезд и уход ведёт коробка, пункты внутри стоят на месте: разъезжаться
+     по одному им больше нечем — они не отдельные плашки. --r и
+     --mobile-facts aboutScene.js ставит на обёртки колонок, вниз к спискам
+     они наследуются как обычные кастом-свойства. */
+  .atlas:not(.is-static) :is(.atlas-item, .atlas-service) {
+    opacity: 1;
+    transform: none;
+  }
+  .atlas:not(.is-static) .atlas-list {
+    opacity: calc(var(--r, 0) * var(--mobile-facts, 1));
+    transform:
+      translateX(calc((1 - var(--r, 0)) * (100% + var(--gut))))
+      translateY(calc((1 - var(--mobile-facts, 1)) * -28px));
+  }
+  .atlas:not(.is-static) .atlas-services-list {
+    opacity: var(--r, 0);
+    transform: translateX(calc((1 - var(--r, 0)) * (100% + var(--gut))));
+  }
 }

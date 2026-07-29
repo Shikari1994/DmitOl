@@ -382,6 +382,20 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   --rig-shot-slide: 0%;
   --rig-shot-zoom: var(--rig-shot-zoom-max);
 }
+/* Кнопка «Подробнее» у 03–07 центрируется по ПЛАШКЕ, а не по первой
+   grid-строке. Причина: спейсер кадра стоит в потоке и держит вторую
+   строку, поэтому align-self: center у .rig-cube отмеряет центр только
+   по строке с текстом — кнопка визуально задиралась вверх (у 01/02
+   кадр абсолютный, второй строки нет, и там она стояла верно).
+   Сдвиг = половина строки кадра (--rig-media-h + --rig-media-air +
+   --rig-media-gap) минус половина --rig-media-gap, который у
+   .rig-row--shot уже отнят от нижнего padding, — то есть ровно
+   --rig-media-add / 2. Именно transform, а не margin: он не зависит от
+   свободного места в треке и не может распереть строку.
+   Ниже 821px кадры скрыты и раскладка одноколоночная — правило не нужно. */
+@media (min-width: 821px) {
+  .rig-row--shot .rig-cube { transform: translateY(calc(var(--rig-media-add) / 2)); }
+}
 .rig-media--shot {
   margin-left: calc(-1 * var(--rp));
   width: calc(50% + var(--rp));
@@ -503,13 +517,21 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
    Числа зависят от высоты плашки и подобраны эмпирически. */
 .rig-row--overlay {
   --rig-ov-zoom: var(--rig-ov-rest);
+  /* Отступ кадра от правой рамки плашки. Переменная, а не число в
+     transform: тот же сдвиг вычитается из ширины .rig-text ниже, иначе
+     кадр, уезжая влево, съедал бы зазор до описания. Значение общее,
+     у 01 своё — ниже. */
+  --rig-ov-shift: 96px;
   /* Обе плашки чуть выше остальных, симметрично сверху и снизу: текст
      остаётся по центру, а кадр получает больше вертикального места. */
   padding-top: calc(var(--rpy) + var(--rig-media-add) / 2);
   padding-bottom: calc(var(--rpy) + var(--rig-media-add) / 2);
 }
 .rig-row--overlay:hover, .rig-row--overlay:focus-within { --rig-ov-zoom: var(--rig-ov-max); }
-.rig-row--overlay:has(.rig-media--mwd) { --rig-ov-rest: 0.86; --rig-ov-max: 1; }
+/* 01 отведён левее остальных: кадр комплекта не обрезается никогда
+   (зум ≤ 1), поэтому у его маски справа остаётся воздух — визуально
+   предмет казался прижатым к рамке сильнее, чем крупный план 02. */
+.rig-row--overlay:has(.rig-media--mwd) { --rig-ov-rest: 0.86; --rig-ov-max: 1; --rig-ov-shift: 160px; }
 .rig-row--overlay:has(.rig-media--decoder) { --rig-ov-rest: 2; --rig-ov-max: 2.35; }
 
 /* ── 01 (mwd / GT-NAVIGATOR) ──
@@ -527,7 +549,7 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
-  transform: translateX(-32px);
+  transform: translateX(calc(-1 * var(--rig-ov-shift)));
 }
 .rig-media--mwd .rig-media-inner {
   position: absolute; inset: 0;
@@ -567,7 +589,7 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
-  transform: translateX(-32px);
+  transform: translateX(calc(-1 * var(--rig-ov-shift)));
 }
 .rig-media--decoder .rig-media-inner {
   position: absolute; inset: 0;
@@ -608,7 +630,8 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
    у .rig-row: W = min(100vw, var(--maxw)) — фактическая ширина
    .page-shell, плашка = W − 2·gut, текст стартует на W/3 − gut − rp от
    её контент-бокса, кадр начинается за min(38%|32% плашки, 400|340px)
-   от правого края. Разность и есть доступная ширина, минус 16px зазора,
+   от правого края плюс сдвиг --rig-ov-shift, на который весь оверлей
+   отведён влево. Разность и есть доступная ширина, минус 16px зазора,
    чтобы буквы не касались границы кадра.
    max(...) снизу — предохранитель: если у будущей ширины кадра расчёт
    уйдёт в слишком узкий колодец, текст остановится на 22ch и лучше
@@ -616,12 +639,12 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
    min(62ch, ...) сверху — базовая мера строки из .rig-text: расчёт
    только СУЖАЕТ текст там, где кадр близко, и никогда не растягивает.
 
-   Верхней границы у медиазапроса нет намеренно: ширина кадра упирается
-   в потолок 400px, а колодец до него добирает 62ch только к ~1620px —
-   то есть на 1250–1620px наложение ещё есть. Формула действует на всей
-   многоколоночной раскладке и сама гаснет там, где не нужна, за счёт
-   min(62ch, ...). */
-@media (min-width: 821px) {
+   Нижняя граница совпадает с порогом показа кадра (1240px): ниже него
+   оверлея нет вовсе и сужать описание не от чего. Верхней границы нет
+   намеренно — ширина кадра упирается в потолок 400px, а колодец до него
+   добирает 62ch только к ~1620px, то есть на 1250–1620px наложение ещё
+   есть. Формула сама гаснет там, где не нужна, за счёт min(62ch, ...). */
+@media (min-width: 1240px) {
   .rig-row--accordion:has(.rig-media--decoder) .rig-text,
   .rig-row--accordion:has(.rig-media--mwd) .rig-text {
     --rig-text-air: clamp(16px, 1.6vw, 28px);
@@ -630,32 +653,46 @@ html[data-scheme="light"] .rig-media-inner .theme-img--light { display: block; }
     max-width: min(62ch, max(22ch, calc(
       min(100vw, var(--maxw)) * 2 / 3 - var(--gut)
       - min((min(100vw, var(--maxw)) - 2 * var(--gut)) * 0.38, 400px)
-      - var(--rig-text-air))));
+      - var(--rig-ov-shift) - var(--rig-text-air))));
   }
   .rig-row--accordion:has(.rig-media--mwd) .rig-text {
     max-width: min(62ch, max(22ch, calc(
       min(100vw, var(--maxw)) * 2 / 3 - var(--gut)
       - min((min(100vw, var(--maxw)) - 2 * var(--gut)) * 0.32, 340px)
-      - var(--rig-text-air))));
+      - var(--rig-ov-shift) - var(--rig-text-air))));
   }
 }
 
-/* Ниже 820px строка схлопывается в одну колонку, и оверлей 01/02 лёг бы
-   прямо поверх текста описания. На touch настоящего hover всё равно
-   нет, а кадр здесь — десктопный акцент, не часть содержания, поэтому
-   просто не показываем.
+/* Ниже 1240px кадры 01/02 убраны совсем (2026-07-30, по просьбе).
+   Оверлей во всю высоту плашки требует места справа, которого на этих
+   ширинах уже нет: колодец до текста схлопывается, описание упирается в
+   предохранитель 22ch и рассыпается на короткие строки. Плашка без
+   кадра читается лучше, чем кадр за счёт текста. Порог общий с формулой
+   .rig-text выше — там ровно та же граница 1240px.
+
+   Мелкие кадры 03–07 (.rig-media--shot) живут в своём grid-треке, месту
+   у текста не мешают и гаснут позже, на 820px, вместе со схлопыванием
+   строки в одну колонку.
 
    Правило стоит ЗДЕСЬ, а не рядом с `.rig-row { grid-template-columns:
    1fr }`: `.rig-media--mwd { display: block }` объявлен ниже по каскаду,
    и при равной специфичности побеждает более поздняя точка кода. */
-@media (max-width: 820px) {
+@media (max-width: 1239.98px) {
   .rig-media--mwd,
-  .rig-media--decoder,
-  .rig-media--shot { display: none; }
+  .rig-media--decoder { display: none; }
+  /* Без кадра плашке не нужна и добавочная высота под него. */
   .rig-row--overlay {
     padding-top: var(--rpy);
     padding-bottom: var(--rpy);
   }
+}
+
+/* Ниже 820px строка схлопывается в одну колонку, и кадр 03–07 лёг бы
+   прямо поверх текста описания. На touch настоящего hover всё равно
+   нет, а кадр здесь — десктопный акцент, не часть содержания, поэтому
+   просто не показываем. */
+@media (max-width: 820px) {
+  .rig-media--shot { display: none; }
   .rig-row--shot { padding-bottom: var(--rpy); }
 }
 

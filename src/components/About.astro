@@ -45,7 +45,11 @@ const SERVICES = [
   'Проектирование профилей скважин, включая технический расчёт и работу с рисками пересечения',
   'Анализ процесса строительства наклонно-направленных и горизонтальных скважин в режиме реального времени с выявлением рисков и расхождений с проектной траекторией',
   'Удалённое сопровождение процесса строительства наклонно-направленных и горизонтальных скважин',
-  'Аренда скважинного оборудования разного уровня.',
+  ['Аренда скважинного оборудования разного уровня', [
+    'Комплекс с Резистивиметром',
+    'Телеметрическая система с гамма модулем',
+    'Прибор резистивиметрии',
+  ]],
   'Ремонт и техническое обслуживание скважинного оборудования',
 ]
 ---
@@ -90,56 +94,56 @@ const SERVICES = [
               ))}
             </span>
           </h2>
-          <a class="pill" href="#contact">
-            связаться
-            <span class="btn-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          </a>
           <div class="atlas-details">
-            <span class="atlas-services-kicker mono" data-atlas-services-kicker>Услуги</span>
-            <div class="atlas-services glass" data-atlas-services aria-label="Услуги">
-              <ol class="atlas-services-list">
-                {SERVICES.map((s, i) => {
-                  const [text, bullets] = Array.isArray(s) ? s : [s, null]
-                  return (
-                    <li class="atlas-service">
-                      <span class="as-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                      <span class="as-text">
-                        {text}
-                        {bullets && (
-                          <ul class="as-bullets">
-                            {bullets.map((b) => <li>{b}</li>)}
-                          </ul>
-                        )}
-                      </span>
-                    </li>
-                  )
-                })}
-              </ol>
-            </div>
+            {/* .glass на самом списке работает только на очень узком
+                телефоне (<350px): там колонка собирается в одну стеклянную
+                коробку, а плашки внутри теряют свою. Во всех остальных
+                раскладках рецепт с списка снят (см. atlas.css). */}
+            <ol class="atlas-list glass" aria-label="О компании">
+              {FACTS.map((fact, i) => {
+                return (
+                  <li class="atlas-item glass" data-atlas-item={i}>
+                    <span class="ai-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                    <span class="ai-text">
+                      {fact.label && <strong>{fact.label}</strong>}
+                      {fact.text}
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
           </div>
         </div>
       </div>
 
-      {/* Верх колонки встаёт ровно на строку заголовка слева. Точку
-          меряет aboutScene.js живьём (--deck-top): высота строки рубрики
-          зависит от шрифта и кегля, константа в CSS промахнулась бы на
-          пиксели при смене шкалы. Расчётный фолбэк в CSS остаётся — на
-          первый кадр и на случай, если скрипт не поднялся. */}
       <div class="atlas-deck">
-        <span class="atlas-deck-kicker mono">О компании</span>
-        <ol class="atlas-list">
-          {FACTS.map((fact, i) => {
+        {/* Подпись держит левую кромку колонки и стоит НАД ней, вне потока:
+            верх правой колонки синхронизирован с первой левой плашкой
+            (--deck-top), и подпись в потоке сдвинула бы плашки вниз с
+            общей горизонтали. Она же озаглавливает список для screen
+            reader — прежний aria-label на div без роли не читался. */}
+        <div class="atlas-services" data-atlas-services>
+          <span class="atlas-services-kicker mono" id="atlas-services-kicker">Услуги</span>
+          {/* .glass — по той же причине, что и у списка фактов выше. */}
+          <ol class="atlas-services-list glass" aria-labelledby="atlas-services-kicker">
+            {SERVICES.map((s, i) => {
+              const [text, bullets] = Array.isArray(s) ? s : [s, null]
             return (
-              <li class="atlas-item glass" data-atlas-item={i}>
-                <span class="ai-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <span class="ai-text">
-                  {fact.label && <strong>{fact.label}</strong>}
-                  {fact.text}
+              <li class="atlas-service glass">
+                <span class="as-no mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="as-text">
+                  {text}
+                  {bullets && (
+                    <ul class="as-bullets">
+                      {bullets.map((b) => <li>{b}</li>)}
+                    </ul>
+                  )}
                 </span>
               </li>
             )
-          })}
-        </ol>
+            })}
+          </ol>
+        </div>
       </div>
     </div>
   </div>
