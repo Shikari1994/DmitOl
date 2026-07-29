@@ -69,20 +69,16 @@
    считается от ширины вьюпорта, чтобы на узких экранах пропорция не
    выродилась в полоску. */
 .product-photo.is-compact {
+  min-width: 0;
   padding: 0;
   height: clamp(250px, 32vw, 480px);
-  /* scale ниже выводит кадр за границы рамки — обрезаем по ней. */
+  /* Изображение обрезается строго по границам рамки. */
   overflow: hidden;
 }
-/* contain + scale, а НЕ cover: рамка (пропорция ~2.8) заметно уже кадра
-   (~1.75), и cover срезал бы треть высоты — приборы упирались бы в края.
-   contain вписывает кадр целиком, scale возвращает часть крупности.
-   Пустого поля вокруг не появляется: фон у всех pageImage прозрачный,
-   сквозь него идёт та же --panel, что и в рамке. */
+/* Кадр всегда занимает всю область рамки, сохраняя пропорции. */
 .product-photo.is-compact img {
   width: 100%; height: 100%; max-height: none;
-  object-fit: contain;
-  scale: 1.15;
+  object-fit: cover;
 }
 /* Кадр инклинометра шире соседних (2.24 против ~1.75), и contain
    центрирует его, оставляя пустой промежуток справа до рамки. Сдвигаем
@@ -147,13 +143,17 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
   margin-top: 8px; gap: 6px;
 }
 .product-bullets .product-bullets li::before { content: '○'; }
+.product-bullets strong { color: var(--ink); font-weight: 700; }
 .product-module-title + .product-bullets { margin-top: 6px; }
 
 /* Многоколоночные таблицы (форм-факторы, метрология по частотам) —
    заведены под резистивиметр (04): двухколоночный dl (.product-specs)
    не вмещает диапазон + точность в отдельных колонках. Общий рендер
    в [id].astro (product.tables), доступен любому узлу. */
-.product-table-wrap { margin-top: var(--s-3); overflow-x: auto; border: 1px solid var(--line-strong); }
+.product-table-wrap {
+  margin-top: var(--s-3); overflow-x: auto; border: 1px solid var(--line-strong);
+  overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
+}
 /* table-layout: fixed и одинаковые проценты колонок на ВСЕХ таблицах:
    так их вертикальные линии совпадают между собой при пролистывании
    страницы, а не гуляют по ширине контента конкретной ячейки. */
@@ -223,4 +223,42 @@ html[data-scheme="light"] .product-photo .theme-img--light { display: block; }
 
 @media (max-width: 700px) {
   .product-title { font-size: clamp(1.75rem, 5.8vw, 2.35rem); }
+
+  /* У портретных кадров (01 и 02) на телефоне тоже должна быть единая
+     высота рамки: иначе узкий кадр выглядит меньше остальных. */
+  .product-photo:not(.is-compact) {
+    min-width: 0;
+    padding: 0;
+    height: clamp(250px, 72vw, 420px);
+    overflow: hidden;
+  }
+  .product-photo:not(.is-compact) img {
+    width: 100%; height: 100%; max-height: none;
+    object-fit: cover;
+  }
+
+  /* Таблицы на телефоне (04 резистивиметр, 06 пульсатор, 07 запчасти —
+     только у них есть product.tables) вписываются в экран целиком, без
+     скролла вбок. Что этому мешало:
+       · min-width: 14em у заголовка строки — первая колонка это 34%
+         ширины, то есть таблица минимум ~660px на любом экране;
+       · white-space: nowrap в шапке — при table-layout: fixed длинный
+         заголовок («Модель 124 мм (4.87" / 5")») не переносился и не мог
+         раздвинуть свою колонку, поэтому вылезал поверх соседней.
+     Проценты колонок не трогаем — вертикали таблиц по-прежнему совпадают
+     между собой, просто считаются от ширины экрана. */
+  .product-table { font-size: var(--fs-0); }
+  .product-table th,
+  .product-table td { padding: 10px var(--s-1); }
+  .product-table thead th { white-space: normal; letter-spacing: 0.02em; }
+  .product-table tbody th[scope='row'] { min-width: 0; }
+}
+
+/* Три колонки на 360px — по ~100px на ячейку, поэтому здесь ужимаемся
+   ещё: боковые паддинги в 6px и разрядка в ноль отдают всю ширину
+   тексту. */
+@media (max-width: 480px) {
+  .product-table th,
+  .product-table td { padding: 8px 6px; }
+  .product-table thead th { letter-spacing: 0; }
 }

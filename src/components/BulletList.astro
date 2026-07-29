@@ -5,6 +5,13 @@
    компонент на каждый уровень: во всех текущих данных вложенность не
    глубже двух уровней, но само правило общее. */
 const { items } = Astro.props
+
+/* **слово** в исходной строке — точечное выделение первого слова
+   жирным там, где это задано в данных (см. generator, модуль 04),
+   а не автоматика для всех списков сайта. */
+function renderBold(text) {
+  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+}
 ---
 
 <ul class="product-bullets">
@@ -12,7 +19,7 @@ const { items } = Astro.props
     const [text, sub] = Array.isArray(item) ? item : [item, null]
     return (
       <li>
-        <span>{text}</span>
+        {text.includes('**') ? <span set:html={renderBold(text)} /> : <span>{text}</span>}
         {sub && <Astro.self items={sub} />}
       </li>
     )
