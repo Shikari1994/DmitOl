@@ -117,6 +117,7 @@
   .step { grid-template-columns: 44px 1fr; gap: 18px; }
   .step-node { width: 44px; height: 44px; }
   .how-line, .how-line-fill { left: 21px; }
+  .step h3 { font-size: clamp(1.05rem, 5vw, var(--fs-3)); letter-spacing: -0.025em; }
 }
 
 @media (prefers-reduced-motion: reduce) {

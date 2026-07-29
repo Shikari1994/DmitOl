@@ -141,11 +141,13 @@ html[data-scheme="light"] .sw-eco-tile { --glass-bg: rgba(255, 255, 255, 0.14); 
    самих роликах вкладок, public/video/module-*.mp4) — тот же приём
    подчёркивания, что у scrollspy в шапке (.nav-links a.active), не
    новая форма. */
+.sw-tabs-wrap { position: relative; }
 .sw-tabs {
   display: flex; flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
   margin-bottom: clamp(20px, 2.2vw, 30px);
 }
+.sw-tabs-scroll-hint { display: none; }
 .sw-tab {
   position: relative;
   display: flex; align-items: baseline; gap: 8px;
@@ -176,9 +178,21 @@ html[data-scheme="light"] .sw-tab { color: rgba(20, 23, 28, 0.8); }
   /* Пять вкладок в один ряд на узком экране не помещаются без переноса
      на вторую строку — вместо этого лента прокручивается горизонтально,
      как собственная вкладочная навигация приложения на телефоне. */
-  .sw-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .sw-tabs {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+    padding-right: 76px;
+  }
   .sw-tabs::-webkit-scrollbar { display: none; }
-  .sw-tab { flex: 0 0 auto; }
+  .sw-tab { flex: 0 0 auto; min-height: 44px; scroll-snap-align: start; }
+  .sw-tabs-scroll-hint {
+    position: absolute; z-index: 2; top: 0; right: 0; bottom: clamp(20px, 2.2vw, 30px);
+    display: inline-flex; align-items: center; gap: 5px; padding: 0 2px 2px 28px;
+    background: linear-gradient(to right, transparent, var(--surface) 42%);
+    color: var(--live); font-family: var(--font-mono); font-size: 0.52rem; font-weight: 600;
+    letter-spacing: 0.08em; white-space: nowrap; pointer-events: none;
+  }
+  .sw-tabs-scroll-hint span { font-size: 0.9rem; line-height: 1; }
 }
 
 .sw-frame {
@@ -532,6 +546,12 @@ html[data-scheme="light"] #mobile .eyebrow::before {
     justify-content: center;
     padding: 15px 24px;
   }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  #software { padding-top: 56px; padding-bottom: 56px; }
+  .sw-eco { min-height: 0; }
+  .sw-life { margin-top: 40px; }
 }
 
 @media (max-width: 380px) {

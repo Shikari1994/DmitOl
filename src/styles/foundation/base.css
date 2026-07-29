@@ -14,6 +14,7 @@ body {
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
 body.menu-open { overflow: hidden; }
 
@@ -72,6 +73,7 @@ img { display: block; max-width: 100%; }
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   column-gap: var(--col-gap);
 }
+.grid > * { min-width: 0; }
 /* Длинные абзацы ширину экрана не наследуют — им меру задаёт
    собственный max-width (.lead, .sc-text и т.п.). Полную ширину
    забирает только типографика и сетка. */
@@ -168,6 +170,7 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top)); 
 @media (max-width: 700px) {
   .h-title { font-size: clamp(1.75rem, 5.8vw, 2.35rem); }
   .h-title br { display: none; }
+  .h-title, .split-title, .how-done-title { letter-spacing: -0.035em; overflow-wrap: anywhere; }
   .lead { font-size: var(--fs-2); line-height: 1.7; }
   .eyebrow { margin-bottom: 22px; }
 }

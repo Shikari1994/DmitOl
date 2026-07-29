@@ -330,7 +330,10 @@ async function start() {
   })
   const markers = new THREE.Points(markerGeo, markerMat)
   markers.renderOrder = 2
-  globe.add(markers)
+  // На телефоне карточки фактов уже стоят поверх шара: маркеры городов
+  // превращаются в лишний шум под текстом, поэтому остаются только на
+  // планшете и desktop вместе с подписями.
+  if (!isMobile) globe.add(markers)
 
   /* ── Подписи городов ──
      DOM-слой поверх канваса, не текст в сцене: см. шапку globe/labels.js.

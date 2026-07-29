@@ -161,19 +161,22 @@ const LIFECYCLE = [
     </div>
 
     <div class="sw-stage reveal">
-      <div class="sw-tabs">
-        {MODULES.map((m, i) => (
-          <button
-            type="button"
-            class={'sw-tab' + (i === 0 ? ' is-active' : '')}
-            data-sw-tab
-            data-index={i}
-            aria-pressed={i === 0 ? 'true' : 'false'}
-          >
-            <span class="sw-tab-n mono">{m.n}</span>
-            <span class="sw-tab-label">{m.tab}</span>
-          </button>
-        ))}
+      <div class="sw-tabs-wrap">
+        <div class="sw-tabs">
+          {MODULES.map((m, i) => (
+            <button
+              type="button"
+              class={'sw-tab' + (i === 0 ? ' is-active' : '')}
+              data-sw-tab
+              data-index={i}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              <span class="sw-tab-n mono">{m.n}</span>
+              <span class="sw-tab-label">{m.tab}</span>
+            </button>
+          ))}
+        </div>
+        <span class="sw-tabs-scroll-hint" aria-hidden="true">ЛИСТАЙТЕ <span>→</span></span>
       </div>
 
       <div class="sw-frame instr-frame">

@@ -148,3 +148,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
   .econ-algo-tag { white-space: normal; text-align: left; }
 }
 
+@media (max-width: 380px) {
+  .econ-kicker { align-items: flex-start; line-height: 1.45; }
+  .econ-badge { align-items: flex-start; }
+}

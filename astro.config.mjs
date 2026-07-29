@@ -9,4 +9,12 @@ export default defineConfig({
   base: process.env.BASE_PATH || '/',
   integrations: [sitemap()],
   server: { host: true, port: 5173 },
+  // three.js загружается лениво в сцене «О компании». Не пропускаем его через
+  // Vite optimizeDeps: при пересборке кэша URL оптимизированного чанка меняется,
+  // и уже открытая страница получает 504 «Outdated Optimize Dep» вместо глобуса.
+  vite: {
+    optimizeDeps: {
+      exclude: ['three'],
+    },
+  },
 })

@@ -226,30 +226,40 @@ html[data-scheme="light"] .rig-row { background-color: rgba(255, 255, 255, 0.14)
 /* min-height резервирует 2 строки, даже если описание короче: без
    резерва короткий текст даёт колонку ниже, а с ней и всю плашку ниже
    соседних на несколько пикселей. */
-.rig-text { position: relative; z-index: 1; font-size: var(--fs-2); line-height: 1.6; min-height: 3.2em; color: var(--ink-dim); max-width: 62ch; }
+.rig-text { position: relative; z-index: 1; min-width: 0; font-size: var(--fs-2); line-height: 1.6; min-height: 3.2em; color: var(--ink-dim); max-width: 62ch; }
 
 /* Кнопка-«загрузка»: наведение заливает её слева направо рублеными
    шагами (steps(), не ease) — как прогресс-бар терминала, а не css-твин.
-   Моно-гарнитура и мигающий курсор `_` — тот же приборный язык, что у
-   .rig-num/.rig-line.
+   Моно-гарнитура поддерживает тот же приборный язык, что у .rig-num/.rig-line.
 
    Кликабельна ТОЛЬКО она, не вся строка: .rig-row лишь подсвечивается
    на hover/focus-within и курсор pointer на ней не висит. */
 .rig-cube {
   position: relative; z-index: 1; overflow: hidden;
-  width: clamp(148px, 15vw, 172px); height: 44px;
+  /* Отдельно фиксируем вертикальное положение: при разной высоте описаний
+     кнопка остаётся по центру плашки, а не следует за базовой линией grid. */
+  align-self: center;
+  width: clamp(188px, 18vw, 224px); height: 60px;
   display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--line-strong);
   background: var(--panel);
   color: inherit; font: inherit; text-decoration: none;
   cursor: pointer;
   transition: border-color 0.3s var(--ease);
+  animation: rig-cube-border-pulse 2.8s ease-in-out infinite;
 }
-.rig-cube:hover, .rig-cube:focus-visible { border-color: var(--brand); }
+.rig-cube:hover, .rig-cube:focus-visible {
+  border-color: var(--brand);
+  animation: none;
+}
 .rig-cube:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+@keyframes rig-cube-border-pulse {
+  0%, 100% { border-color: var(--line-strong); }
+  50% { border-color: color-mix(in srgb, var(--brand) 72%, var(--line-strong)); }
+}
 .rig-cube-label, .rig-cube-fill-text {
   font-family: var(--font-mono);
-  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   white-space: nowrap;
 }
 .rig-cube-label { position: relative; z-index: 1; color: var(--ink); }
@@ -270,13 +280,6 @@ html[data-scheme="light"] .rig-cube-fill { background: var(--brand); color: #fff
 .rig-cube:hover .rig-cube-fill, .rig-cube:focus-visible .rig-cube-fill {
   clip-path: inset(0 0 0 0);
 }
-.rig-cube-caret {
-  display: inline-block;
-  margin-left: 1px;
-  animation: rig-cube-blink 0.9s steps(1, jump-none) infinite;
-}
-@keyframes rig-cube-blink { 50% { opacity: 0; } }
-
 /* Прицелы на самой кнопке — отход от Dmit, там corner-marks только на
    строке целиком. z-index выше заливки .rig-cube-fill, иначе прицелы
    тонут под ней при наведении. */
@@ -304,10 +307,6 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(3),
 html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   border-color: #fff;
 }
-@media (prefers-reduced-motion: reduce) {
-  .rig-cube-caret { animation: none; }
-}
-
 /* Тот же приём, что у .prod-head-title: колонку раздвинуть нельзя (она
    стоит на общей направляющей), поэтому на средних ширинах уменьшается
    сам кегль — на 838px колонка ~158px, а «РЕЗИСТИВИМЕТР» при --fs-3
@@ -332,6 +331,7 @@ html[data-scheme="light"] .rig-cube-corners i:nth-child(4) {
   .rig-row, .rig-cube-fill, .rig-corners i, .rig-cube-corners i,
   .rig-media--shot .rig-media-inner, .rig-media--shot img,
   .rig-media--mwd img, .rig-media--decoder img { transition: none; }
+  .rig-cube { animation: none; }
 }
 
 /* ══ ПРИБОРНЫЕ КАДРЫ 03–07 (.rig-media--shot) ══════════════════════

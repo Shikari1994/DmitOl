@@ -4,7 +4,7 @@
    Одна сцена, всё движется одновременно по одному прогрессу прокрутки
    сквозь обёртку .atlas (0…1):
 
-     услуги     плашки выезжают из-за правой кромки по одной, сверху
+     факты      плашки выезжают из-за правой кромки по одной, сверху
                 вниз, по ломтю прокрутки на плашку;
      ночь       заливка наливается прозрачностью слоя весь путь, а не в
                 конце: шар «окрашивает» сцену по мере скролла;
@@ -29,13 +29,13 @@ function init(wrap) {
   const stage = wrap.querySelector('[data-atlas-stage]')
   const nightEl = wrap.querySelector('.atlas-night')
   const geoWords = [...wrap.querySelectorAll('[data-geo-word]')]
-  const facts = [...wrap.querySelectorAll('[data-atlas-fact]')]
+  const services = wrap.querySelector('[data-atlas-services]')
+  const servicesKicker = wrap.querySelector('[data-atlas-services-kicker]')
   const deck = wrap.querySelector('.atlas-deck')
   const items = [...wrap.querySelectorAll('[data-atlas-item]')]
   const copyEl = wrap.querySelector('.atlas-copy')
   const geoEl = wrap.querySelector('[data-atlas-geo]')
   const n = items.length
-  const factsN = facts.length
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const conn = navigator.connection
@@ -67,11 +67,16 @@ function init(wrap) {
   const KICKER_ON = 0.1
   const LIST_IN = 0.06
   const LIST_END = 0.86
+  /* Услуги начинают въезжать только после того, как четвёртая плашка
+     полностью встала на место. Конец оставляем в пределах активной части
+     сцены, чтобы финальная выдержка по-прежнему была неподвижной. */
+  const SERVICES_IN = LIST_IN + (LIST_END - LIST_IN) * ((n - 1 + 1 / 1.8) / n)
   const NIGHT_IN = 0.12
   /* Вплотную к завершению разворота шара (см. GEO_END ниже и GLOBE_END в
      globeCanvas.js): ночь дотемняется тем же кадром, что и финал шара.
      Ниже — и остаток прокрутки идёт без единого визуального изменения. */
   const NIGHT_FULL = 0.9
+  const SERVICES_END = NIGHT_FULL
   const NIGHT_SWAP = 0.52   // порог перекраски заголовка в светлый
   /* ДЕРЖАТЬ В ПАРЕ с globeCanvas.js: 0.882 = GLOBE_END (0.98) × конец
      разворота в его координатах (0.9) — момент, когда шар уже полностью
@@ -81,7 +86,7 @@ function init(wrap) {
 
   const progress = makeProgress(wrap, stage)
 
-  /* Верх колонки услуг = верхняя кромка ПРОПИСНЫХ в заголовке слева.
+  /* Верх колонки фактов = верхняя кромка ПРОПИСНЫХ в заголовке слева.
      Меряем живьём, а не константой в CSS: высота строки рубрики над ним
      складывается из кегля, интерлиньяжа и метрик шрифта, и любое число
      промахнётся при смене шкалы или веб-шрифта.
@@ -117,6 +122,9 @@ function init(wrap) {
 
   const draw = () => {
     const p = progress()
+    // На планшете, как и на телефоне, в нижней зоне помещается только один
+    // список: сначала факты о компании, затем услуги.
+    const isMobileScene = window.matchMedia('(max-width: 1100px)').matches
 
     // синева наливается прозрачностью слоя, покадрово по прокрутке
     nightEl.style.opacity = span(p, NIGHT_IN, NIGHT_FULL).toFixed(3)
@@ -132,19 +140,6 @@ function init(wrap) {
       w.style.setProperty('--w-fill', clamp01(fill * wn - i).toFixed(3))
     })
 
-    /* Факты слева — не отдельный таймлайн: их смена идёт по тому же
-       прогрессу, что и выход правой колонки. Небольшое перекрытие делает
-       переход читабельным и при прокрутке в любую сторону. */
-    const FACTS_IN = 0.06
-    const factStep = (LIST_END - FACTS_IN) / factsN
-    facts.forEach((fact, i) => {
-      const inAt = FACTS_IN + i * factStep
-      const outAt = FACTS_IN + (i + 1) * factStep
-      const entering = i === 0 ? 1 : smooth(span(p, inAt, inAt + 0.08))
-      const leaving = i === factsN - 1 ? 1 : 1 - smooth(span(p, outAt - 0.08, outAt))
-      fact.style.setProperty('--fact', Math.min(entering, leaving).toFixed(3))
-    })
-
     // заголовок перекрашивается в светлый, когда синевы стало достаточно
     const isNight = p >= NIGHT_SWAP
     if (isNight !== night) {
@@ -152,18 +147,36 @@ function init(wrap) {
       stage.classList.toggle('is-night', isNight)
     }
 
-    // подпись колонки встаёт первой и без выезда — к ней приезжают плашки
+    // Подпись фактов встаёт первой, вместе с первой карточкой.
     if (deck) deck.style.setProperty('--in', span(p, KICKER_IN, KICKER_ON).toFixed(3))
 
-    /* Услуги: у плашки i свой ломоть прокрутки [i/n … (i+1)/n], но едет
+    /* Факты о компании: у плашки i свой ломоть прокрутки [i/n … (i+1)/n], но едет
        она не всю его длину — множитель 1.8 укладывает выезд в первую
        половину, дальше плашка просто стоит. Иначе колонка ехала бы вся
        разом, без пауз между появлениями. smooth даёт торможение у цели.
        Приехавшее не уходит: к финалу сцены колонка стоит целиком. */
-    const shown = span(p, LIST_IN, LIST_END) * n
+    // На планшете и телефоне в кадре помещается только один список: сначала полностью
+    // раскрываем факты о компании, затем убираем их и только после паузы
+    // выводим услуги. На desktop сохраняется параллельная сцена.
+    const shown = isMobileScene
+      ? span(p, 0.06, 0.46) * n
+      : span(p, LIST_IN, LIST_END) * n
     items.forEach((el, i) => {
       el.style.setProperty('--r', smooth(clamp01((shown - i) * 1.8)).toFixed(3))
     })
+    // Услуги въезжают слева лишь после того, как на месте уже все факты
+    // о компании. У них своя короткая фаза, но тот же scroll-driven easing.
+    const servicesProgress = smooth(span(
+      p,
+      isMobileScene ? 0.62 : SERVICES_IN,
+      isMobileScene ? 0.80 : SERVICES_END,
+    )).toFixed(3)
+    if (services) services.style.setProperty('--r', servicesProgress)
+    if (servicesKicker) servicesKicker.style.setProperty('--r', servicesProgress)
+    if (deck) {
+      const factsProgress = isMobileScene ? 1 - smooth(span(p, 0.50, 0.58)) : 1
+      deck.style.setProperty('--mobile-facts', factsProgress.toFixed(3))
+    }
   }
 
   /* Один rAF на кадр, взведённый скроллом и ресайзом. Скролл ведёт

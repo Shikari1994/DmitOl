@@ -52,6 +52,9 @@ footer {
 }
 
 .footer-contact-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   text-decoration: none;
   transition: color 0.2s;
 }

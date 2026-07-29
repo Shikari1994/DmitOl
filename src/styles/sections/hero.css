@@ -381,4 +381,23 @@ html[data-scheme="light"] .hero-tile-phone img {
 @media (max-width: 700px) {
   .hero-tile { --hero-tile-text-w: 68%; }
   .hero-tile-art { display: none; }
+  .hero-tile { min-height: 208px; }
+  .hero-tile:active { background: var(--hero-tile-hover); }
+}
+
+@media (max-width: 380px) {
+  .hero-copy { gap: 36px; padding-top: 28px; padding-bottom: 28px; }
+  .hero-copy-top, .hero-copy-bottom { gap: 20px; }
+  .hero-brand { gap: 14px; }
+  .hero-brand-mark { height: 48px; width: calc(48px * 1191 / 1004); }
+  .hero-brand-title { font-size: 24px; letter-spacing: -0.04em; }
+  .hero-tile { min-height: 196px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-intro { min-height: auto; }
+  .hero-copy { gap: 32px; }
+  .hero-teasers { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 1fr; }
+  .hero-tile { min-height: 184px; }
+  .hero-tile + .hero-tile { border-top: 0; border-left: 1px solid var(--hero-line); }
 }

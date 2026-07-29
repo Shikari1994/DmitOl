@@ -85,3 +85,8 @@
   .mob-phone.is-mid { height: 96%; margin-bottom: -2%; z-index: 2; }
 }
 
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
+  #mobile { padding-top: 48px; }
+  .mob-head { margin-bottom: 20px; }
+  .mob-stage { height: min(340px, 78svh); }
+}

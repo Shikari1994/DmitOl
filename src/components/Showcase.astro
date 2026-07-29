@@ -75,7 +75,7 @@ const isShot = (id) => Boolean(ACCORDION_IMAGES[id]) && !OVERLAY_MEDIA.has(id)
           <a class="rig-cube" href={asset(`/products/${p.id}`)}>
             <span class="rig-cube-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
             <span class="rig-cube-label">Подробнее</span>
-            <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">Подробнее<span class="rig-cube-caret">_</span></span></span>
+            <span class="rig-cube-fill" aria-hidden="true"><span class="rig-cube-fill-text">Подробнее</span></span>
           </a>
           {ACCORDION_IMAGES[p.id] && (
             <span class={`rig-media rig-media--accordion rig-media--${p.id}${isShot(p.id) ? ' rig-media--shot' : ''}`} aria-hidden="true">
