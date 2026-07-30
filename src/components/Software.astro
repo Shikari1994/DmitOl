@@ -1,5 +1,6 @@
 ---
 import { asset } from '../lib/asset.js'
+import { ENABLE_LIGHT_THEME } from '../lib/flags.js'
 
 /* Только настольная версия: мобильный клиент — отдельная секция
    (Mobile.astro), плиткой он был бы одним скриншотом среди пяти.
@@ -131,7 +132,11 @@ const LIFECYCLE = [
         {/* Один кадр в двух цветовых версиях: тёмная и светлая. CSS
             выключает неактивную через display:none, поэтому качается
             только показанный ролик — второй начнёт грузиться лишь после
-            переключения темы (см. motion/lazyVideo.js). */}
+            переключения темы (см. motion/lazyVideo.js).
+
+            Светлый вариант — под ENABLE_LIGHT_THEME (lib/flags.js): сам
+            файл уехал в media-archive/on-hold/, и оставленный тег дал бы
+            404, стоит светлой плитке попасть в вьюпорт. */}
         <video
           class="sw-eco-video sw-eco-video--dark"
           data-lazy-video={asset('/video/ecosystem-dark.mp4')}
@@ -140,14 +145,16 @@ const LIFECYCLE = [
           playsinline
           preload="none"
         ></video>
-        <video
-          class="sw-eco-video sw-eco-video--light"
-          data-lazy-video={asset('/video/ecosystem-light.mp4')}
-          muted
-          loop
-          playsinline
-          preload="none"
-        ></video>
+        {ENABLE_LIGHT_THEME && (
+          <video
+            class="sw-eco-video sw-eco-video--light"
+            data-lazy-video={asset('/video/ecosystem-light.mp4')}
+            muted
+            loop
+            playsinline
+            preload="none"
+          ></video>
+        )}
         <img class="sw-eco-logo" src={asset('/drill-monitor-logo.svg')} alt="Drill Monitor" />
       </div>
       <div class="sw-eco-tiles">

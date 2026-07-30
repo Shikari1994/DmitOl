@@ -7,6 +7,8 @@
    137 КБ, прежде чем начать нажиматься.
    ───────────────────────────────────────────── */
 
+import { ENABLE_LIGHT_THEME } from '../lib/flags.js'
+
 const nav = document.querySelector('nav.nav')
 const burger = document.querySelector('.nav-burger')
 const menu = document.querySelector('.nav-mobile')
@@ -110,8 +112,12 @@ if (burger && menu) {
    Сам атрибут html[data-scheme] уже стоит: его синхронно поставил inline-
    скрипт в Layout.astro до первой отрисовки. Здесь только клик и
    синхронизация обеих копий кнопки (шапка + мобильное меню) через общий
-   класс, без своего состояния у каждой. */
-{
+   класс, без своего состояния у каждой.
+
+   Под флагом (см. lib/flags.js): с выключенной светлой схемой кнопок в
+   разметке нет, и блок отработал бы впустую — а так Vite выкидывает его
+   из бандла целиком по константе. */
+if (ENABLE_LIGHT_THEME) {
   const KEY = 'gtn-theme'
   const root = document.documentElement
   const buttons = [...document.querySelectorAll('.theme-toggle')]

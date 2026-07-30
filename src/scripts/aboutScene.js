@@ -110,8 +110,71 @@ function init(wrap) {
     const factsTop = facts.getBoundingClientRect().top
     stage.style.setProperty('--deck-top', `${Math.round(factsTop - stageTop)}px`)
   }
+  /* ── Плашки обязаны вместить свой текст ──
+     Высота плашки жёсткая: ряд считается от кадра (--card-row в
+     atlas.css), обе колонки стоят на одной шкале, и переросшая плашка
+     ломала бы горизонталь. Кегль тянется за высотой ряда, но у него
+     есть пол — на низком кадре (мелкое окно, увеличенный масштаб
+     браузера) шкала в него упирается, а текст в CSS-пикселях за кадром
+     не сжимается, и самая длинная плашка вылезала за своё стекло.
+
+     Дальше CSS не помогает: сколько строк выйдет после переноса, знает
+     только layout. Поэтому меряем фактическое переполнение и общим
+     множителем --card-fit ужимаем кегль ОБЕИХ колонок разом — шкала
+     остаётся единой, плашки одного роста, меняется только кегль внутри.
+     Множитель только уменьшает (потолок 1): вверх шкалу ведёт сам CSS.
+     Считается редко — на ресайзе и после загрузки шрифтов, не в кадре
+     прокрутки: каждая проба — синхронный пересчёт раскладки. */
+  const cards = [...wrap.querySelectorAll('.atlas-item, .atlas-service')]
+  const FIT_MIN = 0.78   // ниже кегль перестаёт читаться, ужимать дальше нечего
+
+  /* Худшее отношение «место в плашке / нужная высота текста» по всем
+     плашкам сцены. 1 — все влезают. */
+  const worstFit = () => {
+    let worst = 1
+    for (const card of cards) {
+      const text = card.querySelector('.ai-text, .as-text')
+      if (!text) continue
+      const cs = getComputedStyle(card)
+      const room = card.getBoundingClientRect().height
+        - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+      const need = text.getBoundingClientRect().height
+      // Полупиксель допуска: округления раскладки не повод ужимать сцену.
+      if (room > 0 && need > room + 0.5) worst = Math.min(worst, room / need)
+    }
+    return worst
+  }
+
+  const fitCards = () => {
+    if (!cards.length) return
+    stage.style.setProperty('--card-fit', '1')
+    const room = worstFit()
+    if (room >= 1) return
+    /* Высота блока текста падает примерно как КВАДРАТ кегля: строка
+       становится ниже и строк переноса становится меньше — поэтому
+       первый шаг берём корнем из нехватки, а не самой нехваткой (иначе
+       он ужал бы вдвое сильнее нужного). Дальше добираем мелкими
+       шагами: перенос строки дискретен, точной формулы для него нет. */
+    let fit = Math.max(FIT_MIN, Math.sqrt(room))
+    stage.style.setProperty('--card-fit', fit.toFixed(3))
+    for (let i = 0; i < 6 && fit > FIT_MIN && worstFit() < 1; i++) {
+      fit = Math.max(FIT_MIN, fit - 0.025)
+      stage.style.setProperty('--card-fit', fit.toFixed(3))
+    }
+  }
+
+  /* Обе меры — про геометрию, обе читают раскладку, поэтому идут одной
+     парой и в одном кадре: сначала верх правой колонки, затем кегль
+     (ряд плашки считается от --deck-top, порядок обязателен). */
+  let fitRaf = 0
+  const scheduleFit = () => {
+    if (fitRaf) return
+    fitRaf = requestAnimationFrame(() => { fitRaf = 0; syncDeckTop(); fitCards() })
+  }
+
   syncDeckTop()
-  document.fonts?.ready.then(syncDeckTop)
+  fitCards()
+  document.fonts?.ready.then(() => { syncDeckTop(); fitCards() })
 
   let night = null   // состояние класса .is-night, чтобы не дёргать DOM зря
 
@@ -197,7 +260,7 @@ function init(wrap) {
     raf = requestAnimationFrame(() => { raf = 0; draw() })
   }
 
-  window.addEventListener('resize', () => { syncDeckTop(); schedule() })
+  window.addEventListener('resize', () => { scheduleFit(); schedule() })
 
   /* Скролл слушаем только пока сцена на экране — обычная экономия на
      длинной странице: за её пределами прогресс всё равно упёрт в 0 или 1
@@ -215,5 +278,5 @@ function init(wrap) {
   ).observe(wrap)
 
   draw()
-  window.addEventListener('load', () => { syncDeckTop(); schedule() })
+  window.addEventListener('load', () => { syncDeckTop(); fitCards(); schedule() })
 }

@@ -1,6 +1,7 @@
 ---
 import '../styles/index.css'
 import logoColor from '../assets/brand/logo-color.webp'
+import { ENABLE_LIGHT_THEME } from '../lib/flags.js'
 
 // Лого лежит в src/assets, а не в public: единственный файл на favicon,
 // og:image и шапку. Путь у него с хешем содержимого — меняется только
@@ -32,7 +33,7 @@ const orgSchema = {
 ---
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-scheme={ENABLE_LIGHT_THEME ? undefined : 'dark'}>
   <head>
     <meta charset="UTF-8" />
     <!-- viewport-fit=cover обязателен: без него env(safe-area-inset-*) на iOS
@@ -56,22 +57,33 @@ const orgSchema = {
          иначе на тёмной системе с сохранённым светлым выбором страница
          на первый кадр мелькнула бы дефолтной тёмной, а затем
          перекрасилась бы в светлую после разбора модулей. is:inline —
-         не ESM-модуль, выполняется сразу по месту, без defer. -->
-    <script is:inline>
-      (function () {
-        try {
-          var KEY = 'gtn-theme'
-          var stored = localStorage.getItem(KEY)
-          var scheme =
-            stored === 'light' || stored === 'dark'
-              ? stored
-              : window.matchMedia('(prefers-color-scheme: light)').matches
-                ? 'light'
-                : 'dark'
-          document.documentElement.setAttribute('data-scheme', scheme)
-        } catch (e) {}
-      })()
-    </script>
+         не ESM-модуль, выполняется сразу по месту, без defer.
+
+         При выключенном ENABLE_LIGHT_THEME скрипта нет вообще, а
+         data-scheme="dark" стоит прямо на <html> (см. выше). Именно
+         поэтому выбор схемы нельзя было оставить как есть, просто
+         спрятав кнопку: скрипт читает prefers-color-scheme, и посетитель
+         со светлой системной темой открыл бы сайт светлым — без
+         тумблера, то есть без возможности вернуться. Сохранённый
+         localStorage['gtn-theme'] с прошлых визитов по той же причине
+         больше не читается и ни на что не влияет. -->
+    {ENABLE_LIGHT_THEME && (
+      <script is:inline>
+        (function () {
+          try {
+            var KEY = 'gtn-theme'
+            var stored = localStorage.getItem(KEY)
+            var scheme =
+              stored === 'light' || stored === 'dark'
+                ? stored
+                : window.matchMedia('(prefers-color-scheme: light)').matches
+                  ? 'light'
+                  : 'dark'
+            document.documentElement.setAttribute('data-scheme', scheme)
+          } catch (e) {}
+        })()
+      </script>
+    )}
 
     <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
   </head>

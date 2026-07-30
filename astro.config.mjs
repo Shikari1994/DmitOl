@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap'
 // домен (корень), и под GitHub Pages (под-путь /DmitOl/).
 // Локально и для прод-домена: base='/'. Для Pages CI задаёт BASE_PATH=/DmitOl.
 export default defineConfig({
-  site: process.env.SITE || 'https://geotehnavigatsiya.ru',
+  site: process.env.SITE || 'https://geo-tn.com',
   base: process.env.BASE_PATH || '/',
   integrations: [sitemap()],
   server: { host: true, port: 5173 },

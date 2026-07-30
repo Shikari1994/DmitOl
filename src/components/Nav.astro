@@ -3,6 +3,7 @@ import { Image } from 'astro:assets'
 import { asset } from '../lib/asset.js'
 import logoWhite from '../assets/brand/logo-white.png'
 import logoColor from '../assets/brand/logo-color.webp'
+import { ENABLE_LIGHT_THEME } from '../lib/flags.js'
 
 /* Пунктов пять — по числу занятых колонок сетки между направляющими
    --rail-1…--rail-6 (шестая пустая, .nav-tail закреплена явным
@@ -35,7 +36,14 @@ const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
         режутся до двойного ретина-запаса: исходный PNG белого лого весит
         170 КБ при нужных здесь единицах КБ. */}
     <Image class="nav-logo-img nav-logo-img--dark" src={logoWhite} height={68} format="webp" alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
-    <Image class="nav-logo-img nav-logo-img--light" src={logoColor} height={68} alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
+    {/* Цветное лого — только для светлой схемы (nav.css гасит его через
+        display:none в тёмной). С выключенным ENABLE_LIGHT_THEME его нет
+        в разметке совсем, а не спрятано: display:none у <img> не мешает
+        браузеру скачать кадр, и оно грузилось бы на каждой странице,
+        никогда не показавшись. */}
+    {ENABLE_LIGHT_THEME && (
+      <Image class="nav-logo-img nav-logo-img--light" src={logoColor} height={68} alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
+    )}
     <span class="nav-logo-text">Геотехнавигация</span>
   </a>
   <ul class="nav-links">
@@ -51,15 +59,17 @@ const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
         «сколько там сейчас». Тикает scripts/nav.js, здесь состояние до
         него. */}
     <span class="nav-clock mono" id="nav-clock">МОСКВА · --:--:--</span>
-    <button class="theme-toggle" type="button" aria-label="Переключить тему" aria-pressed="false">
-      <svg class="theme-toggle-icon theme-toggle-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-      </svg>
-      <svg class="theme-toggle-icon theme-toggle-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-      </svg>
-    </button>
+    {ENABLE_LIGHT_THEME && (
+      <button class="theme-toggle" type="button" aria-label="Переключить тему" aria-pressed="false">
+        <svg class="theme-toggle-icon theme-toggle-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+        <svg class="theme-toggle-icon theme-toggle-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+        </svg>
+      </button>
+    )}
     <a class="pill nav-cta" href={asset('/#contact')}>
       Связаться
       <span class="btn-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -81,14 +91,16 @@ const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
       <li><a href={href}>{label}</a></li>
     ))}
   </ul>
-  <button class="theme-toggle" type="button" aria-label="Переключить тему" aria-pressed="false">
-    <svg class="theme-toggle-icon theme-toggle-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-    </svg>
-    <svg class="theme-toggle-icon theme-toggle-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-    </svg>
-  </button>
+  {ENABLE_LIGHT_THEME && (
+    <button class="theme-toggle" type="button" aria-label="Переключить тему" aria-pressed="false">
+      <svg class="theme-toggle-icon theme-toggle-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      </svg>
+      <svg class="theme-toggle-icon theme-toggle-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+      </svg>
+    </button>
+  )}
   <a class="pill pill--solid" href={asset('/#contact')}>Связаться</a>
 </div>
