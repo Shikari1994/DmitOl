@@ -1,0 +1,48 @@
+name: Deploy to reg.ru
+
+# Боевой сайт https://geo-tn.com — хостинг reg.ru (ISPmanager, каталог
+# /www/geo-tn.com). Пуш в main собирает Astro и доливает по FTP только те
+# файлы, что изменились: видео из public/video (24 МБ) уезжают один раз.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: regru-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # SITE и BASE_PATH не задаём: astro.config.mjs по умолчанию собирает
+      # под https://geo-tn.com в корень домена — ровно то, что нужно reg.ru.
+      - run: npm run build
+
+      - name: Upload to reg.ru
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.REGRU_FTP_SERVER }}
+          username: ${{ secrets.REGRU_FTP_USERNAME }}
+          password: ${{ secrets.REGRU_FTP_PASSWORD }}
+          # Если сборка упадёт на TLS-ошибке ftp-сервера, замените на ftp.
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          # У FTP-пользователя домашняя директория — /www/geo-tn.com, при входе
+          # он сразу оказывается в корне сайта. Поэтому путь относительный.
+          # Если войти главным аккаунтом u3593225 (домашняя «/»), сюда нужно
+          # было бы писать /www/geo-tn.com/.
+          server-dir: ./
+          # Служебные файлы гита на хостинге не нужны.
+          exclude: |
+            **/.git*
+            **/.git*/**

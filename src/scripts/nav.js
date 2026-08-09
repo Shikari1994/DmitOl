@@ -108,28 +108,84 @@ if (burger && menu) {
   })
 }
 
-/* ─── Тумблер светлой/тёмной схемы ───
+/* ─── Автоматическая светлая/тёмная схема и ручной тумблер ───
    Сам атрибут html[data-scheme] уже стоит: его синхронно поставил inline-
-   скрипт в Layout.astro до первой отрисовки. Здесь только клик и
-   синхронизация обеих копий кнопки (шапка + мобильное меню) через общий
-   класс, без своего состояния у каждой.
+   скрипт в Layout.astro до первой отрисовки. Здесь расписание, временное
+   ручное переопределение и синхронизация обеих копий кнопки (шапка +
+   мобильное меню) через общий класс, без своего состояния у каждой.
 
    Под флагом (см. lib/flags.js): с выключенной светлой схемой кнопок в
    разметке нет, и блок отработал бы впустую — а так Vite выкидывает его
    из бандла целиком по константе. */
 if (ENABLE_LIGHT_THEME) {
   const KEY = 'gtn-theme'
+  const UNTIL_KEY = 'gtn-theme-until'
   const root = document.documentElement
   const buttons = [...document.querySelectorAll('.theme-toggle')]
   const metaThemeColor = document.getElementById('theme-color-meta')
   const COLOR = { dark: '#141414', light: '#eef0f3' }
+  let boundaryTimer = 0
+
+  /* Автоматическая схема использует только локальные часы устройства:
+     светлая с 08:00 включительно до 18:00, в остальное время тёмная. */
+  const automaticScheme = (date = new Date()) => {
+    const hour = date.getHours()
+    return hour >= 8 && hour < 18 ? 'light' : 'dark'
+  }
+
+  const nextBoundary = (date = new Date()) => {
+    const boundary = new Date(date)
+    boundary.setSeconds(0, 0)
+    if (date.getHours() < 8) boundary.setHours(8)
+    else if (date.getHours() < 18) boundary.setHours(18)
+    else {
+      boundary.setDate(boundary.getDate() + 1)
+      boundary.setHours(8)
+    }
+    return boundary
+  }
+
+  const activeOverride = (now = Date.now()) => {
+    try {
+      const scheme = localStorage.getItem(KEY)
+      const until = Number(localStorage.getItem(UNTIL_KEY))
+      return (scheme === 'light' || scheme === 'dark') && Number.isFinite(until) && until > now
+        ? { scheme, until }
+        : null
+    } catch (e) {
+      return null
+    }
+  }
+
+  const clearOverride = () => {
+    try {
+      localStorage.removeItem(KEY)
+      localStorage.removeItem(UNTIL_KEY)
+    } catch (e) {}
+  }
 
   const reflect = () => {
     const scheme = root.getAttribute('data-scheme') === 'light' ? 'light' : 'dark'
-    buttons.forEach((b) => b.setAttribute('aria-pressed', String(scheme === 'light')))
+    const next = scheme === 'light' ? 'тёмную' : 'светлую'
+    buttons.forEach((b) => {
+      b.setAttribute('aria-pressed', String(scheme === 'light'))
+      b.setAttribute('aria-label', `Включить ${next} тему до следующего автоматического переключения`)
+    })
     if (metaThemeColor) metaThemeColor.setAttribute('content', COLOR[scheme])
   }
-  reflect()
+
+  const applySchedule = () => {
+    const override = activeOverride()
+    if (!override) clearOverride()
+    root.setAttribute('data-scheme', override?.scheme || automaticScheme())
+    reflect()
+
+    window.clearTimeout(boundaryTimer)
+    const boundary = override ? new Date(override.until) : nextBoundary()
+    boundaryTimer = window.setTimeout(applySchedule, Math.max(0, boundary.getTime() - Date.now()) + 50)
+  }
+
+  applySchedule()
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -137,10 +193,18 @@ if (ENABLE_LIGHT_THEME) {
       root.setAttribute('data-scheme', next)
       try {
         localStorage.setItem(KEY, next)
+        localStorage.setItem(UNTIL_KEY, String(nextBoundary().getTime()))
       } catch (e) {}
-      reflect()
+      applySchedule()
     })
   })
+
+  /* Пересчитываем тему после сна ноутбука, ручной смены часов и при
+     переключении темы в другой вкладке. */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) applySchedule()
+  })
+  window.addEventListener('storage', applySchedule)
 }
 
 /* ─── Часы (МСК) в шапке ───

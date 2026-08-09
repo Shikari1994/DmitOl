@@ -20,7 +20,7 @@
    Флаг гасит четыре места:
    - Layout.astro — html[data-scheme] прибит к "dark" прямо в разметке
      (при включённом флаге его синхронно ставит inline-скрипт по
-     localStorage + prefers-color-scheme);
+     расписанию 08:00–18:00 и временному выбору из localStorage);
    - Nav.astro — обе копии кнопки .theme-toggle (шапка и мобильное
      меню) и светлый вариант лого .nav-logo-img--light;
    - scripts/nav.js — обработчик клика по тумблеру;

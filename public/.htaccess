@@ -5,10 +5,18 @@
   RewriteEngine On
 
   # Единственный канонический адрес: https без www.
-  # Работает с 2026-07-30: для домена выпущен сертификат Let's Encrypt.
+  #
+  # На reg.ru TLS завершается на фронтенде (nginx/DDoS-Guard), а до Apache
+  # запрос доходит уже по http — поэтому %{HTTPS} здесь всегда «off» и одной
+  # этой проверки мало: она даёт бесконечный цикл редиректов
+  # (ERR_TOO_MANY_REDIRECTS, поймали 2026-07-30). Настоящий протокол клиента
+  # приезжает в заголовке X-Forwarded-Proto — редиректим, только если обе
+  # проверки говорят, что соединение не защищено.
   RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # Здесь цикла быть не может: после редиректа хост уже без www.
   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
   RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 </IfModule>
@@ -16,6 +24,18 @@
 # Astro собирает страницы как /path/index.html.
 DirectoryIndex index.html
 Options -Indexes
+
+# Автодеплой (GitHub Actions) кладёт в корень служебный слепок залитых файлов —
+# наружу его отдавать незачем.
+<Files ".ftp-deploy-sync-state.json">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</Files>
 
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml

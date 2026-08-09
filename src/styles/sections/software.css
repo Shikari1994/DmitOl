@@ -50,15 +50,8 @@
 .sw-eco-video {
   width: 100%; height: 100%; object-fit: cover;
 }
-/* Два ролика на две схемы: ecosystem-dark.mp4 и ecosystem-light.mp4,
-   каждый подмешивается в цвет реального фона секции своим ::before/
-   ::after в var(--surface). Неактивный скрыт через display:none — и
-   поэтому не грузится: ленивая загрузка идёт через IntersectionObserver,
-   а у display:none нет геометрии. Ролик качается только после
-   переключения темы. */
-.sw-eco-video--light { display: none; }
-html[data-scheme="light"] .sw-eco-video--dark { display: none; }
-html[data-scheme="light"] .sw-eco-video--light { display: block; }
+/* Экран Drill Monitor всегда использует тёмную рабочую схему, даже когда
+   остальная страница показана в светлой теме. */
 /* z-index:2, выше ::before (1) — верхний фейд-градиент не размывает
    логотип, тот остаётся чётким поверх видео независимо от кадра ролика. */
 .sw-eco-logo {

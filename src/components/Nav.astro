@@ -1,8 +1,8 @@
 ---
 import { Image } from 'astro:assets'
 import { asset } from '../lib/asset.js'
-import logoWhite from '../assets/brand/logo-white.png'
-import logoColor from '../assets/brand/logo-color.webp'
+import markWhite from '../assets/brand/mark-white.png'
+import markBlack from '../assets/brand/mark-black.png'
 import { ENABLE_LIGHT_THEME } from '../lib/flags.js'
 
 /* Пунктов пять — по числу занятых колонок сетки между направляющими
@@ -32,17 +32,11 @@ const MOBILE_LINKS = [...LINKS, ['/#contact', 'Контакты']]
 
 <nav class="nav glass">
   <a class="nav-logo" href={asset('/')}>
-    {/* В вёрстке лого 23px и 34px по высоте (nav.css), поэтому оба кадра
-        режутся до двойного ретина-запаса: исходный PNG белого лого весит
-        170 КБ при нужных здесь единицах КБ. */}
-    <Image class="nav-logo-img nav-logo-img--dark" src={logoWhite} height={68} format="webp" alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
-    {/* Цветное лого — только для светлой схемы (nav.css гасит его через
-        display:none в тёмной). С выключенным ENABLE_LIGHT_THEME его нет
-        в разметке совсем, а не спрятано: display:none у <img> не мешает
-        браузеру скачать кадр, и оно грузилось бы на каждой странице,
-        никогда не показавшись. */}
+    {/* Тот же монохромный знак, что в hero: светлый на тёмной теме,
+        тёмный на светлой. Размер в nav.css подогнан под высоту шапки. */}
+    <Image class="nav-logo-img nav-logo-img--dark" src={markWhite} height={56} format="webp" alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
     {ENABLE_LIGHT_THEME && (
-      <Image class="nav-logo-img nav-logo-img--light" src={logoColor} height={68} alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
+      <Image class="nav-logo-img nav-logo-img--light" src={markBlack} height={56} format="webp" alt="ГЕОТЕХНАВИГАЦИЯ" loading="eager" />
     )}
     <span class="nav-logo-text">Геотехнавигация</span>
   </a>

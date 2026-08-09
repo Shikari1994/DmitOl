@@ -80,10 +80,17 @@
   width: 100%; height: 100%; max-height: none;
   object-fit: cover;
 }
-/* Кадр инклинометра шире соседних (2.24 против ~1.75), и contain
-   центрирует его, оставляя пустой промежуток справа до рамки. Сдвигаем
-   видимую часть вправо, чтобы край упирался в границу. */
-.product-photo--inclinometer.is-compact img { object-position: 100% 50%; }
+/* Длинные цилиндрические узлы должны быть видны целиком. cover обрезал
+   их концы в более узкой рамке, поэтому этим четырём кадрам даём contain
+   и небольшой равномерный запас от границ. */
+.product-photo--inclinometer.is-compact img,
+.product-photo--resistivimeter.is-compact img,
+.product-photo--pulsator.is-compact img,
+.product-photo--parts.is-compact img {
+  width: 92%; height: 92%;
+  object-fit: contain;
+  object-position: center;
+}
 /* Пара кадров тёмная/светлая схема (пока только 03, инклинометр, см.
    products.js/imageLight) — по умолчанию (без data-scheme или dark)
    видна .theme-img--dark, светлая схема глушит её и показывает

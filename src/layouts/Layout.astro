@@ -54,17 +54,16 @@ const orgSchema = {
     <meta name="theme-color" content="#141414" id="theme-color-meta" />
 
     <!-- Схема (светлая/тёмная) ставится синхронно, до отрисовки body:
-         иначе на тёмной системе с сохранённым светлым выбором страница
-         на первый кадр мелькнула бы дефолтной тёмной, а затем
-         перекрасилась бы в светлую после разбора модулей. is:inline —
+         иначе автоматическая или временно выбранная пользователем тема
+         появилась бы только после первого кадра. is:inline —
          не ESM-модуль, выполняется сразу по месту, без defer.
 
          При выключенном ENABLE_LIGHT_THEME скрипта нет вообще, а
          data-scheme="dark" стоит прямо на <html> (см. выше). Именно
          поэтому выбор схемы нельзя было оставить как есть, просто
-         спрятав кнопку: скрипт читает prefers-color-scheme, и посетитель
-         со светлой системной темой открыл бы сайт светлым — без
-         тумблера, то есть без возможности вернуться. Сохранённый
+         спрятав кнопку: автоматическое расписание могло бы открыть сайт
+         светлым — без тумблера, то есть без возможности вернуться.
+         Сохранённый
          localStorage['gtn-theme'] с прошлых визитов по той же причине
          больше не читается и ни на что не влияет. -->
     {ENABLE_LIGHT_THEME && (
@@ -72,13 +71,24 @@ const orgSchema = {
         (function () {
           try {
             var KEY = 'gtn-theme'
+            var UNTIL_KEY = 'gtn-theme-until'
+            var now = new Date()
             var stored = localStorage.getItem(KEY)
-            var scheme =
-              stored === 'light' || stored === 'dark'
-                ? stored
-                : window.matchMedia('(prefers-color-scheme: light)').matches
-                  ? 'light'
-                  : 'dark'
+            var until = Number(localStorage.getItem(UNTIL_KEY))
+            var hasActiveOverride =
+              (stored === 'light' || stored === 'dark') &&
+              Number.isFinite(until) &&
+              until > now.getTime()
+            var hour = now.getHours()
+            var scheme = hasActiveOverride
+              ? stored
+              : hour >= 8 && hour < 18
+                ? 'light'
+                : 'dark'
+            if (!hasActiveOverride) {
+              localStorage.removeItem(KEY)
+              localStorage.removeItem(UNTIL_KEY)
+            }
             document.documentElement.setAttribute('data-scheme', scheme)
           } catch (e) {}
         })()

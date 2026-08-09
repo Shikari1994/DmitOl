@@ -132,6 +132,7 @@ html[data-scheme="light"] .econ-head { background-color: rgba(255, 255, 255, 0.1
 .econ-algo-row:first-child { border-top: 0; padding-top: 0; }
 .econ-algo-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .econ-algo-title { font-family: var(--font-text); font-size: var(--fs-2); font-weight: 800; color: var(--ink); }
+.econ-algo-subtitle { font-size: var(--fs-1); font-weight: 700; color: var(--ink-dim); }
 .econ-algo-sub { font-size: var(--fs-1); letter-spacing: 0.02em; color: var(--ink-faint); font-weight: 500; }
 .econ-algo-tag {
   font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim);
