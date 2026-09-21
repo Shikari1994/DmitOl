@@ -1,4 +1,5 @@
 ---
+import { asset } from '../lib/asset.js'
 ---
 
 <footer id="contact">
@@ -10,9 +11,27 @@
       <a href="mailto:info@geo-tn.com">info@geo-tn.com</a>
       </div>
     </section>
-    <address class="footer-cell footer-cell-address">
+    <div class="footer-cell footer-cell-address">
       <span class="footer-tag mono">адрес_офиса</span>
-      <span>123007, г. Москва, 5-я Магистральная, д. 10а, офис 15</span>
-    </address>
+      <address class="footer-address-text">123007, г. Москва, 5-я Магистральная, д. 10а, офис 15</address>
+      <a
+        class="footer-document"
+        href={asset('/documents/drill-monitor-registration-certificate.pdf')}
+        target="_blank"
+        rel="noopener noreferrer"
+        type="application/pdf"
+        aria-label="Открыть цветное свидетельство о регистрации Drill Monitor (PDF, новая вкладка)"
+      >
+        <img
+          src={asset('/documents/drill-monitor-registration-preview.png')}
+          alt=""
+          width="311"
+          height="440"
+          loading="eager"
+          decoding="async"
+        />
+        <span class="footer-document-open mono" aria-hidden="true">PDF ↗</span>
+      </a>
+    </div>
   </div>
 </footer>
